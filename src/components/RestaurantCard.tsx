@@ -30,7 +30,13 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold">{restaurant.name}</h2>
-            <span className="text-gray-500">{restaurant.priceRange}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">{restaurant.priceRange}</span>
+              <span className="text-yellow-500">★</span>
+              <span className="text-gray-700">
+                {restaurant.rating.toFixed(1)}
+              </span>
+            </div>
           </div>
           <span
             className={`px-2 py-1 rounded text-sm ${

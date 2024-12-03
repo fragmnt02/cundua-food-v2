@@ -17,6 +17,7 @@ type RestaurantForm = Omit<
     };
   };
   information?: string;
+  rating: number;
 };
 
 export default function CreateRestaurant() {
@@ -37,7 +38,8 @@ export default function CreateRestaurant() {
     paymentMethods: [],
     location: {},
     hours: {},
-    information: ''
+    information: '',
+    rating: 0
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -425,6 +427,24 @@ export default function CreateRestaurant() {
             <option value="$$$">$$$ ($300-600 MXN por persona)</option>
             <option value="$$$$">$$$$ (Más de $600 MXN por persona)</option>
           </select>
+        </div>
+
+        {/* Rating */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Calificación (0-5) <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            name="rating"
+            value={formData.rating}
+            onChange={handleChange}
+            min="0"
+            max="5"
+            step="0.1"
+            className="w-full p-2 border rounded"
+            required
+          />
         </div>
 
         {/* Features */}

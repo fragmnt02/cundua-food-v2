@@ -8,7 +8,9 @@ import {
   FaFacebook,
   FaWhatsapp,
   FaPhone,
-  FaBiking
+  FaBiking,
+  FaStar,
+  FaStarHalf
 } from 'react-icons/fa';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { Day } from '@/types/restaurant';
@@ -32,6 +34,28 @@ export default function RestaurantPage() {
       Day.Sabado
     ];
     return days[new Date().getDay()];
+  };
+
+  // Add this helper function
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={`star-${i}`} className="text-yellow-400" />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<FaStarHalf key="half-star" className="text-yellow-400" />);
+    }
+
+    const remainingStars = 5 - stars.length;
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
+    }
+
+    return stars;
   };
 
   if (!restaurant) {
@@ -70,6 +94,14 @@ export default function RestaurantPage() {
               <p>
                 {restaurant.priceRange} • {restaurant.cuisine.join(', ')}
               </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-lg">Calificación</h3>
+              <div className="flex items-center gap-2">
+                <div className="flex">{renderStars(restaurant.rating)}</div>
+                <span className="text-gray-600">({restaurant.rating} / 5)</span>
+              </div>
             </div>
 
             <div>
