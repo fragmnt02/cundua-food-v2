@@ -121,6 +121,8 @@ export function useRestaurant(): UseRestaurantReturn {
           throw new Error('Failed to create restaurant');
         }
 
+        localStorage.removeItem(CACHE_KEY);
+
         // Refresh the restaurants list after creation
         await fetchRestaurants();
 
@@ -154,6 +156,8 @@ export function useRestaurant(): UseRestaurantReturn {
         if (!response.ok) {
           throw new Error('Failed to update restaurant');
         }
+
+        localStorage.removeItem(CACHE_KEY);
 
         // Refresh the restaurants list after update
         await fetchRestaurants();
