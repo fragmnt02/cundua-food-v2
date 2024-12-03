@@ -181,17 +181,49 @@ export default function CreateRestaurant() {
         {/* Main Image */}
         <div>
           <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">
-            URL de la Imágen Principal <span className="text-red-500">*</span>
+            Imágen Principal <span className="text-red-500">*</span>
           </label>
-          <input
-            type="url"
-            id="imageUrl"
-            name="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+          <div className="flex flex-col gap-2">
+            {formData.imageUrl && (
+              <img
+                src={formData.imageUrl}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded"
+              />
+            )}
+            <input
+              type="file"
+              id="imageUrl"
+              name="imageUrl"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch('/api/upload', {
+                      method: 'POST',
+                      body: formData
+                    });
+
+                    if (response.ok) {
+                      const { url } = await response.json();
+                      setFormData((prev) => ({
+                        ...prev,
+                        imageUrl: url
+                      }));
+                    }
+                  } catch (error) {
+                    console.error('Error uploading image:', error);
+                  }
+                }
+              }}
+              className="w-full p-2 border rounded"
+              required={!formData.imageUrl}
+            />
+          </div>
         </div>
 
         {/* Cuisine Types */}

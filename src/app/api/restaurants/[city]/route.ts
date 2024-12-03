@@ -11,7 +11,6 @@ export async function POST(
   try {
     const body = await request.json();
     const { city } = await params;
-    console.log('EOOO', city, body);
 
     // Add the restaurant to Firestore
     const restaurantsRef = collection(db, 'cities', city, 'restaurants');
