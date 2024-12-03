@@ -442,7 +442,9 @@ export default function CreateRestaurant() {
                   ? 'Food Truck'
                   : value === RestaurantType.DarkKitchen
                   ? 'Cocina Fantasma'
-                  : 'Plaza de Comidas (Pasatiempo)'}
+                  : value === RestaurantType.FoodCourt
+                  ? 'Plaza de Comidas (Pasatiempo)'
+                  : 'Para Llevar'}
               </option>
             ))}
           </select>

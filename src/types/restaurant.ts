@@ -112,5 +112,6 @@ export enum RestaurantType {
   Restaurant = 'restaurant',
   FoodTruck = 'foodTruck',
   DarkKitchen = 'darkKitchen',
-  FoodCourt = 'foodCourt'
+  FoodCourt = 'foodCourt',
+  TakeAway = 'takeAway'
 }

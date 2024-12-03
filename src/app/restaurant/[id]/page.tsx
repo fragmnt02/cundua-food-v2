@@ -27,7 +27,8 @@ export default function RestaurantPage() {
     [RestaurantType.Restaurant]: 'Restaurante',
     [RestaurantType.FoodTruck]: 'Food Truck',
     [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
-    [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)'
+    [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)',
+    [RestaurantType.TakeAway]: 'Para Llevar'
   };
 
   // Add function to get current day in Spanish
