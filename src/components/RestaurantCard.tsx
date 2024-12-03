@@ -42,10 +42,10 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
             }`}
           >
             {restaurant.isOpen
-              ? 'Open'
+              ? 'Abierto'
               : restaurant.isOpeningSoon
-              ? 'Opening Soon'
-              : 'Closed'}
+              ? 'Abre Pronto'
+              : 'Cerrado'}
           </span>
         </div>
         <p className="text-gray-600">{restaurant.cuisine.join(', ')}</p>

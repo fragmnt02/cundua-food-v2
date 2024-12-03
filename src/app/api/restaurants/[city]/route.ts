@@ -1,0 +1,107 @@
+'use server';
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { Day, Restaurant } from '@/types/restaurant';
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ city: string }> }
+) {
+  try {
+    const body = await request.json();
+    const { city } = await params;
+    console.log('EOOO', city, body);
+
+    // Add the restaurant to Firestore
+    const restaurantsRef = collection(db, 'cities', city, 'restaurants');
+    const docRef = await addDoc(restaurantsRef, {
+      ...body,
+      createdAt: new Date().toISOString()
+    });
+
+    return NextResponse.json({ id: docRef.id }, { status: 201 });
+  } catch (error) {
+    console.error('Error creating restaurant:', error);
+    return NextResponse.json(
+      { error: 'Error creating restaurant' },
+      { status: 500 }
+    );
+  }
+}
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ city: string }> }
+) {
+  try {
+    const { city } = await params;
+    const restaurantsRef = collection(db, 'cities', city, 'restaurants');
+    const snapshot = await getDocs(restaurantsRef);
+
+    const restaurants = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Restaurant[];
+
+    // Add isOpen and isOpeningSoon status based on current Mexico City time
+    const mexicoCityTime = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Mexico_City'
+    });
+    const currentTime = new Date(mexicoCityTime);
+    const currentHour = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+    const currentDay = currentTime.getDay();
+
+    const daysMap = {
+      0: Day.Domingo,
+      1: Day.Lunes,
+      2: Day.Martes,
+      3: Day.Miercoles,
+      4: Day.Jueves,
+      5: Day.Viernes,
+      6: Day.Sabado
+    };
+
+    const restaurantsWithStatus = restaurants.map((restaurant) => {
+      const todaySchedule = restaurant.hours.find(
+        (schedule) =>
+          schedule.day === daysMap[currentDay as keyof typeof daysMap]
+      );
+
+      if (!todaySchedule) {
+        return { ...restaurant, isOpen: false, isOpeningSoon: false };
+      }
+
+      const [openHour, openMinutes] = todaySchedule.open.split(':').map(Number);
+      const [closeHour, closeMinutes] = todaySchedule.close
+        .split(':')
+        .map(Number);
+
+      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+      const openTimeInMinutes = openHour * 60 + openMinutes;
+      const closeTimeInMinutes = closeHour * 60 + closeMinutes;
+
+      const isOpen =
+        currentTimeInMinutes >= openTimeInMinutes &&
+        currentTimeInMinutes < closeTimeInMinutes;
+      const isOpeningSoon =
+        !isOpen &&
+        openTimeInMinutes - currentTimeInMinutes > 0 &&
+        openTimeInMinutes - currentTimeInMinutes <= 10;
+
+      return {
+        ...restaurant,
+        isOpen,
+        isOpeningSoon
+      };
+    });
+
+    return NextResponse.json(restaurantsWithStatus);
+  } catch (error) {
+    console.error('Error fetching restaurants:', error);
+    return NextResponse.json(
+      { error: 'Error fetching restaurants' },
+      { status: 500 }
+    );
+  }
+}

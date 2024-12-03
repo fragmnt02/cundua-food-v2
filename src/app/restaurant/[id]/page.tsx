@@ -11,6 +11,7 @@ import {
   FaBiking
 } from 'react-icons/fa';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import { Day } from '@/types/restaurant';
 
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
@@ -22,13 +23,13 @@ export default function RestaurantPage() {
   // Add function to get current day in Spanish
   const getCurrentDayInSpanish = () => {
     const days = [
-      'Domingo',
-      'Lunes',
-      'Martes',
-      'Miercoles',
-      'Jueves',
-      'Viernes',
-      'Sabado'
+      Day.Domingo,
+      Day.Lunes,
+      Day.Martes,
+      Day.Miercoles,
+      Day.Jueves,
+      Day.Viernes,
+      Day.Sabado
     ];
     return days[new Date().getDay()];
   };
@@ -144,7 +145,7 @@ export default function RestaurantPage() {
             <div className="flex gap-4">
               {restaurant.socialMedia?.instagram && (
                 <a
-                  href={`https://instagram.com/${restaurant.socialMedia.instagram}`}
+                  href={restaurant.socialMedia.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
@@ -155,7 +156,7 @@ export default function RestaurantPage() {
               )}
               {restaurant.socialMedia?.facebook && (
                 <a
-                  href={`https://facebook.com/${restaurant.socialMedia.facebook}`}
+                  href={restaurant.socialMedia.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -191,14 +192,18 @@ export default function RestaurantPage() {
                 </a>
               )}
               <a
-                href="#"
+                href={`https://wa.me/+5219141139222`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
               >
                 <FaBiking className="text-xl" />
                 Rapidito
               </a>
               <a
-                href="#"
+                href={`https://wa.me/+5219141222478`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
                 <FaBiking className="text-xl" />

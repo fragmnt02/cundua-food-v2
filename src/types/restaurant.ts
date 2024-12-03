@@ -62,3 +62,13 @@ export enum Cuisine {
   'Comida Callejera' = 'Comida Callejera',
   Asiatica = 'Asiatica'
 }
+
+export enum Day {
+  Domingo = 'Domingo',
+  Lunes = 'Lunes',
+  Martes = 'Martes',
+  Miercoles = 'Miércoles',
+  Jueves = 'Jueves',
+  Viernes = 'Viernes',
+  Sabado = 'Sábado'
+}

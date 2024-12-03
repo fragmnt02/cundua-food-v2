@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { PaymentMethod, Cuisine, Restaurant } from '@/types/restaurant';
+import { PaymentMethod, Cuisine, Restaurant, Day } from '@/types/restaurant';
 import { useCity } from '@/hooks/useCity';
 import { useRestaurant } from '@/hooks/useRestaurant';
 
@@ -139,13 +139,13 @@ export default function CreateRestaurant() {
   };
 
   const daysOfWeek = [
-    'lunes',
-    'martes',
-    'miercoles',
-    'jueves',
-    'viernes',
-    'sabado',
-    'domingo'
+    Day.Lunes,
+    Day.Martes,
+    Day.Miercoles,
+    Day.Jueves,
+    Day.Viernes,
+    Day.Sabado,
+    Day.Domingo
   ];
 
   if (isLoading) {

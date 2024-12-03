@@ -144,7 +144,7 @@ export function useRestaurant(): UseRestaurantReturn {
 
       try {
         const response = await fetch(`/api/restaurants/${city}/${id}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
           },
