@@ -100,6 +100,7 @@ export default function CreateRestaurant() {
         'id' | 'isOpen' | 'isOpeningSoon'
       > = {
         ...formData,
+        rating: Number(formData.rating),
         hours: Object.entries(formData.hours).map(([day, hours]) => ({
           day,
           open: hours.open,
