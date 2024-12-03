@@ -186,7 +186,7 @@ export default function RestaurantPage() {
         {/* Social Media and Delivery Section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
-            <h2 className="text-2xl font-bold mb-4">Síguenos</h2>
+            <h2 className="text-2xl font-bold mb-4">Redes Sociales</h2>
             <div className="flex gap-4">
               {restaurant.socialMedia?.instagram && (
                 <a
@@ -259,24 +259,26 @@ export default function RestaurantPage() {
         </section>
 
         {/* Location Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Ubicación</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-semibold text-lg mb-2">Dirección</h3>
-              <p className="mb-4">{restaurant.location?.address}</p>
-              <iframe
-                width="100%"
-                height="450"
-                style={{ border: 0, margin: '1rem 0' }}
-                src={restaurant.location?.mapUrl}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+        {restaurant?.location?.address && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">Ubicación</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h3 className="font-semibold text-lg mb-2">Dirección</h3>
+                <p className="mb-4">{restaurant.location?.address}</p>
+                <iframe
+                  width="100%"
+                  height="450"
+                  style={{ border: 0, margin: '1rem 0' }}
+                  src={restaurant.location?.mapUrl}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Information Section */}
         <section className="mb-12">
@@ -294,27 +296,29 @@ export default function RestaurantPage() {
         </section>
 
         {/* Menu Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Menú</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurant.menu.map((menuItem, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
-                onClick={() => setSelectedImage(menuItem.imageUrl)}
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={menuItem.imageUrl}
-                    alt={`Menu item ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
+        {restaurant.menu?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">Menú</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {restaurant.menu.map((menuItem, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedImage(menuItem.imageUrl)}
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={menuItem.imageUrl}
+                      alt={`Menu item ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Video Section */}
         <section className="mb-12">
