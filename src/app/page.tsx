@@ -1,6 +1,6 @@
 'use client';
 
-import { Cuisine, PaymentMethod } from '@/types/restaurant';
+import { Cuisine, PaymentMethod, RestaurantType } from '@/types/restaurant';
 import { useState, useMemo, useCallback } from 'react';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { useRestaurant } from '@/hooks/useRestaurant';
@@ -50,6 +50,12 @@ export default function Home() {
       }
     }
   });
+  const [selectedType, setSelectedType] = useState(() => {
+    if (isClient()) {
+      return localStorage.getItem('restaurantFilters.type') || 'all';
+    }
+    return 'all';
+  });
 
   // Filter and sort restaurants
   const filteredRestaurants = useMemo(() => {
@@ -59,6 +65,7 @@ export default function Home() {
           restaurant.name.toLowerCase()?.includes(searchQuery.toLowerCase()) &&
           (selectedCuisine === 'all' ||
             restaurant.cuisine?.includes(selectedCuisine as Cuisine)) &&
+          (selectedType === 'all' || restaurant.type === selectedType) &&
           (selectedPriceRange === 'all' ||
             restaurant.priceRange === selectedPriceRange) &&
           (selectedFeatures.length === 0 ||
@@ -81,6 +88,7 @@ export default function Home() {
     restaurants,
     searchQuery,
     selectedCuisine,
+    selectedType,
     selectedPriceRange,
     selectedFeatures,
     selectedPaymentMethods
@@ -132,6 +140,11 @@ export default function Home() {
     });
   };
 
+  const handleTypeChange = (value: string) => {
+    setSelectedType(value);
+    updateCache('type', value);
+  };
+
   return (
     <main className="p-8">
       <h1 className="text-3xl font-bold mb-8">Restaurantes</h1>
@@ -159,6 +172,25 @@ export default function Home() {
             {Object.values(Cuisine).map((cuisine) => (
               <option key={cuisine} value={cuisine}>
                 {cuisine}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedType}
+            onChange={(e) => handleTypeChange(e.target.value)}
+            className="p-2 border rounded"
+          >
+            <option value="all">Todos los tipos</option>
+            {Object.values(RestaurantType).map((type) => (
+              <option key={type} value={type}>
+                {type === RestaurantType.Restaurant
+                  ? 'Restaurante'
+                  : type === RestaurantType.FoodTruck
+                  ? 'Food Truck'
+                  : type === RestaurantType.DarkKitchen
+                  ? 'Cocina Fantasma'
+                  : 'Plaza de Comidas (Pasatiempo)'}
               </option>
             ))}
           </select>

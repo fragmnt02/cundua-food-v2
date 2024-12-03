@@ -46,6 +46,7 @@ $$$$ = Más de $600 MXN por persona
   information?: string;
   rating: number;
   videoUrl?: string;
+  type: RestaurantType;
 }
 
 export enum PaymentMethod {
@@ -74,4 +75,11 @@ export enum Day {
   Jueves = 'Jueves',
   Viernes = 'Viernes',
   Sabado = 'Sábado'
+}
+
+export enum RestaurantType {
+  Restaurant = 'restaurant',
+  FoodTruck = 'foodTruck',
+  DarkKitchen = 'darkKitchen',
+  FoodCourt = 'foodCourt'
 }

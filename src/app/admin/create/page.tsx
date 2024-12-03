@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { PaymentMethod, Cuisine, Restaurant, Day } from '@/types/restaurant';
+import {
+  PaymentMethod,
+  Cuisine,
+  Restaurant,
+  Day,
+  RestaurantType
+} from '@/types/restaurant';
 import { useCity } from '@/hooks/useCity';
 import { useRestaurant } from '@/hooks/useRestaurant';
 
@@ -19,6 +25,7 @@ type RestaurantForm = Omit<
   information?: string;
   rating: number;
   videoUrl?: string;
+  type: string;
 };
 
 export default function CreateRestaurant() {
@@ -41,7 +48,8 @@ export default function CreateRestaurant() {
     hours: {},
     information: '',
     rating: 0,
-    videoUrl: ''
+    videoUrl: '',
+    type: RestaurantType.Restaurant
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -410,6 +418,33 @@ export default function CreateRestaurant() {
             }
             className="w-full p-2 border rounded"
           />
+        </div>
+
+        {/* Restaurant Type */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Tipo de Establecimiento <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.type}
+            onChange={handleChange}
+            name="type"
+            className="w-full p-2 border rounded"
+            required
+          >
+            <option value="">Seleccionar tipo</option>
+            {Object.entries(RestaurantType).map(([key, value]) => (
+              <option key={key} value={value}>
+                {value === RestaurantType.Restaurant
+                  ? 'Restaurante'
+                  : value === RestaurantType.FoodTruck
+                  ? 'Food Truck'
+                  : value === RestaurantType.DarkKitchen
+                  ? 'Cocina Fantasma'
+                  : 'Plaza de Comidas (Pasatiempo)'}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Price Range */}

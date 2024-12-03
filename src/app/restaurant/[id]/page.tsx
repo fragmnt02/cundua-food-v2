@@ -13,7 +13,7 @@ import {
   FaStarHalf
 } from 'react-icons/fa';
 import { useRestaurant } from '@/hooks/useRestaurant';
-import { Day } from '@/types/restaurant';
+import { Day, RestaurantType } from '@/types/restaurant';
 
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
@@ -21,6 +21,14 @@ export default function RestaurantPage() {
   const restaurant = getRestaurant(params.id as string);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+
+  // Add this mapping near the top of the component, after the useState declarations
+  const restaurantTypeMap: { [key in RestaurantType]: string } = {
+    [RestaurantType.Restaurant]: 'Restaurante',
+    [RestaurantType.FoodTruck]: 'Food Truck',
+    [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
+    [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)'
+  };
 
   // Add function to get current day in Spanish
   const getCurrentDayInSpanish = () => {
@@ -92,7 +100,8 @@ export default function RestaurantPage() {
             <div>
               <h3 className="font-semibold text-lg">Precio y tipo de comida</h3>
               <p>
-                {restaurant.priceRange} • {restaurant.cuisine.join(', ')}
+                {restaurant.priceRange} • {restaurant.cuisine.join(', ')} •{' '}
+                {restaurantTypeMap[restaurant.type]}
               </p>
             </div>
 
