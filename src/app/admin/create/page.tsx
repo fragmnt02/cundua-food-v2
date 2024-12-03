@@ -11,6 +11,7 @@ import {
 } from '@/types/restaurant';
 import { useCity } from '@/hooks/useCity';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import Image from 'next/image';
 
 type RestaurantForm = Omit<
   Restaurant,
@@ -209,7 +210,7 @@ export default function CreateRestaurant() {
           </label>
           <div className="flex flex-col gap-2">
             {formData.imageUrl && (
-              <img
+              <Image
                 src={formData.imageUrl}
                 alt="Preview"
                 className="w-32 h-32 object-cover rounded"
@@ -672,7 +673,6 @@ export default function CreateRestaurant() {
         <div>
           <label htmlFor="videoUrl" className="block text-sm font-medium mb-1">
             URL del Video de Tabascomiendo{' '}
-            <span className="text-red-500">*</span>
           </label>
           <input
             type="url"
@@ -681,7 +681,6 @@ export default function CreateRestaurant() {
             value={formData.videoUrl || ''}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
           />
         </div>
 
