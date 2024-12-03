@@ -18,6 +18,7 @@ type RestaurantForm = Omit<
   };
   information?: string;
   rating: number;
+  videoUrl?: string;
 };
 
 export default function CreateRestaurant() {
@@ -39,7 +40,8 @@ export default function CreateRestaurant() {
     location: {},
     hours: {},
     information: '',
-    rating: 0
+    rating: 0,
+    videoUrl: ''
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -629,6 +631,23 @@ export default function CreateRestaurant() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Video URL */}
+        <div>
+          <label htmlFor="videoUrl" className="block text-sm font-medium mb-1">
+            URL del Video de Tabascomiendo{' '}
+            <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="url"
+            id="videoUrl"
+            name="videoUrl"
+            value={formData.videoUrl || ''}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
         </div>
 
         <button

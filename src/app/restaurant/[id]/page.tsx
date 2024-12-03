@@ -303,6 +303,25 @@ export default function RestaurantPage() {
           </div>
         </section>
 
+        {/* Video Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-4">Video</h2>
+          <div className="bg-white p-6 rounded-lg shadow">
+            {restaurant.videoUrl ? (
+              <div className="aspect-w-16 aspect-h-9">
+                <iframe
+                  src={restaurant.videoUrl}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-lg"
+                ></iframe>
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">No hay video disponible.</p>
+            )}
+          </div>
+        </section>
+
         {/* Add Modal */}
         {selectedImage && (
           <div

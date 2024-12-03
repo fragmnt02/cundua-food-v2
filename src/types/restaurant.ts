@@ -45,6 +45,7 @@ $$$$ = Más de $600 MXN por persona
   };
   information?: string;
   rating: number;
+  videoUrl?: string;
 }
 
 export enum PaymentMethod {
