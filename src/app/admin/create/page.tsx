@@ -16,6 +16,7 @@ type RestaurantForm = Omit<
       close: string;
     };
   };
+  information?: string;
 };
 
 export default function CreateRestaurant() {
@@ -35,7 +36,8 @@ export default function CreateRestaurant() {
     features: {},
     paymentMethods: [],
     location: {},
-    hours: {}
+    hours: {},
+    information: ''
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -506,6 +508,22 @@ export default function CreateRestaurant() {
               }))
             }
             className="w-full p-2 border rounded"
+          />
+        </div>
+
+        {/* Additional Information */}
+        <div className="space-y-2">
+          <h3 className="font-medium">Información Adicional</h3>
+          <textarea
+            placeholder="Escribe información adicional sobre el restaurante..."
+            value={formData.information || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                information: e.target.value
+              }))
+            }
+            className="w-full p-2 border rounded min-h-[100px]"
           />
         </div>
 

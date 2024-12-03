@@ -233,6 +233,21 @@ export default function RestaurantPage() {
           </div>
         </section>
 
+        {/* Information Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-4">Información adicional</h2>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="prose max-w-none">
+              {restaurant.information && <div>{restaurant.information}</div>}
+              {!restaurant.information && (
+                <p className="text-gray-500 italic">
+                  No hay información adicional disponible.
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* Menu Section */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-4">Menú</h2>
