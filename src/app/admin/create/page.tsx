@@ -271,7 +271,7 @@ export default function CreateRestaurant() {
           >
             {Object.keys(Cuisine).map((type) => (
               <option key={type} value={type}>
-                {type}
+                {Cuisine[type as keyof typeof Cuisine]}
               </option>
             ))}
           </select>

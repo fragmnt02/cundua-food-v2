@@ -64,7 +64,9 @@ export default function Home() {
         (restaurant) =>
           restaurant.name.toLowerCase()?.includes(searchQuery.toLowerCase()) &&
           (selectedCuisine === 'all' ||
-            restaurant.cuisine?.includes(selectedCuisine as Cuisine)) &&
+            restaurant.cuisine?.includes(
+              selectedCuisine as keyof typeof Cuisine
+            )) &&
           (selectedType === 'all' || restaurant.type === selectedType) &&
           (selectedPriceRange === 'all' ||
             restaurant.priceRange === selectedPriceRange) &&
@@ -169,9 +171,9 @@ export default function Home() {
             className="p-2 border rounded"
           >
             <option value="all">Todas las cocinas</option>
-            {Object.values(Cuisine).map((cuisine) => (
+            {Object.keys(Cuisine).map((cuisine) => (
               <option key={cuisine} value={cuisine}>
-                {cuisine}
+                {Cuisine[cuisine as keyof typeof Cuisine]}
               </option>
             ))}
           </select>

@@ -13,7 +13,7 @@ import {
   FaStarHalf
 } from 'react-icons/fa';
 import { useRestaurant } from '@/hooks/useRestaurant';
-import { Day, RestaurantType } from '@/types/restaurant';
+import { Cuisine, Day, RestaurantType } from '@/types/restaurant';
 
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
@@ -100,8 +100,11 @@ export default function RestaurantPage() {
             <div>
               <h3 className="font-semibold text-lg">Precio y tipo de comida</h3>
               <p>
-                {restaurant.priceRange} • {restaurant.cuisine.join(', ')} •{' '}
-                {restaurantTypeMap[restaurant.type]}
+                {restaurant.priceRange} •{' '}
+                {restaurant.cuisine
+                  .map((cuisine) => Cuisine[cuisine as keyof typeof Cuisine])
+                  .join(', ')}
+                • {restaurantTypeMap[restaurant.type]}
               </p>
             </div>
 
