@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { PaymentMethod, Cuisine, Restaurant, Day } from '@/types/restaurant';
 import { useCity } from '@/hooks/useCity';
@@ -38,7 +38,7 @@ export default function CreateRestaurant() {
     hours: {}
   });
 
-  const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 0 });
+  const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -130,13 +130,21 @@ export default function CreateRestaurant() {
     }));
   };
 
-  const handleMenuImageAdd = () => {
-    setFormData((prev) => ({
-      ...prev,
-      menu: [...prev.menu, newMenuImage].sort((a, b) => a.order - b.order)
-    }));
-    setNewMenuImage({ imageUrl: '', order: 0 });
-  };
+  const handleMenuImageAdd = useCallback(() => {
+    setFormData((prev) => {
+      const newMenu = [...prev.menu, newMenuImage].sort(
+        (a, b) => a.order - b.order
+      );
+      setNewMenuImage({ imageUrl: '', order: newMenu.length + 1 });
+      return { ...prev, menu: newMenu };
+    });
+  }, [newMenuImage]);
+
+  useEffect(() => {
+    if (newMenuImage.imageUrl) {
+      handleMenuImageAdd();
+    }
+  }, [newMenuImage, handleMenuImageAdd]);
 
   const daysOfWeek = [
     Day.Lunes,
@@ -151,6 +159,8 @@ export default function CreateRestaurant() {
   if (isLoading) {
     return <div className="text-center p-6">Cargando...</div>;
   }
+
+  console.log(formData);
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -291,16 +301,33 @@ export default function CreateRestaurant() {
             ))}
             <div className="flex flex-col sm:flex-row gap-2">
               <input
-                type="url"
-                value={newMenuImage.imageUrl}
-                onChange={(e) =>
-                  setNewMenuImage((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    try {
+                      const formData = new FormData();
+                      formData.append('file', file);
+
+                      const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                      });
+
+                      if (response.ok) {
+                        const { url } = await response.json();
+                        setNewMenuImage((prev) => ({
+                          ...prev,
+                          imageUrl: url
+                        }));
+                      }
+                    } catch (error) {
+                      console.error('Error uploading image:', error);
+                    }
+                  }
+                }}
                 className="w-full p-2 border rounded"
-                placeholder="URL de la Imágen"
               />
               <div className="flex gap-2">
                 <input
@@ -314,14 +341,8 @@ export default function CreateRestaurant() {
                   }
                   className="w-20 p-2 border rounded"
                   placeholder="Orden"
+                  readOnly
                 />
-                <button
-                  type="button"
-                  onClick={handleMenuImageAdd}
-                  className="px-4 py-2 bg-green-500 text-white rounded whitespace-nowrap"
-                >
-                  Agregar
-                </button>
               </div>
             </div>
           </div>
