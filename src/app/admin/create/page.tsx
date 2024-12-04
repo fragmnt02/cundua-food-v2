@@ -591,7 +591,7 @@ export default function CreateRestaurant() {
             className="w-full p-2 border rounded"
           />
           <input
-            type="url"
+            type="text"
             placeholder="URL del Mapa"
             value={formData.location?.mapUrl || ''}
             onChange={(e) =>
