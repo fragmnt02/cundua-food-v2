@@ -44,7 +44,7 @@ export default function CreateRestaurant() {
     delivery: {},
     priceRange: '$',
     features: {},
-    paymentMethods: [],
+    paymentMethods: [PaymentMethod.Efectivo],
     location: {},
     hours: {},
     information: '',
