@@ -101,6 +101,16 @@ export default function CreateRestaurant() {
       > = {
         ...formData,
         rating: Number(formData.rating),
+        location: formData.location
+          ? {
+              ...formData.location,
+              mapUrl: formData.location.mapUrl
+                ? formData.location.mapUrl.includes('<iframe')
+                  ? formData.location.mapUrl.split('src="')[1].split('"')[0]
+                  : formData.location.mapUrl
+                : undefined
+            }
+          : undefined,
         hours: Object.entries(formData.hours).map(([day, hours]) => ({
           day,
           open: hours.open,
@@ -286,13 +296,22 @@ export default function CreateRestaurant() {
           <div className="space-y-2">
             {formData.menu.map((img, index) => (
               <div key={index} className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="url"
-                  value={img.imageUrl}
-                  className="w-full p-2 border rounded"
-                  placeholder="URL de la Imágen"
-                  readOnly
-                />
+                <div className="flex gap-2 items-center">
+                  <Image
+                    src={img.imageUrl}
+                    alt={`Menu image ${index + 1}`}
+                    width={80}
+                    height={80}
+                    className="object-cover rounded"
+                  />
+                  <input
+                    type="url"
+                    value={img.imageUrl}
+                    className="w-full p-2 border rounded"
+                    placeholder="URL de la Imágen"
+                    readOnly
+                  />
+                </div>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -464,8 +483,8 @@ export default function CreateRestaurant() {
             required
           >
             <option value="$">$ (Menos de $100 MXN por persona)</option>
-            <option value="$$">$$ ($150-300 MXN por persona)</option>
-            <option value="$$$">$$$ ($300-600 MXN por persona)</option>
+            <option value="$$">$$ ($100-200 MXN por persona)</option>
+            <option value="$$$">$$$ ($200-600 MXN por persona)</option>
             <option value="$$$$">$$$$ (Más de $600 MXN por persona)</option>
           </select>
         </div>
@@ -479,7 +498,20 @@ export default function CreateRestaurant() {
             type="number"
             name="rating"
             value={formData.rating}
-            onChange={handleChange}
+            onChange={(e) => {
+              if (e.target.value === '') {
+                setFormData((prev) => ({
+                  ...prev,
+                  rating: e.target.value as unknown as number
+                }));
+                return;
+              }
+
+              const value = parseFloat(e.target.value);
+              if (value <= 5) {
+                setFormData((prev) => ({ ...prev, rating: value }));
+              }
+            }}
             min="0"
             max="5"
             step="0.1"

@@ -31,6 +31,17 @@ export default function RestaurantPage() {
     [RestaurantType.TakeAway]: 'Para Llevar'
   };
 
+  // Add this mapping near the top of the component, after restaurantTypeMap
+  const featureTranslations: { [key: string]: string } = {
+    reservations: 'Reservaciones',
+    outdoorSeating: 'Asientos al aire libre',
+    wifi: 'WiFi',
+    hasAC: 'Aire acondicionado',
+    hasParking: 'Estacionamiento',
+    kidsFriendly: 'Amigable para niños',
+    freeDelivery: 'Envío gratis'
+  };
+
   // Add function to get current day in Spanish
   const getCurrentDayInSpanish = () => {
     const days = [
@@ -125,10 +136,7 @@ export default function RestaurantPage() {
                     value && (
                       <li key={key} className="flex items-center gap-2">
                         <span className="text-green-600">✓</span>
-                        {key
-                          .replace(/([A-Z])/g, ' $1')
-                          .replace(/^has/, '')
-                          .trim()}
+                        {featureTranslations[key] || key}
                       </li>
                     )
                 )}

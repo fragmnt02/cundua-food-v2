@@ -206,9 +206,10 @@ export default function Home() {
             className="p-2 border rounded"
           >
             <option value="all">Todos los precios</option>
-            <option value="$">$</option>
-            <option value="$$">$$</option>
-            <option value="$$$">$$$</option>
+            <option value="$">$ (Menos de $100 MXN por persona)</option>
+            <option value="$$">$$ ($100-200 MXN por persona)</option>
+            <option value="$$$">$$$ ($200-600 MXN por persona)</option>
+            <option value="$$$$">$$$$ (Más de $600 MXN por persona)</option>
           </select>
 
           {/* Features Filter */}

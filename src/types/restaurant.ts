@@ -24,8 +24,8 @@ export interface Restaurant {
   };
   /*
 $ = Menos de $100 MXN por persona
-$$ = $150-300 MXN por persona
-$$$ = $300-600 MXN por persona
+$$ = $100-200 MXN por persona
+$$$ = $200-600 MXN por persona
 $$$$ = Más de $600 MXN por persona
 */
   priceRange: '$' | '$$' | '$$$' | '$$$$';
@@ -61,41 +61,40 @@ export enum Cuisine {
   Aves = 'Aves',
   Burritos = 'Burritos',
   Cafe = 'Cafe',
-  Caldos = 'Caldos',
   Carnitas = 'Carnitas',
   Cochinita = 'Cochinita',
   ComidaCasera = 'Comida Casera',
   ComidaCallejera = 'Comida Callejera',
   ComidaRapida = 'Comida Rápida',
   ComidaTipica = 'Comida Típica',
-  ComidaVegetariana = 'Comida Vegetariana',
   ComidaVegana = 'Comida Vegana',
+  ComidaVegetariana = 'Comida Vegetariana',
   Cortes = 'Cortes',
   Desayunos = 'Desayunos',
+  Empanadas = 'Empanadas',
+  Ensaladas = 'Ensaladas',
   Gourmet = 'Gourmet',
   Hamburguesas = 'Hamburguesas',
   Helados = 'Helados',
   HotDogs = 'Hot Dogs',
+  Italiana = 'Italiana',
+  Japonesa = 'Japonesa',
   Jugos = 'Jugos',
   Mariscos = 'Mariscos',
+  Mexicana = 'Mexicana',
+  Oriental = 'Oriental',
   Panaderia = 'Panadería',
+  Pastas = 'Pastas',
+  Pescados = 'Pescados',
   Pizza = 'Pizza',
   Postres = 'Postres',
   Saludable = 'Saludable',
+  Sopas = 'Sopas',
   Sushi = 'Sushi',
   Tacos = 'Tacos',
-  Tortas = 'Tortas',
   Tamales = 'Tamales',
-  Tostadas = 'Tostadas',
-  Empanadas = 'Empanadas',
-  Pastas = 'Pastas',
-  Ensaladas = 'Ensaladas',
-  Sopas = 'Sopas',
-  Pescados = 'Pescados',
-  Mexicana = 'Mexicana',
-  Oriental = 'Oriental',
-  Italiana = 'Italiana',
-  Japonesa = 'Japonesa'
+  Tortas = 'Tortas',
+  Tostadas = 'Tostadas'
 }
 
 export enum Day {
