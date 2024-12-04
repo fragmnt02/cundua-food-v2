@@ -516,7 +516,7 @@ export default function CreateRestaurant() {
             }}
             min="0"
             max="5"
-            step="0.1"
+            step="0.5"
             className="w-full p-2 border rounded"
             required
           />
