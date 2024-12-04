@@ -31,7 +31,7 @@ type RestaurantForm = Omit<
 };
 
 export default function CreateRestaurant() {
-  const { createRestaurant, updateRestaurant } = useRestaurant();
+  const { createRestaurant, updateRestaurant, restaurants } = useRestaurant();
   const router = useRouter();
   const params = useParams();
   const { city } = useCity();
@@ -56,6 +56,7 @@ export default function CreateRestaurant() {
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -174,6 +175,35 @@ export default function CreateRestaurant() {
     }
   }, [newMenuImage, handleMenuImageAdd]);
 
+  const handleRestaurantSelect = useCallback(
+    (restaurantId: string) => {
+      const selectedRestaurant = restaurants?.find(
+        (r) => r.id === restaurantId
+      );
+      if (selectedRestaurant) {
+        const hoursObject = selectedRestaurant.hours.reduce(
+          (acc: RestaurantForm['hours'], curr: Restaurant['hours'][0]) => {
+            acc[curr.day] = {
+              open: curr.open,
+              close: curr.close
+            };
+            return acc;
+          },
+          {}
+        );
+
+        setFormData({
+          ...selectedRestaurant,
+          hours: hoursObject,
+          isIncomplete: true,
+          id: undefined
+        } as RestaurantForm);
+        setSelectedRestaurantId(restaurantId);
+      }
+    },
+    [restaurants]
+  );
+
   const daysOfWeek = [
     Day.Lunes,
     Day.Martes,
@@ -195,6 +225,29 @@ export default function CreateRestaurant() {
       <h1 className="text-2xl font-bold mb-6">
         {params.id ? 'Actualizar Restaurante' : 'Crear Nuevo Restaurante'}
       </h1>
+
+      {!params.id && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-1">
+            Copiar datos de un restaurante existente
+          </label>
+          <select
+            value={selectedRestaurantId}
+            onChange={(e) => handleRestaurantSelect(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Seleccionar restaurante...</option>
+            {restaurants
+              ?.sort((a, b) => a.name.localeCompare(b.name))
+              .map((restaurant) => (
+                <option key={restaurant.id} value={restaurant.id}>
+                  {restaurant.name}
+                </option>
+              ))}
+          </select>
+        </div>
+      )}
+
       <p className="text-sm text-gray-500 mb-4">
         Los campos marcados con * son obligatorios
       </p>
