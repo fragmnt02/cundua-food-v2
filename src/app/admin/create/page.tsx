@@ -27,6 +27,7 @@ type RestaurantForm = Omit<
   rating: number;
   videoUrl?: string;
   type: string;
+  isIncomplete?: boolean;
 };
 
 export default function CreateRestaurant() {
@@ -50,7 +51,8 @@ export default function CreateRestaurant() {
     information: '',
     rating: 0,
     videoUrl: '',
-    type: RestaurantType.Restaurant
+    type: RestaurantType.Restaurant,
+    isIncomplete: true
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -719,6 +721,25 @@ export default function CreateRestaurant() {
             onChange={handleChange}
             className="w-full p-2 border rounded"
           />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="isIncomplete"
+            name="isIncomplete"
+            checked={formData.isIncomplete || false}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                isIncomplete: e.target.checked
+              }))
+            }
+            className="rounded"
+          />
+          <label htmlFor="isIncomplete" className="text-sm font-medium">
+            Marcar como restaurante incompleto
+          </label>
         </div>
 
         <button

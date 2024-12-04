@@ -29,7 +29,14 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
       <div className="p-4">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-semibold">{restaurant.name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold">{restaurant.name}</h2>
+              {restaurant.isIncomplete && (
+                <span className="text-xs px-2 py-1 bg-orange-100 text-orange-800 rounded">
+                  Incompleto
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-gray-500">{restaurant.priceRange}</span>
               <span className="text-yellow-500">★</span>
