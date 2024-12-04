@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import {
   FaInstagram,
   FaFacebook,
@@ -21,6 +21,8 @@ export default function RestaurantPage() {
   const restaurant = getRestaurant(params.id as string);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Add this mapping near the top of the component, after the useState declarations
   const restaurantTypeMap: { [key in RestaurantType]: string } = {
@@ -78,6 +80,11 @@ export default function RestaurantPage() {
     return stars;
   };
 
+  useEffect(() => {
+    const adminStatus = localStorage.getItem('admin');
+    setIsAdmin(adminStatus !== null);
+  }, []);
+
   if (!restaurant) {
     return <div>Loading...</div>;
   }
@@ -86,6 +93,14 @@ export default function RestaurantPage() {
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
+        {isAdmin && (
+          <button
+            onClick={() => router.push(`/admin/update/${params.id}`)}
+            className="absolute top-4 right-4 z-10 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Editar Restaurante
+          </button>
+        )}
         <Image
           src={restaurant.imageUrl}
           alt={restaurant.name}

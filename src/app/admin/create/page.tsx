@@ -57,7 +57,7 @@ export default function CreateRestaurant() {
 
   useEffect(() => {
     const fetchRestaurant = async () => {
-      if (!params.id) {
+      if (!params.id || !city) {
         setIsLoading(false);
         return;
       }
@@ -225,6 +225,8 @@ export default function CreateRestaurant() {
                 src={formData.imageUrl}
                 alt="Preview"
                 className="w-32 h-32 object-cover rounded"
+                width={100}
+                height={100}
               />
             )}
             <input
