@@ -7,7 +7,7 @@ import { useRestaurant } from '@/hooks/useRestaurant';
 import { isClient } from '@/hooks/isClient';
 
 export default function Home() {
-  const { restaurants } = useRestaurant();
+  const { restaurants, loading } = useRestaurant();
   const [searchQuery, setSearchQuery] = useState(() => {
     if (isClient()) {
       return localStorage.getItem('restaurantFilters.searchQuery') || '';
@@ -253,12 +253,19 @@ export default function Home() {
         </div>
       </details>
 
-      {/* Restaurant Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRestaurants.map((restaurant) => (
-          <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-        ))}
-      </div>
+      {/* Loading Spinner */}
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      ) : (
+        /* Restaurant Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRestaurants.map((restaurant) => (
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          ))}
+        </div>
+      )}
     </main>
   );
 }
