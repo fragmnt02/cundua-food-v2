@@ -1,8 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,21 +24,24 @@ export default function LoginPage() {
   const [resetSent, setResetSent] = useState(false);
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setError('');
+      setLoading(true);
 
-    try {
-      await login(email, password);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        await login(email, password);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [email, password, login]
+  );
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = useCallback(async () => {
     if (!email) {
       setError('Por favor, ingresa tu correo electrónico');
       return;
@@ -60,93 +75,121 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [email]);
+
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEmail(e.target.value);
+    },
+    []
+  );
+
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value);
+    },
+    []
+  );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Iniciar Sesión
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
+          <CardDescription className="text-center">
             ¿No tienes una cuenta?{' '}
             <Link
               href="/auth/signup"
-              className="font-medium text-[#ffc433] hover:text-[#e6b02e]"
+              className="font-medium text-primary hover:text-primary/90 transition-colors"
+              aria-label="Ir a la página de registro"
             >
               Regístrate
             </Link>
-          </p>
-        </div>
-        {resetSent ? (
-          <div className="bg-green-50 border border-green-500 text-green-700 p-3 rounded text-center">
-            Se ha enviado un enlace de recuperación a tu correo electrónico
-          </div>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-500 text-red-500 p-3 rounded">
-                {error}
-              </div>
-            )}
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  Email
-                </label>
-                <input
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {resetSent ? (
+            <Alert
+              variant="success"
+              className="bg-green-50 border-green-500 text-green-700"
+              role="status"
+              aria-live="polite"
+            >
+              <AlertDescription>
+                Se ha enviado un enlace de recuperación a tu correo electrónico
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              {error && (
+                <Alert variant="destructive" role="alert" aria-live="assertive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-[#ffc433] focus:border-[#ffc433] focus:z-10 sm:text-sm"
-                  placeholder="Email"
+                  onChange={handleEmailChange}
+                  placeholder="correo@ejemplo.com"
+                  className="w-full"
+                  disabled={loading}
+                  aria-required="true"
+                  aria-invalid={error ? 'true' : 'false'}
+                  aria-describedby={error ? 'login-error' : undefined}
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Contraseña
-                </label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#ffc433] focus:border-[#ffc433] focus:z-10 sm:text-sm"
-                  placeholder="Contraseña"
+                  onChange={handlePasswordChange}
+                  placeholder="••••••••"
+                  className="w-full"
+                  disabled={loading}
+                  aria-required="true"
+                  aria-invalid={error ? 'true' : 'false'}
+                  aria-describedby={error ? 'login-error' : undefined}
                 />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={handleForgotPassword}
-                className="text-sm font-medium text-[#ffc433] hover:text-[#e6b02e]"
+                className="px-0"
+                disabled={loading}
+                aria-label="Recuperar contraseña"
               >
                 ¿Olvidaste tu contraseña?
-              </button>
-            </div>
-
-            <div>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                className="w-full"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-[#363430] bg-[#ffc433] hover:bg-[#e6b02e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffc433]"
+                aria-label={loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               >
+                {loading && (
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                )}
                 {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </main>
   );
 }

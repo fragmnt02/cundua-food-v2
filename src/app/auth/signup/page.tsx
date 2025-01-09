@@ -3,28 +3,54 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 export default function SignupPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     setLoading(true);
 
     try {
-      await signup(email, password);
+      await signup(formData.email, formData.password);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -34,89 +60,95 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-center">
             Crear una cuenta
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          </h1>
+          <p className="text-sm text-muted-foreground text-center">
             ¿Ya tienes una cuenta?{' '}
             <Link
               href="/auth/login"
-              className="font-medium text-[#ffc433] hover:text-[#e6b02e]"
+              className="font-medium text-primary hover:text-primary/90 transition-colors"
             >
               Inicia Sesión
             </Link>
           </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-500 text-red-500 p-3 rounded">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <input
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo electrónico</Label>
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-[#ffc433] focus:border-[#ffc433] focus:z-10 sm:text-sm"
-                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="tu@ejemplo.com"
+                aria-describedby="email-description"
               />
+              <p
+                id="email-description"
+                className="text-sm text-muted-foreground"
+              >
+                Usaremos tu correo para iniciar sesión
+              </p>
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Contraseña
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="new-password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#ffc433] focus:border-[#ffc433] focus:z-10 sm:text-sm"
-                placeholder="Contraseña"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                aria-describedby="password-description"
               />
+              <p
+                id="password-description"
+                className="text-sm text-muted-foreground"
+              >
+                Mínimo 6 caracteres
+              </p>
             </div>
-            <div>
-              <label htmlFor="confirm-password" className="sr-only">
-                Confirmar Contraseña
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+              <Input
                 id="confirm-password"
-                name="confirm-password"
+                name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#ffc433] focus:border-[#ffc433] focus:z-10 sm:text-sm"
-                placeholder="Confirmar Contraseña"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
               />
             </div>
-          </div>
-
-          <div>
-            <button
+          </CardContent>
+          <CardFooter>
+            <Button
               type="submit"
+              className="w-full"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-[#363430] bg-[#ffc433] hover:bg-[#e6b02e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffc433]"
+              aria-busy={loading}
             >
               {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
-          </div>
+            </Button>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
