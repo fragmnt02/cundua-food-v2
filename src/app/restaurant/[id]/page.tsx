@@ -54,6 +54,30 @@ const days = [
 // Helper functions moved outside component
 const getCurrentDayInSpanish = () => days[new Date().getDay()];
 
+const formatPhoneNumber = (
+  phone: string
+): { formatted: string; clean: string } => {
+  // Remove all non-numeric characters
+  const cleaned = phone.replace(/\D/g, '');
+
+  // Format for display - assuming Mexican format (10 digits)
+  // This will handle different formats gracefully
+  const match = cleaned.match(/^(\d{2,3})(\d{3})(\d{4})$/);
+
+  if (match) {
+    return {
+      formatted: `(${match[1]}) ${match[2]}-${match[3]}`,
+      clean: cleaned
+    };
+  }
+
+  // If the number doesn't match expected format, return original
+  return {
+    formatted: phone,
+    clean: cleaned
+  };
+};
+
 const renderStars = (rating: number) => {
   const stars = [];
   const fullStars = Math.floor(rating);
@@ -251,7 +275,9 @@ export default function RestaurantPage() {
             <div className="flex flex-wrap gap-4">
               {restaurant.delivery?.whatsapp && (
                 <a
-                  href={`https://wa.me/${restaurant.delivery.whatsapp}`}
+                  href={`https://wa.me/+521${
+                    formatPhoneNumber(restaurant.delivery.whatsapp).clean
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -262,11 +288,13 @@ export default function RestaurantPage() {
               )}
               {restaurant.delivery?.phone && (
                 <a
-                  href={`tel:${restaurant.delivery.phone}`}
+                  href={`tel:${
+                    formatPhoneNumber(restaurant.delivery.phone).clean
+                  }`}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                 >
                   <FaPhone className="text-xl" />
-                  Teléfono
+                  {formatPhoneNumber(restaurant.delivery.phone).formatted}
                 </a>
               )}
               <a
