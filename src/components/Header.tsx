@@ -1,29 +1,15 @@
 'use client';
 
 import { useCity } from '@/hooks/useCity';
+import { useAdmin } from '@/hooks/useAdmin';
 import Image from 'next/image';
 import { FaUserCircle, FaPlus } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
 export const Header = () => {
   const { city, updateCity } = useCity();
+  const { isAdmin, handleUserIconClick } = useAdmin();
   const router = useRouter();
-
-  // Add isAdmin check
-  const isAdmin =
-    typeof window !== 'undefined' && localStorage.getItem('admin') === 'true';
-
-  // Add click handler for user icon
-  const handleUserIconClick = () => {
-    const clicks = parseInt(localStorage.getItem('userIconClicks') || '0');
-    const newClicks = clicks + 1;
-    localStorage.setItem('userIconClicks', newClicks.toString());
-
-    if (newClicks === 10) {
-      localStorage.setItem('admin', 'true');
-      alert('¡Ahora eres administrador!');
-    }
-  };
 
   return (
     <header className="flex items-center justify-between px-8 py-4 border-b bg-[#ffc433]">
@@ -31,9 +17,9 @@ export const Header = () => {
         <Image
           src="/logo.svg"
           alt="Tabascomiendo Logo"
-          className="rounded-full h-12 cursor-pointer"
-          width={100}
-          height={100}
+          className="rounded-full h-12 w-auto cursor-pointer"
+          width={48}
+          height={48}
           onClick={() => router.push('/')}
         />
         <select

@@ -17,13 +17,13 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
     >
       <div className="relative h-48 bg-gray-200">
         <Image
-          src={imageSrc}
-          alt={restaurant.name}
+          src={imageSrc || '/restaurant.svg'}
+          alt={restaurant.name || 'Restaurant image'}
           fill
+          priority
           className="object-cover"
-          placeholder="blur"
-          blurDataURL="/restaurant.svg"
           onError={() => setImageSrc('/restaurant.svg')}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
       <div className="p-4">
