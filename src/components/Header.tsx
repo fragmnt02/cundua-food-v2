@@ -4,11 +4,25 @@ import { useCity } from '@/hooks/useCity';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
-import { FaUserCircle, FaPlus, FaUser } from 'react-icons/fa';
+import {
+  FaUserCircle,
+  FaPlus,
+  FaUser,
+  FaMapMarkerAlt,
+  FaBars
+} from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { CITY_USER_FRIENDLY_NAME, CITIES } from '@/lib/constants';
+import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from '@/components/ui/sheet';
 
 interface DropdownProps {
   isOpen: boolean;
@@ -38,6 +52,15 @@ const Dropdown = memo(({ isOpen, onClose, children }: DropdownProps) => {
     };
   }, [isOpen, onClose]);
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
   return (
     <div
       ref={dropdownRef}
@@ -50,6 +73,8 @@ const Dropdown = memo(({ isOpen, onClose, children }: DropdownProps) => {
       role="menu"
       aria-orientation="vertical"
       aria-labelledby="user-menu"
+      onKeyDown={handleKeyDown}
+      tabIndex={isOpen ? 0 : -1}
     >
       {children}
     </div>
@@ -58,19 +83,85 @@ const Dropdown = memo(({ isOpen, onClose, children }: DropdownProps) => {
 
 Dropdown.displayName = 'Dropdown';
 
+interface MobileMenuProps {
+  isAdmin: boolean;
+  user: { email: string } | null;
+  onLogout: () => void;
+  router: {
+    push: (path: string) => void;
+  };
+}
+
+const MobileMenu = memo(
+  ({ isAdmin, user, onLogout, router }: MobileMenuProps) => {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="sm:hidden hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            aria-label="Abrir menú móvil"
+          >
+            <FaBars className="text-2xl text-[#363430]" aria-hidden="true" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Menú de navegación</SheetTitle>
+          </SheetHeader>
+          <nav className="mt-8 space-y-4">
+            {isAdmin && (
+              <Button
+                onClick={() => router.push('/admin/create')}
+                variant="ghost"
+                className="w-full justify-start gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+              >
+                <FaPlus className="text-xl" aria-hidden="true" />
+                <span>Crear Restaurante</span>
+              </Button>
+            )}
+
+            {user ? (
+              <>
+                <div
+                  className="px-2 py-1 text-sm text-gray-700 border-t"
+                  role="status"
+                >
+                  {user.email}
+                </div>
+                <Button
+                  onClick={onLogout}
+                  variant="ghost"
+                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                >
+                  Cerrar Sesión
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => router.push('/auth/login')}
+                variant="ghost"
+                className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+              >
+                Iniciar Sesión
+              </Button>
+            )}
+          </nav>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+);
+
+MobileMenu.displayName = 'MobileMenu';
+
 export const Header = memo(() => {
-  const { city, updateCity } = useCity();
+  const { city } = useCity();
   const { isAdmin } = useAdmin();
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const handleCityChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      updateCity(e.target.value);
-    },
-    [updateCity]
-  );
 
   const toggleDropdown = useCallback(() => {
     setIsDropdownOpen((prev) => !prev);
@@ -86,95 +177,142 @@ export const Header = memo(() => {
   }, [logout, closeDropdown]);
 
   return (
-    <header className="sticky top-0 flex items-center justify-between px-4 sm:px-8 py-4 border-b bg-[#ffc433] shadow-sm relative z-50">
-      <div className="flex items-center gap-4 flex-1 sm:flex-initial">
-        <Link href="/" aria-label="Go to homepage">
-          <Image
-            src="/logo.svg"
-            alt="Tabascomiendo Logo"
-            className="rounded-full h-10 w-10 sm:h-12 sm:w-12 transition-transform hover:scale-105"
-            width={48}
-            height={48}
-            priority
-          />
-        </Link>
-        <div className="relative flex-1 sm:flex-initial max-w-[200px]">
-          <select
-            className="w-full p-2 border rounded bg-transparent text-[#363430] border-[#363430] cursor-pointer
-                     hover:border-[#222] focus:outline-none focus:ring-2 focus:ring-[#363430] focus:border-transparent
-                     transition-all duration-200"
-            value={city ?? ''}
-            onChange={handleCityChange}
-            aria-label="Select city"
-          >
-            <option value="">Selecciona tu ciudad</option>
-            {CITIES.map((cityOption) => (
-              <option key={cityOption} value={cityOption.toLowerCase()}>
-                {
-                  CITY_USER_FRIENDLY_NAME[
-                    cityOption as keyof typeof CITY_USER_FRIENDLY_NAME
-                  ]
-                }
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+    <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav
+          className="flex items-center justify-between h-16"
+          aria-label="Navegación principal"
+        >
+          <div className="flex items-center gap-4 flex-1">
+            <Link
+              href="/"
+              className="focus-visible:ring-2 focus-visible:ring-[#ffb400] rounded-full"
+              aria-label="Ir a la página principal"
+            >
+              <Image
+                src="/logo.svg"
+                alt="Logo de Tabascomiendo"
+                className="rounded-full h-10 w-10 sm:h-12 sm:w-12 transition-transform hover:scale-105"
+                width={48}
+                height={48}
+                priority
+              />
+            </Link>
+            <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
+            <Link
+              href="/select-city"
+              className="flex items-center gap-2 text-[#363430] hover:text-[#222] font-medium group focus-visible:ring-2 focus-visible:ring-[#ffb400] rounded-md p-2"
+              aria-label={`Seleccionar ciudad: ${
+                city
+                  ? CITY_USER_FRIENDLY_NAME[
+                      city as keyof typeof CITY_USER_FRIENDLY_NAME
+                    ]
+                  : 'No seleccionada'
+              }`}
+            >
+              <FaMapMarkerAlt
+                className="text-lg text-[#ffb400] group-hover:scale-110 transition-transform"
+                aria-hidden="true"
+              />
+              <span>
+                {city
+                  ? CITY_USER_FRIENDLY_NAME[
+                      city as keyof typeof CITY_USER_FRIENDLY_NAME
+                    ]
+                  : 'Selecciona tu ciudad'}
+              </span>
+            </Link>
+          </div>
 
-      <div className="flex items-center gap-4">
-        {isAdmin && (
-          <button
-            onClick={() => router.push('/admin/create')}
-            className="p-2 rounded-full hover:bg-[#ffb400] transition-colors duration-200"
-            aria-label="Create new restaurant"
-          >
-            <FaPlus className="text-2xl text-[#363430]" />
-          </button>
-        )}
-
-        <div className="relative">
-          <button
-            onClick={toggleDropdown}
-            className="p-2 rounded-full hover:bg-[#ffb400] transition-colors duration-200"
-            aria-expanded={isDropdownOpen}
-            aria-haspopup="true"
-            aria-label="User menu"
-          >
-            {user ? (
-              <FaUser className="text-3xl text-[#363430]" />
-            ) : (
-              <FaUserCircle className="text-3xl text-[#363430]" />
-            )}
-          </button>
-
-          <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown}>
-            {user ? (
+          {/* Desktop Menu */}
+          <div className="hidden sm:flex items-center gap-4">
+            {isAdmin && (
               <>
-                <div
-                  className="px-4 py-2 text-sm text-gray-700 border-b truncate"
-                  role="menuitem"
+                <Button
+                  onClick={() => router.push('/admin/create')}
+                  variant="ghost"
+                  className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                  aria-label="Crear nuevo restaurante"
                 >
-                  {user.email}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
-                  role="menuitem"
-                >
-                  Cerrar Sesión
-                </button>
+                  <FaPlus
+                    className="text-xl text-[#363430]"
+                    aria-hidden="true"
+                  />
+                  <span>Agregar Restaurante</span>
+                </Button>
+                <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
               </>
-            ) : (
-              <button
-                onClick={() => router.push('/auth/login')}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
-                role="menuitem"
-              >
-                Iniciar Sesión
-              </button>
             )}
-          </Dropdown>
-        </div>
+
+            <div className="relative">
+              <Button
+                onClick={toggleDropdown}
+                variant="ghost"
+                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                aria-expanded={isDropdownOpen}
+                aria-haspopup="true"
+                aria-controls="user-dropdown"
+                id="user-menu"
+              >
+                {user ? (
+                  <>
+                    <FaUser
+                      className="text-2xl text-[#363430]"
+                      aria-hidden="true"
+                    />
+                    <span>Mi Cuenta</span>
+                  </>
+                ) : (
+                  <>
+                    <FaUserCircle
+                      className="text-2xl text-[#363430]"
+                      aria-hidden="true"
+                    />
+                    <span>Iniciar Sesión</span>
+                  </>
+                )}
+              </Button>
+
+              <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown}>
+                {user ? (
+                  <>
+                    <div
+                      className="px-4 py-2 text-sm text-gray-700 border-b truncate"
+                      role="status"
+                    >
+                      {user.email}
+                    </div>
+                    <Button
+                      onClick={handleLogout}
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                      role="menuitem"
+                    >
+                      Cerrar Sesión
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => router.push('/auth/login')}
+                    variant="ghost"
+                    className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                    role="menuitem"
+                  >
+                    Iniciar Sesión
+                  </Button>
+                )}
+              </Dropdown>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          <MobileMenu
+            isAdmin={isAdmin}
+            user={user}
+            onLogout={handleLogout}
+            router={router}
+          />
+        </nav>
       </div>
     </header>
   );
