@@ -5,6 +5,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import Image from 'next/image';
 import { FaUserCircle, FaPlus } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { CITY_USER_FRIENDLY_NAME, CITIES } from '@/lib/constants';
 
 export const Header = () => {
   const { city, updateCity } = useCity();
@@ -24,10 +25,19 @@ export const Header = () => {
         />
         <select
           className="p-2 border rounded bg-transparent text-[#363430] border-[#363430]"
-          value={city}
+          value={city ?? ''}
           onChange={(e) => updateCity(e.target.value)}
         >
-          <option value="cunduacan">Cunduacán</option>
+          <option value="">Selecciona tu ciudad</option>
+          {CITIES.map((cityOption) => (
+            <option key={cityOption} value={cityOption.toLowerCase()}>
+              {
+                CITY_USER_FRIENDLY_NAME[
+                  cityOption as keyof typeof CITY_USER_FRIENDLY_NAME
+                ]
+              }
+            </option>
+          ))}
         </select>
       </div>
 
