@@ -2,15 +2,37 @@
 
 import { useCity } from '@/hooks/useCity';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
-import { FaUserCircle, FaPlus } from 'react-icons/fa';
+import { FaUserCircle, FaPlus, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME, CITIES } from '@/lib/constants';
+import { useState, useEffect, useRef } from 'react';
 
 export const Header = () => {
   const { city, updateCity } = useCity();
-  const { isAdmin, handleUserIconClick } = useAdmin();
+  const { isAdmin } = useAdmin();
+  const { user, logout } = useAuth();
+  console.log(user);
   const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="flex items-center justify-between px-8 py-4 border-b bg-[#ffc433]">
@@ -48,11 +70,49 @@ export const Header = () => {
             onClick={() => router.push('/admin/create')}
           />
         )}
-        <div className="relative group" onClick={handleUserIconClick}>
-          <FaUserCircle className="text-4xl text-[#363430]" />
-          <div className="absolute hidden group-hover:block bg-black text-white text-sm rounded px-2 py-1 -bottom-8 left-1/2 transform -translate-x-1/2">
-            Proximamente
-          </div>
+        <div className="relative" ref={dropdownRef}>
+          {user ? (
+            <>
+              <FaUser
+                className="text-4xl text-[#363430] cursor-pointer"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              />
+              <div
+                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 ${
+                  isDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+              >
+                <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                  {user.email}
+                </div>
+                <button
+                  onClick={logout}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <FaUserCircle
+                className="text-4xl text-[#363430] cursor-pointer"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              />
+              <div
+                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 ${
+                  isDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+              >
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Iniciar Sesión
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
