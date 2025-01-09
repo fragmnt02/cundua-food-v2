@@ -1,7 +1,8 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   FaInstagram,
@@ -15,6 +16,65 @@ import {
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { Cuisine, Day, RestaurantType } from '@/types/restaurant';
 
+// Dynamically import the modal component to reduce initial bundle size
+const ImageModal = dynamic(() => import('@/components/ImageModal'), {
+  ssr: false,
+  loading: () => <div>Loading...</div>
+});
+
+// Constants moved outside component to prevent recreation
+const restaurantTypeMap: { [key in RestaurantType]: string } = {
+  [RestaurantType.Restaurant]: 'Restaurante',
+  [RestaurantType.FoodTruck]: 'Food Truck',
+  [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
+  [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)',
+  [RestaurantType.TakeAway]: 'Para Llevar'
+};
+
+const featureTranslations: { [key: string]: string } = {
+  reservations: 'Reservaciones',
+  outdoorSeating: 'Asientos al aire libre',
+  wifi: 'WiFi',
+  hasAC: 'Aire acondicionado',
+  hasParking: 'Estacionamiento',
+  kidsFriendly: 'Amigable para niños',
+  freeDelivery: 'Envío gratis'
+};
+
+const days = [
+  Day.Domingo,
+  Day.Lunes,
+  Day.Martes,
+  Day.Miercoles,
+  Day.Jueves,
+  Day.Viernes,
+  Day.Sabado
+];
+
+// Helper functions moved outside component
+const getCurrentDayInSpanish = () => days[new Date().getDay()];
+
+const renderStars = (rating: number) => {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(<FaStar key={`star-${i}`} className="text-yellow-400" />);
+  }
+
+  if (hasHalfStar) {
+    stars.push(<FaStarHalf key="half-star" className="text-yellow-400" />);
+  }
+
+  const remainingStars = 5 - stars.length;
+  for (let i = 0; i < remainingStars; i++) {
+    stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
+  }
+
+  return stars;
+};
+
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
   const params = useParams();
@@ -24,69 +84,17 @@ export default function RestaurantPage() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Add this mapping near the top of the component, after the useState declarations
-  const restaurantTypeMap: { [key in RestaurantType]: string } = {
-    [RestaurantType.Restaurant]: 'Restaurante',
-    [RestaurantType.FoodTruck]: 'Food Truck',
-    [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
-    [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)',
-    [RestaurantType.TakeAway]: 'Para Llevar'
-  };
-
-  // Add this mapping near the top of the component, after restaurantTypeMap
-  const featureTranslations: { [key: string]: string } = {
-    reservations: 'Reservaciones',
-    outdoorSeating: 'Asientos al aire libre',
-    wifi: 'WiFi',
-    hasAC: 'Aire acondicionado',
-    hasParking: 'Estacionamiento',
-    kidsFriendly: 'Amigable para niños',
-    freeDelivery: 'Envío gratis'
-  };
-
-  // Add function to get current day in Spanish
-  const getCurrentDayInSpanish = () => {
-    const days = [
-      Day.Domingo,
-      Day.Lunes,
-      Day.Martes,
-      Day.Miercoles,
-      Day.Jueves,
-      Day.Viernes,
-      Day.Sabado
-    ];
-    return days[new Date().getDay()];
-  };
-
-  // Add this helper function
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<FaStar key={`star-${i}`} className="text-yellow-400" />);
-    }
-
-    if (hasHalfStar) {
-      stars.push(<FaStarHalf key="half-star" className="text-yellow-400" />);
-    }
-
-    const remainingStars = 5 - stars.length;
-    for (let i = 0; i < remainingStars; i++) {
-      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
-    }
-
-    return stars;
-  };
-
   useEffect(() => {
     const adminStatus = localStorage.getItem('admin');
     setIsAdmin(adminStatus !== null);
   }, []);
 
   if (!restaurant) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
   }
 
   return (
@@ -105,6 +113,8 @@ export default function RestaurantPage() {
           src={restaurant.imageUrl}
           alt={restaurant.name}
           fill
+          priority
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
           placeholder="blur"
           blurDataURL="/restaurant.svg"
@@ -289,15 +299,17 @@ export default function RestaurantPage() {
               <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="font-semibold text-lg mb-2">Dirección</h3>
                 <p className="mb-4">{restaurant.location?.address}</p>
-                <iframe
-                  width="100%"
-                  height="450"
-                  style={{ border: 0, margin: '1rem 0' }}
-                  src={restaurant.location?.mapUrl}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+                <Suspense fallback={<div>Loading map...</div>}>
+                  <iframe
+                    width="100%"
+                    height="450"
+                    style={{ border: 0, margin: '1rem 0' }}
+                    src={restaurant.location?.mapUrl}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </Suspense>
               </div>
             </div>
           </section>
@@ -334,7 +346,9 @@ export default function RestaurantPage() {
                       src={menuItem.imageUrl}
                       alt={`Menu item ${index + 1}`}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -349,12 +363,15 @@ export default function RestaurantPage() {
           <div className="bg-white p-6 rounded-lg shadow">
             {restaurant.videoUrl ? (
               <div className="aspect-w-16 aspect-h-9">
-                <iframe
-                  src={restaurant.videoUrl}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full rounded-lg"
-                ></iframe>
+                <Suspense fallback={<div>Loading video...</div>}>
+                  <iframe
+                    src={restaurant.videoUrl}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full rounded-lg"
+                    loading="lazy"
+                  ></iframe>
+                </Suspense>
               </div>
             ) : (
               <p className="text-gray-500 italic">No hay video disponible.</p>
@@ -362,51 +379,17 @@ export default function RestaurantPage() {
           </div>
         </section>
 
-        {/* Add Modal */}
+        {/* Image Modal */}
         {selectedImage && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
-            onClick={() => {
+          <ImageModal
+            imageUrl={selectedImage}
+            onClose={() => {
               setSelectedImage(null);
               setScale(1);
             }}
-          >
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              <button
-                className="absolute top-4 right-4 text-white text-xl bg-black bg-opacity-50 rounded-full w-10 h-10"
-                onClick={() => {
-                  setSelectedImage(null);
-                  setScale(1);
-                }}
-              >
-                ×
-              </button>
-              <div className="flex gap-4 absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                <button
-                  className="bg-white px-4 py-2 rounded"
-                  onClick={() => setScale((prev) => Math.min(prev + 0.5, 3))}
-                >
-                  +
-                </button>
-                <button
-                  className="bg-white px-4 py-2 rounded"
-                  onClick={() => setScale((prev) => Math.max(prev - 0.5, 1))}
-                >
-                  -
-                </button>
-              </div>
-              <div className="overflow-auto max-h-[90vh] max-w-[90vw]">
-                <Image
-                  src={selectedImage}
-                  alt="Menu fullscreen"
-                  width={1000}
-                  height={1000}
-                  className="object-contain transition-transform duration-200"
-                  style={{ transform: `scale(${scale})` }}
-                />
-              </div>
-            </div>
-          </div>
+            scale={scale}
+            onScaleChange={setScale}
+          />
         )}
       </div>
     </main>
