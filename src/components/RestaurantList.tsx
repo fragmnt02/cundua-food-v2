@@ -6,6 +6,8 @@ import { RestaurantCard } from '@/components/RestaurantCard';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { isClient } from '@/hooks/isClient';
 import dynamic from 'next/dynamic';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Constants moved outside component to prevent recreation
 const FEATURES = ['hasAC', 'hasParking', 'freeDelivery'] as const;
@@ -20,10 +22,30 @@ const FEATURE_LABELS: Record<Feature, string> = {
 // Lazy load the filter section for better initial load
 const FilterSection = dynamic(() => import('./FilterSection'), {
   ssr: false,
-  loading: () => (
-    <div className="animate-pulse h-12 bg-gray-200 rounded w-full" />
-  )
+  loading: () => <FilterSectionSkeleton />
 });
+
+const FilterSectionSkeleton = () => (
+  <div className="space-y-4 mb-6">
+    <Skeleton className="h-10 w-full" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+    </div>
+  </div>
+);
+
+const RestaurantCardSkeleton = () => (
+  <div className="space-y-3">
+    <Skeleton className="h-48 w-full" />
+    <div className="space-y-2">
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+    </div>
+  </div>
+);
 
 interface Filters {
   searchQuery: string;
@@ -34,18 +56,19 @@ interface Filters {
   type: string;
 }
 
+const INITIAL_FILTERS: Filters = {
+  searchQuery: '',
+  cuisine: 'all',
+  priceRange: 'all',
+  features: [],
+  paymentMethods: [],
+  type: 'all'
+};
+
 export default function RestaurantList() {
   const { restaurants, loading } = useRestaurant();
   const [filters, setFilters] = useState<Filters>(() => {
-    if (!isClient())
-      return {
-        searchQuery: '',
-        cuisine: 'all',
-        priceRange: 'all',
-        features: [],
-        paymentMethods: [],
-        type: 'all'
-      };
+    if (!isClient()) return INITIAL_FILTERS;
 
     return {
       searchQuery: localStorage.getItem('restaurantFilters.searchQuery') || '',
@@ -122,15 +145,11 @@ export default function RestaurantList() {
   );
 
   return (
-    <main className="p-8">
+    <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Restaurantes</h1>
 
       {/* Lazy loaded filter section */}
-      <Suspense
-        fallback={
-          <div className="animate-pulse h-12 bg-gray-200 rounded w-full" />
-        }
-      >
+      <Suspense fallback={<FilterSectionSkeleton />}>
         <FilterSection
           filters={filters}
           onFilterChange={updateFilters}
@@ -141,16 +160,28 @@ export default function RestaurantList() {
 
       {/* Loading state */}
       {loading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      ) : (
-        /* Restaurant Grid with virtualization for large lists */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <RestaurantCardSkeleton key={i} />
           ))}
         </div>
+      ) : filteredRestaurants.length === 0 ? (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            No se encontraron restaurantes
+          </h2>
+          <p className="text-gray-600">
+            Intenta ajustar los filtros para ver más resultados
+          </p>
+        </div>
+      ) : (
+        <ScrollArea className="h-[calc(100vh-300px)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
+            {filteredRestaurants.map((restaurant) => (
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            ))}
+          </div>
+        </ScrollArea>
       )}
     </main>
   );
