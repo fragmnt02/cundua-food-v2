@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
+import { initAdmin } from '@/lib/firebase-admin';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -45,8 +46,26 @@ export async function POST(request: Request) {
     );
     const user = userCredential.user;
 
-    // Get the ID token
-    const idToken = await user.getIdToken();
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        {
+          error: 'Please verify your email address.'
+        },
+        { status: 403 }
+      );
+    }
+
+    // Get the ID token with a long expiration
+    const idToken = await user.getIdToken(true);
+
+    // Create session cookie using Firebase Admin
+    const adminAuth = initAdmin();
+    // Set session expiration to 7 days.
+    const expiresIn = 60 * 60 * 24 * 7 * 1000;
+    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+      expiresIn
+    });
 
     // Create the response with the cookie
     const response = NextResponse.json({
@@ -54,7 +73,7 @@ export async function POST(request: Request) {
     });
 
     // Set the secure HTTP-only cookie
-    response.cookies.set('session', idToken, COOKIE_OPTIONS);
+    response.cookies.set('session', sessionCookie, COOKIE_OPTIONS);
 
     return response;
   } catch (error) {
@@ -66,17 +85,14 @@ export async function POST(request: Request) {
   }
 }
 
-// Add a logout route in the same file
 export async function DELETE() {
   try {
-    // Sign out from Firebase
     await signOut(auth);
 
     const response = NextResponse.json({
       message: 'Logged out successfully'
     });
 
-    // Delete the session cookie
     response.cookies.delete('session');
 
     return response;

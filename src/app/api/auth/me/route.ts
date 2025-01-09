@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
+import { UserRole } from '@/lib/roles';
 
 export async function GET() {
   try {
@@ -12,11 +13,14 @@ export async function GET() {
     }
 
     const auth = initAdmin();
-    const decodedClaims = await auth.verifyIdToken(sessionCookie.value);
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
+    const userRecord = await auth.getUser(decodedClaims.uid);
+    const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
     return NextResponse.json({
       user: {
-        email: decodedClaims.email
+        email: decodedClaims.email,
+        role
       }
     });
   } catch (error) {

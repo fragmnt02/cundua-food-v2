@@ -30,7 +30,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await fetch('/api/auth/me');
         if (response.ok) {
           const data = await response.json();
-          setUser(data.user);
+          if (data.user) {
+            setUser({
+              email: data.user.email
+            });
+          }
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -58,8 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || 'Failed to sign up');
       }
 
-      // After successful signup, log the user in
-      await login(email, password);
+      // Show Spanish alert about email validation
+      alert(
+        'Por favor, revisa tu correo electrónico para validar tu cuenta antes de iniciar sesión.'
+      );
+
+      router.push('/auth/login');
     } catch (error) {
       throw error;
     }
