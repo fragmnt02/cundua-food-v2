@@ -13,7 +13,7 @@ export const Header = () => {
   const { city, updateCity } = useCity();
   const { isAdmin } = useAdmin();
   const { user, logout } = useAuth();
-  console.log(user);
+
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

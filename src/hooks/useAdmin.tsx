@@ -1,23 +1,31 @@
 import { useState, useEffect } from 'react';
+import { UserRole } from '@/lib/roles';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    setIsAdmin(localStorage.getItem('admin') === 'true');
-  }, []);
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.user?.role === UserRole.ADMIN);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    };
 
-  const handleUserIconClick = () => {
-    const clicks = parseInt(localStorage.getItem('userIconClicks') || '0');
-    const newClicks = clicks + 1;
-    localStorage.setItem('userIconClicks', newClicks.toString());
-
-    if (newClicks === 10) {
-      localStorage.setItem('admin', 'true');
-      setIsAdmin(true);
-      alert('¡Ahora eres administrador!');
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsAdmin(false);
     }
-  };
+  }, [user]);
 
-  return { isAdmin, handleUserIconClick };
+  return { isAdmin };
 };
