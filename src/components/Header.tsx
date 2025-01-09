@@ -35,7 +35,7 @@ export const Header = () => {
   }, []);
 
   return (
-    <header className="flex items-center justify-between px-8 py-4 border-b bg-[#ffc433]">
+    <header className="flex items-center justify-between px-8 py-4 border-b bg-[#ffc433] relative z-50">
       <div className="flex items-center gap-4">
         <Image
           src="/logo.svg"
@@ -78,7 +78,7 @@ export const Header = () => {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               />
               <div
-                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 ${
+                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 z-50 ${
                   isDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
                 }`}
               >
@@ -100,7 +100,7 @@ export const Header = () => {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               />
               <div
-                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 ${
+                className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transition-all duration-300 z-50 ${
                   isDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
                 }`}
               >
