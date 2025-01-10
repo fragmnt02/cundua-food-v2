@@ -54,6 +54,7 @@ interface Filters {
   features: Feature[];
   paymentMethods: PaymentMethod[];
   type: string;
+  showOnlyOpen: boolean;
 }
 
 const INITIAL_FILTERS: Filters = {
@@ -62,7 +63,8 @@ const INITIAL_FILTERS: Filters = {
   priceRange: 'all',
   features: [],
   paymentMethods: [],
-  type: 'all'
+  type: 'all',
+  showOnlyOpen: false
 };
 
 export default function RestaurantList() {
@@ -80,7 +82,9 @@ export default function RestaurantList() {
       paymentMethods: JSON.parse(
         localStorage.getItem('restaurantFilters.paymentMethods') || '[]'
       ),
-      type: localStorage.getItem('restaurantFilters.type') || 'all'
+      type: localStorage.getItem('restaurantFilters.type') || 'all',
+      showOnlyOpen:
+        localStorage.getItem('restaurantFilters.showOnlyOpen') === 'true'
     };
   });
 
@@ -112,6 +116,7 @@ export default function RestaurantList() {
           filters.paymentMethods.every((method) =>
             restaurant.paymentMethods?.includes(method)
           );
+        const matchesOpenStatus = !filters.showOnlyOpen || restaurant.isOpen;
 
         return (
           matchesSearch &&
@@ -119,7 +124,8 @@ export default function RestaurantList() {
           matchesType &&
           matchesPriceRange &&
           matchesFeatures &&
-          matchesPaymentMethods
+          matchesPaymentMethods &&
+          matchesOpenStatus
         );
       })
       .sort((a, b) => {
@@ -132,12 +138,12 @@ export default function RestaurantList() {
 
   // Update filters and cache
   const updateFilters = useCallback(
-    (key: keyof Filters, value: string | string[]) => {
+    (key: keyof Filters, value: string | string[] | boolean) => {
       setFilters((prev) => ({ ...prev, [key]: value }));
       if (isClient()) {
         localStorage.setItem(
           `restaurantFilters.${key}`,
-          typeof value === 'object' ? JSON.stringify(value) : value
+          typeof value === 'object' ? JSON.stringify(value) : String(value)
         );
       }
     },

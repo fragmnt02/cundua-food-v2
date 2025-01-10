@@ -29,11 +29,15 @@ interface Filters {
   features: Feature[];
   paymentMethods: PaymentMethod[];
   type: string;
+  showOnlyOpen: boolean;
 }
 
 interface FilterSectionProps {
   filters: Filters;
-  onFilterChange: (key: keyof Filters, value: string | string[]) => void;
+  onFilterChange: (
+    key: keyof Filters,
+    value: string | string[] | boolean
+  ) => void;
   features: readonly Feature[];
   featureLabels: Record<Feature, string>;
 }
@@ -52,7 +56,8 @@ export default function FilterSection({
     filters.priceRange !== 'all' ||
     filters.features.length > 0 ||
     filters.paymentMethods.length > 0 ||
-    filters.type !== 'all';
+    filters.type !== 'all' ||
+    filters.showOnlyOpen;
 
   const activeFilterCount = [
     filters.searchQuery !== '',
@@ -60,7 +65,8 @@ export default function FilterSection({
     filters.priceRange !== 'all',
     ...filters.features,
     ...filters.paymentMethods,
-    filters.type !== 'all'
+    filters.type !== 'all',
+    filters.showOnlyOpen
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -70,6 +76,7 @@ export default function FilterSection({
     onFilterChange('features', []);
     onFilterChange('paymentMethods', []);
     onFilterChange('type', 'all');
+    onFilterChange('showOnlyOpen', false);
   };
 
   return (
@@ -201,6 +208,20 @@ export default function FilterSection({
           <div className="mt-4">
             <h3 className="text-sm font-medium mb-2">Características</h3>
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filters.showOnlyOpen ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  onFilterChange('showOnlyOpen', !filters.showOnlyOpen);
+                }}
+                aria-pressed={filters.showOnlyOpen}
+                className={cn(
+                  'transition-colors',
+                  filters.showOnlyOpen && 'text-primary-foreground'
+                )}
+              >
+                Solo abiertos
+              </Button>
               {features.map((feature) => (
                 <Button
                   key={feature}

@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAdmin } from '@/hooks/useAdmin';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -112,12 +113,9 @@ export default function RestaurantPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
-    const adminStatus = localStorage.getItem('admin');
-    setIsAdmin(adminStatus !== null);
-
     // Update title and description dynamically
     if (restaurant) {
       // Update only the title tag
