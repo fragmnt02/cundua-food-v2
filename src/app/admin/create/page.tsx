@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type RestaurantForm = Omit<
   Restaurant,
-  'id' | 'isOpen' | 'isOpeningSoon' | 'hours'
+  'id' | 'isOpen' | 'isOpeningSoon' | 'hours' | 'rating' | 'voteCount'
 > & {
   hours: {
     [key: string]: {
@@ -36,8 +36,6 @@ type RestaurantForm = Omit<
     };
   };
   information?: string;
-  rating: number;
-  voteCount: number;
   videoUrl?: string;
   type: RestaurantType;
   isIncomplete?: boolean;
@@ -63,8 +61,6 @@ export default function CreateRestaurant() {
     location: {},
     hours: {},
     information: '',
-    rating: 0,
-    voteCount: 0,
     videoUrl: '',
     type: RestaurantType.Restaurant,
     isIncomplete: true
@@ -120,10 +116,9 @@ export default function CreateRestaurant() {
     try {
       const transformedFormData: Omit<
         Restaurant,
-        'id' | 'isOpen' | 'isOpeningSoon'
+        'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
       > = {
         ...formData,
-        rating: Number(formData.rating),
         location: formData.location
           ? {
               ...formData.location,

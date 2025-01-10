@@ -24,11 +24,17 @@ interface UseRestaurantReturn {
   getRestaurant: (id: string) => Restaurant | undefined;
   refreshData: () => Promise<void>;
   createRestaurant: (
-    restaurantData: Omit<Restaurant, 'id' | 'isOpen' | 'isOpeningSoon'>
+    restaurantData: Omit<
+      Restaurant,
+      'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
+    >
   ) => Promise<boolean | undefined>;
   updateRestaurant: (
     id: string,
-    restaurantData: Omit<Restaurant, 'id' | 'isOpen' | 'isOpeningSoon'>
+    restaurantData: Omit<
+      Restaurant,
+      'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
+    >
   ) => Promise<boolean | undefined>;
 }
 
@@ -101,7 +107,10 @@ export function useRestaurant(): UseRestaurantReturn {
 
   const createRestaurant = useCallback(
     async (
-      restaurantData: Omit<Restaurant, 'id' | 'isOpen' | 'isOpeningSoon'>
+      restaurantData: Omit<
+        Restaurant,
+        'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
+      >
     ) => {
       if (!city) return;
 
