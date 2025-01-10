@@ -45,6 +45,7 @@ $$$$ = Más de $600 MXN por persona
   };
   information?: string;
   rating: number;
+  voteCount: number;
   videoUrl?: string;
   type: RestaurantType;
   isIncomplete?: boolean;
@@ -115,4 +116,12 @@ export enum RestaurantType {
   DarkKitchen = 'darkKitchen',
   FoodCourt = 'foodCourt',
   TakeAway = 'takeAway'
+}
+
+export interface Vote {
+  userId: string;
+  restaurantId: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
 }

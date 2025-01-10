@@ -70,7 +70,8 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
                   aria-hidden="true"
                 />
                 <span className="text-sm font-medium">
-                  {restaurant.rating.toFixed(1)}
+                  {restaurant.rating.toFixed(1)} ({restaurant.voteCount || 0}
+                  {restaurant.voteCount === 1 ? ' voto' : ' votos'})
                 </span>
               </div>
             </div>

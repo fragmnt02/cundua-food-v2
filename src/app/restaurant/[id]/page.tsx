@@ -9,19 +9,19 @@ import {
   FaFacebook,
   FaWhatsapp,
   FaPhone,
-  FaBiking,
-  FaStar,
-  FaStarHalf
+  FaBiking
 } from 'react-icons/fa';
+import { Restaurant, RestaurantType, Day, Cuisine } from '@/types/restaurant';
 import { useRestaurant } from '@/hooks/useRestaurant';
-import { Cuisine, Day, RestaurantType } from '@/types/restaurant';
+import { useAdmin } from '@/hooks/useAdmin';
+import { useVote } from '@/hooks/useVote';
+import { VoteStars } from '@/components/VoteStars';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAdmin } from '@/hooks/useAdmin';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -85,35 +85,25 @@ const formatPhoneNumber = (
   };
 };
 
-const renderStars = (rating: number) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-
-  for (let i = 0; i < fullStars; i++) {
-    stars.push(<FaStar key={`star-${i}`} className="text-yellow-400" />);
-  }
-
-  if (hasHalfStar) {
-    stars.push(<FaStarHalf key="half-star" className="text-yellow-400" />);
-  }
-
-  const remainingStars = 5 - stars.length;
-  for (let i = 0; i < remainingStars; i++) {
-    stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
-  }
-
-  return stars;
-};
-
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
   const params = useParams();
-  const restaurant = getRestaurant(params.id as string);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const router = useRouter();
   const { isAdmin } = useAdmin();
+  const { userRating, submitVote, isLoading } = useVote(params.id as string);
+
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      const data = await getRestaurant(params.id as string);
+      if (data) {
+        setRestaurant(data);
+      }
+    };
+    fetchRestaurant();
+  }, [getRestaurant, params.id]);
 
   useEffect(() => {
     // Update title and description dynamically
@@ -122,6 +112,20 @@ export default function RestaurantPage() {
       document.title = `${restaurant.name} | Cundua Food`;
     }
   }, [restaurant]);
+
+  const handleVote = async (rating: number) => {
+    const newAverageRating = await submitVote(rating);
+    if (newAverageRating) {
+      setRestaurant((prev) =>
+        prev
+          ? {
+              ...prev,
+              rating: newAverageRating
+            }
+          : null
+      );
+    }
+  };
 
   if (!restaurant) {
     return (
@@ -221,14 +225,15 @@ export default function RestaurantPage() {
 
                   <div>
                     <h3 className="font-semibold text-lg">Calificación</h3>
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {renderStars(restaurant.rating)}
-                      </div>
-                      <span className="text-gray-600">
-                        ({restaurant.rating} / 5)
-                      </span>
-                    </div>
+                    {restaurant && (
+                      <VoteStars
+                        rating={restaurant.rating}
+                        voteCount={restaurant.voteCount}
+                        userRating={userRating}
+                        onVote={handleVote}
+                        isLoading={isLoading}
+                      />
+                    )}
                   </div>
 
                   <div>
