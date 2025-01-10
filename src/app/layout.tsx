@@ -1,10 +1,12 @@
-import type { Metadata } from 'next';
+'use client';
+
 import localFont from 'next/font/local';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import Script from 'next/script';
+import { Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { analytics } from '@/utils/analytics';
@@ -20,16 +22,9 @@ const geistMono = localFont({
   weight: '100 900'
 });
 
-export const metadata: Metadata = {
-  title: 'Tabascomiendo Catalogo',
-  description: 'Catalogo de restaurantes en Tabasco, Mexico'
-};
+function Analytics() {
+  'use client';
 
-export default function RootLayout({
-  children
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -38,6 +33,14 @@ export default function RootLayout({
     analytics.pageview(url);
   }, [pathname, searchParams]);
 
+  return null;
+}
+
+export default function RootLayout({
+  children
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="es">
       <head>
@@ -62,6 +65,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
         <AuthProvider>
           <Header />
           {children}
