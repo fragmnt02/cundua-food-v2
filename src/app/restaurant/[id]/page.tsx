@@ -29,6 +29,20 @@ const ImageModal = dynamic(() => import('@/components/ImageModal'), {
   loading: () => <Skeleton className="w-full h-96" />
 });
 
+const Comments = dynamic(
+  () => import('@/components/Comments').then((mod) => mod.Comments),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    )
+  }
+);
+
 // Constants moved outside component to prevent recreation
 const restaurantTypeMap: { [key in RestaurantType]: string } = {
   [RestaurantType.Restaurant]: 'Restaurante',
@@ -186,7 +200,7 @@ export default function RestaurantPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="flex w-full overflow-x-auto space-x-2 mb-8 h-auto p-1 sm:grid sm:grid-cols-4">
+          <TabsList className="flex w-full overflow-x-auto space-x-2 mb-8 h-auto p-1 sm:grid sm:grid-cols-5">
             <TabsTrigger value="info" className="flex-shrink-0 h-10">
               Información
             </TabsTrigger>
@@ -198,6 +212,9 @@ export default function RestaurantPage() {
             </TabsTrigger>
             <TabsTrigger value="contact" className="flex-shrink-0 h-10">
               Contacto
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="flex-shrink-0 h-10">
+              Comentarios
             </TabsTrigger>
           </TabsList>
 
@@ -501,6 +518,17 @@ export default function RestaurantPage() {
                     )}
                   </div>
                 </section>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="comments">
+            <Card>
+              <CardHeader>
+                <CardTitle>Comentarios</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Comments restaurantId={params.id as string} />
               </CardContent>
             </Card>
           </TabsContent>

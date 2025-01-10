@@ -125,3 +125,13 @@ export interface Vote {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Comment {
+  id: string;
+  userId: string;
+  userEmail: string;
+  restaurantId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
