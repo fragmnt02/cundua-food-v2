@@ -11,6 +11,7 @@ import {
 } from '@/types/restaurant';
 import { useCity } from '@/hooks/useCity';
 import { useRestaurant } from '@/hooks/useRestaurant';
+import { useAdmin } from '@/hooks/useAdmin';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,7 @@ export default function CreateRestaurant() {
   const router = useRouter();
   const params = useParams();
   const { city } = useCity();
+  const { isAdmin } = useAdmin();
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<RestaurantForm>({
     name: '',
@@ -70,6 +72,11 @@ export default function CreateRestaurant() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
 
   useEffect(() => {
+    if (isAdmin === false) {
+      router.push('/');
+      return;
+    }
+
     const fetchRestaurant = async () => {
       if (!params.id || !city) {
         setIsLoading(false);
@@ -104,7 +111,7 @@ export default function CreateRestaurant() {
     };
 
     fetchRestaurant();
-  }, [params.id, city]);
+  }, [params.id, city, isAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { UserRole } from '@/lib/roles';
 
 interface AuthContextType {
-  user: { email: string } | null;
+  user: { email: string; role?: UserRole } | null;
   loading: boolean;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
@@ -20,7 +21,9 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; role?: UserRole } | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -32,7 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const data = await response.json();
           if (data.user) {
             setUser({
-              email: data.user.email
+              email: data.user.email,
+              role: data.user.role
             });
           }
         }

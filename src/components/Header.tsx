@@ -99,27 +99,36 @@ const MobileMenu = memo(
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
             className="sm:hidden hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-            aria-label="Abrir menú móvil"
+            aria-label="Abrir menú"
           >
-            <FaBars className="text-2xl text-[#363430]" aria-hidden="true" />
+            <FaBars className="text-xl text-[#363430]" aria-hidden="true" />
           </Button>
         </SheetTrigger>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Menú de navegación</SheetTitle>
+            <SheetTitle>Menú</SheetTitle>
           </SheetHeader>
-          <nav className="mt-8 space-y-4">
+          <nav className="flex flex-col gap-4 mt-4">
             {isAdmin && (
-              <Button
-                onClick={() => router.push('/admin/create')}
-                variant="ghost"
-                className="w-full justify-start gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-              >
-                <FaPlus className="text-xl" aria-hidden="true" />
-                <span>Crear Restaurante</span>
-              </Button>
+              <>
+                <Button
+                  onClick={() => router.push('/admin/create')}
+                  variant="ghost"
+                  className="justify-start gap-2"
+                >
+                  <FaPlus className="text-xl" />
+                  Agregar Restaurante
+                </Button>
+                <Button
+                  onClick={() => router.push('/admin/users')}
+                  variant="ghost"
+                  className="justify-start gap-2"
+                >
+                  <FaUser className="text-xl" />
+                  Usuarios
+                </Button>
+              </>
             )}
 
             {user ? (
@@ -240,6 +249,18 @@ export const Header = memo(() => {
                   />
                   <span>Agregar Restaurante</span>
                 </Button>
+                <Button
+                  onClick={() => router.push('/admin/users')}
+                  variant="ghost"
+                  className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                  aria-label="Administrar usuarios"
+                >
+                  <FaUser
+                    className="text-xl text-[#363430]"
+                    aria-hidden="true"
+                  />
+                  <span>Usuarios</span>
+                </Button>
                 <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
               </>
             )}
@@ -307,7 +328,7 @@ export const Header = memo(() => {
 
           {/* Mobile Menu */}
           <MobileMenu
-            isAdmin={isAdmin}
+            isAdmin={!!isAdmin}
             user={user}
             onLogout={handleLogout}
             router={router}
