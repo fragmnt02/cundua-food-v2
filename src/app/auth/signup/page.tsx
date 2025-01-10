@@ -19,7 +19,11 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    telephone: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,10 +31,34 @@ export default function SignupPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+
+    if (name === 'telephone') {
+      // Remove all non-digit characters
+      const digits = value.replace(/\D/g, '');
+
+      // Format the phone number
+      let formattedPhone = '';
+      if (digits.length <= 3) {
+        formattedPhone = digits;
+      } else if (digits.length <= 6) {
+        formattedPhone = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+      } else {
+        formattedPhone = `${digits.slice(0, 3)}-${digits.slice(
+          3,
+          6
+        )}-${digits.slice(6, 10)}`;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        telephone: formattedPhone
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +78,14 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signup(formData.email, formData.password);
+      await signup(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName,
+        formData.dateOfBirth,
+        formData.telephone
+      );
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -83,6 +118,60 @@ export default function SignupPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Nombre</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Juan"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Apellido</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Pérez"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
+              <Input
+                id="dateOfBirth"
+                name="dateOfBirth"
+                type="date"
+                required
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="telephone">Teléfono</Label>
+              <Input
+                id="telephone"
+                name="telephone"
+                type="tel"
+                required
+                value={formData.telephone}
+                onChange={handleChange}
+                placeholder="999-999-9999"
+                pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                maxLength={12}
+              />
+              <p className="text-sm text-muted-foreground">
+                Formato: 999-999-9999
+              </p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <Input

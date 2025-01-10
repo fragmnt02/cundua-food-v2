@@ -17,7 +17,8 @@ const firebaseConfig = {
 const ADMIN_EMAILS = [
   'pakoconvans@gmail.com',
   'mimisqui98@gmail.com',
-  'tabascomiendo@gmail.com'
+  'tabascomiendo@gmail.com',
+  'chaupako@gmail.com'
 ];
 
 // Initialize Firebase
@@ -26,12 +27,29 @@ const auth = getAuth(app);
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, firstName, lastName, dateOfBirth, telephone } =
+      await request.json();
 
     // Validate input
-    if (!email || !password) {
+    if (
+      !email ||
+      !password ||
+      !firstName ||
+      !lastName ||
+      !dateOfBirth ||
+      !telephone
+    ) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'All fields are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate phone number format
+    const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+    if (!phonePattern.test(telephone)) {
+      return NextResponse.json(
+        { error: 'Invalid phone number format. Use: 999-999-9999' },
         { status: 400 }
       );
     }
@@ -43,12 +61,17 @@ export async function POST(request: Request) {
     const userRecord = await adminAuth.createUser({
       email,
       password,
-      emailVerified: false // Explicitly set email as unverified
+      emailVerified: false,
+      displayName: `${firstName} ${lastName}`
     });
 
     // Set custom claims for role
     await adminAuth.setCustomUserClaims(userRecord.uid, {
-      role: ADMIN_EMAILS.includes(email) ? UserRole.ADMIN : UserRole.USER
+      role: ADMIN_EMAILS.includes(email) ? UserRole.ADMIN : UserRole.USER,
+      firstName,
+      lastName,
+      dateOfBirth,
+      telephone
     });
 
     // Sign in the user to send verification email

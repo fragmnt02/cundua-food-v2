@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/lib/roles';
 
@@ -9,7 +15,14 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    dateOfBirth: string,
+    telephone: string
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,43 +34,66 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ email: string; role?: UserRole } | null>(
-    null
-  );
+  const [user, setUser] = useState<{
+    email: string;
+    role?: UserRole;
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    telephone?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const response = await fetch('/api/auth/me');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user) {
-            setUser({
-              email: data.user.email,
-              role: data.user.role
-            });
-          }
+  const checkUser = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user) {
+          setUser({
+            email: data.user.email,
+            role: data.user.role,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            dateOfBirth: data.user.dateOfBirth,
+            telephone: data.user.telephone
+          });
         }
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    checkUser();
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const signup = async (email: string, password: string) => {
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
+  const signup = async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    dateOfBirth: string,
+    telephone: string
+  ) => {
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          dateOfBirth,
+          telephone
+        })
       });
 
       const data = await response.json();
@@ -92,8 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to login');
       }
-
-      setUser({ email });
+      checkUser();
       router.push('/');
     } catch (error) {
       throw error;

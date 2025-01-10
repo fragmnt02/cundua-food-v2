@@ -20,7 +20,11 @@ export async function GET() {
     return NextResponse.json({
       user: {
         email: decodedClaims.email,
-        role
+        role,
+        firstName: userRecord.customClaims?.firstName,
+        lastName: userRecord.customClaims?.lastName,
+        dateOfBirth: userRecord.customClaims?.dateOfBirth,
+        telephone: userRecord.customClaims?.telephone
       }
     });
   } catch (error) {
