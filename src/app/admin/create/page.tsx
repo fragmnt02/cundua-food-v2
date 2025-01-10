@@ -37,8 +37,9 @@ type RestaurantForm = Omit<
   };
   information?: string;
   rating: number;
+  voteCount: number;
   videoUrl?: string;
-  type: string;
+  type: RestaurantType;
   isIncomplete?: boolean;
 };
 
@@ -63,6 +64,7 @@ export default function CreateRestaurant() {
     hours: {},
     information: '',
     rating: 0,
+    voteCount: 0,
     videoUrl: '',
     type: RestaurantType.Restaurant,
     isIncomplete: true

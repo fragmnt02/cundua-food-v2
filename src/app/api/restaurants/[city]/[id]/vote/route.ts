@@ -15,7 +15,7 @@ import { initAdmin } from '@/lib/firebase-admin';
 
 export async function POST(
   request: Request,
-  { params }: { params: { city: string; id: string } }
+  { params }: { params: Promise<{ city: string; id: string }> }
 ) {
   try {
     // Validate user session
@@ -34,7 +34,7 @@ export async function POST(
     const userId = decodedClaims.uid;
 
     const { rating } = await request.json();
-    const { city, id: restaurantId } = params;
+    const { city, id: restaurantId } = await params;
 
     // Validate rating
     if (typeof rating !== 'number' || rating < 1 || rating > 5) {
@@ -102,8 +102,8 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { city: string; id: string } }
-) {
+  context: { params: Promise<{ city: string; id: string }> }
+): Promise<Response> {
   try {
     // Validate user session
     const cookieStore = await cookies();
@@ -120,7 +120,7 @@ export async function GET(
     const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
     const userId = decodedClaims.uid;
 
-    const { id: restaurantId } = params;
+    const { id: restaurantId } = await context.params;
 
     // Get user's vote
     const voteRef = doc(db, 'votes', `${userId}_${restaurantId}`);
