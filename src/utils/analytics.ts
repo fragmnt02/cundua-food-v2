@@ -10,9 +10,6 @@ export const AnalyticsEventNames = {
   LOGIN: 'login'
 } as const;
 
-type EventNames =
-  (typeof AnalyticsEventNames)[keyof typeof AnalyticsEventNames];
-
 interface EventParams {
   page_path?: string;
   restaurant_id?: string;
@@ -23,29 +20,48 @@ interface EventParams {
   method?: string;
 }
 
+interface ConsentParams {
+  analytics_storage?: 'granted' | 'denied';
+  [key: string]: string | undefined;
+}
+
 // Type for the gtag function
 declare global {
   interface Window {
     gtag: (
-      command: 'event',
-      eventName: EventNames,
-      eventParams?: EventParams
+      command: 'event' | 'consent' | 'config',
+      type: string,
+      params?: EventParams | ConsentParams
     ) => void;
   }
 }
+
+const COOKIE_PREFERENCES_KEY = 'cookie-preferences';
+
+const isAnalyticsEnabled = () => {
+  try {
+    const preferences = localStorage.getItem(COOKIE_PREFERENCES_KEY);
+    if (!preferences) return false;
+    return JSON.parse(preferences).analytics === true;
+  } catch {
+    return false;
+  }
+};
 
 // Analytics utility functions
 export const analytics = {
   // Track page views
   pageview: (url: string) => {
-    window.gtag('event', 'page_view', {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', 'page_view', {
       page_path: url
     });
   },
 
   // Track restaurant views
   trackRestaurantView: (restaurantId: string, restaurantName: string) => {
-    window.gtag('event', AnalyticsEventNames.VIEW_RESTAURANT, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.VIEW_RESTAURANT, {
       restaurant_id: restaurantId,
       restaurant_name: restaurantName
     });
@@ -53,7 +69,8 @@ export const analytics = {
 
   // Track ratings
   trackRating: (restaurantId: string, rating: number) => {
-    window.gtag('event', AnalyticsEventNames.RATE_RESTAURANT, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.RATE_RESTAURANT, {
       restaurant_id: restaurantId,
       rating: rating
     });
@@ -61,35 +78,40 @@ export const analytics = {
 
   // Track comments
   trackComment: (restaurantId: string) => {
-    window.gtag('event', AnalyticsEventNames.ADD_COMMENT, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.ADD_COMMENT, {
       restaurant_id: restaurantId
     });
   },
 
   // Track city selection
   trackCitySelection: (city: string) => {
-    window.gtag('event', AnalyticsEventNames.SELECT_CITY, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.SELECT_CITY, {
       city: city
     });
   },
 
   // Track search
   trackSearch: (searchTerm: string) => {
-    window.gtag('event', AnalyticsEventNames.SEARCH, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.SEARCH, {
       search_term: searchTerm
     });
   },
 
   // Track sign up
   trackSignUp: (method: string) => {
-    window.gtag('event', AnalyticsEventNames.SIGN_UP, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.SIGN_UP, {
       method: method
     });
   },
 
   // Track login
   trackLogin: (method: string) => {
-    window.gtag('event', AnalyticsEventNames.LOGIN, {
+    if (!isAnalyticsEnabled()) return;
+    window.gtag?.('event', AnalyticsEventNames.LOGIN, {
       method: method
     });
   }

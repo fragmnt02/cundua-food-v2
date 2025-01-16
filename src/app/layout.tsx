@@ -10,6 +10,7 @@ import { Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { analytics } from '@/utils/analytics';
+import { CookieConsent } from '@/components/CookieConsent';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -45,11 +46,6 @@ export default function RootLayout({
     <html lang="es">
       <head>
         <Script
-          id="cookieyes"
-          src="https://cdn-cookieyes.com/client_data/XXXXXXXXXXXXX/script.js"
-          strategy="beforeInteractive"
-        />
-        <Script
           strategy="afterInteractive"
           src="https://www.googletagmanager.com/gtag/js?id=G-G61FZTS9F4"
         />
@@ -58,7 +54,12 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-G61FZTS9F4');
+            gtag('config', 'G-G61FZTS9F4', {
+              'consent_mode_enabled': true
+            });
+            gtag('consent', 'default', {
+              'analytics_storage': 'denied'
+            });
           `}
         </Script>
       </head>
@@ -72,6 +73,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Toaster />
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>
