@@ -208,7 +208,7 @@ export const Header = memo(() => {
         >
           <div className="flex items-center gap-4 flex-1">
             <Link
-              href="/"
+              href={`/${city}`}
               className="focus-visible:ring-2 focus-visible:ring-[#ffb400] rounded-full"
               aria-label="Ir a la página principal"
             >
@@ -251,7 +251,7 @@ export const Header = memo(() => {
           <div className="hidden sm:flex items-center gap-4">
             {user && (
               <Button
-                onClick={() => router.push('/favorites')}
+                onClick={() => router.push(`/${city}/favorites`)}
                 variant="ghost"
                 className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                 aria-label="Ver mis favoritos"
@@ -266,7 +266,7 @@ export const Header = memo(() => {
             {isAdmin && (
               <>
                 <Button
-                  onClick={() => router.push('/admin/create')}
+                  onClick={() => router.push(`/${city}/admin/create`)}
                   variant="ghost"
                   className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                   aria-label="Crear nuevo restaurante"
@@ -298,7 +298,9 @@ export const Header = memo(() => {
                 {assignedRestaurantId ? (
                   <Button
                     onClick={() =>
-                      router.push(`/admin/update/${assignedRestaurantId}`)
+                      router.push(
+                        `/${city}/admin/update/${assignedRestaurantId}`
+                      )
                     }
                     variant="ghost"
                     className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
@@ -312,7 +314,7 @@ export const Header = memo(() => {
                   </Button>
                 ) : (
                   <Button
-                    onClick={() => router.push('/admin/create')}
+                    onClick={() => router.push(`/${city}/admin/create`)}
                     variant="ghost"
                     className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                     aria-label="Crear nuevo restaurante"

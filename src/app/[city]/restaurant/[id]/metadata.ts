@@ -7,8 +7,9 @@ export async function generateMetadata({
 }: {
   params: { id: string };
 }): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const restaurantRef = doc(db, 'restaurants', params.id);
+    const restaurantRef = doc(db, 'restaurants', id);
     const restaurantSnap = await getDoc(restaurantRef);
     const restaurant = restaurantSnap.data();
 

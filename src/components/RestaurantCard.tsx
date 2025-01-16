@@ -10,14 +10,16 @@ import Link from 'next/link';
 import { useFavorite } from '@/hooks/useFavorite';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { useCity } from '@/hooks/useCity';
 
 export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
   const { isFavorite, toggleFavorite, isLoading } = useFavorite(restaurant.id);
   const { user } = useAuth();
+  const { city } = useCity();
 
   return (
     <Card className="overflow-hidden group">
-      <Link href={`/restaurant/${restaurant.id}`}>
+      <Link href={`/${city}/restaurant/${restaurant.id}`}>
         <CardHeader className="p-0">
           <div className="relative aspect-video">
             {restaurant.imageUrl && restaurant.imageUrl.trim() !== '' && (
@@ -75,7 +77,7 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
         </CardHeader>
       </Link>
 
-      <Link href={`/restaurant/${restaurant.id}`}>
+      <Link href={`/${city}/restaurant/${restaurant.id}`}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-semibold line-clamp-1">{restaurant.name}</h3>

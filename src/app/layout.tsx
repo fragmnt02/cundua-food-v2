@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { analytics } from '@/utils/analytics';
 import { CookieConsent } from '@/components/CookieConsent';
 import { FavoritesProvider } from '@/providers/FavoritesProvider';
+import { CityProvider } from '@/providers/CityProvider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -71,12 +72,14 @@ export default function RootLayout({
           <Analytics />
         </Suspense>
         <AuthProvider>
-          <FavoritesProvider>
-            <Header />
-            {children}
-            <Toaster />
-            <CookieConsent />
-          </FavoritesProvider>
+          <CityProvider>
+            <FavoritesProvider>
+              <Header />
+              {children}
+              <Toaster />
+              <CookieConsent />
+            </FavoritesProvider>
+          </CityProvider>
         </AuthProvider>
       </body>
     </html>
