@@ -4,10 +4,12 @@ import {
   ReactNode,
   useState,
   useCallback,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { CITIES } from '@/lib/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CityContextType {
   city: string;
@@ -21,6 +23,8 @@ export function CityProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
+  const prevUserRef = useRef(user);
 
   // Get city from URL path
   const getCurrentCity = useCallback(() => {
@@ -30,6 +34,30 @@ export function CityProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const [city, setCity] = useState<string>(getCurrentCity());
+
+  // Check for user's last selected city only when user logs in
+  useEffect(() => {
+    const checkUserCity = async () => {
+      try {
+        const response = await fetch('/api/user/city');
+        if (response.ok) {
+          const { city: lastSelectedCity } = await response.json();
+          if (lastSelectedCity && !getCurrentCity()) {
+            router.push(`/${lastSelectedCity}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user city:', error);
+      }
+    };
+
+    // Only run when user transitions from logged out to logged in
+    const prevUser = prevUserRef.current;
+    if (user && !prevUser) {
+      checkUserCity();
+    }
+    prevUserRef.current = user;
+  }, [user, getCurrentCity, router]);
 
   // Redirect to city selection if no valid city in URL
   useEffect(() => {

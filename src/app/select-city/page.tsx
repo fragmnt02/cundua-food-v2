@@ -16,6 +16,19 @@ export default function SelectCity() {
   const handleCitySelect = async (city: string) => {
     try {
       setLoading(city);
+      // Save user's city preference if logged in
+      const response = await fetch('/api/user/city', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ city })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save city preference');
+      }
+
       // Navigate to the city-specific page
       router.push(`/${city}`);
     } catch (error) {
