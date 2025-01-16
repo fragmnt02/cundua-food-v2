@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { useCity } from '@/hooks/useCity';
 import { Restaurant } from '@/types/restaurant';
+import { Button } from '@/components/ui/button';
 
 interface User {
   uid: string;
@@ -170,7 +171,7 @@ export default function UsersPage() {
 
   const handleConfirmClientRole = async (
     userId: string,
-    restaurantId: string
+    restaurantId?: string
   ) => {
     const user = users.find((u) => u.uid === userId);
     if (!user?.pendingRole) return;
@@ -391,7 +392,7 @@ export default function UsersPage() {
                                       <span>Loading...</span>
                                     </div>
                                   ) : (
-                                    <SelectValue placeholder="Select restaurant" />
+                                    <SelectValue placeholder="Select restaurant (optional)" />
                                   )}
                                 </SelectTrigger>
                                 <SelectContent>
@@ -409,6 +410,22 @@ export default function UsersPage() {
                                     ))}
                                 </SelectContent>
                               </Select>
+                              {user.pendingRole === UserRole.CLIENT && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleConfirmClientRole(user.uid)
+                                  }
+                                  disabled={user.isLoading}
+                                >
+                                  {user.isLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    'Confirm'
+                                  )}
+                                </Button>
+                              )}
                             </div>
                           )}
                           <Select

@@ -181,7 +181,7 @@ MobileMenu.displayName = 'MobileMenu';
 export const Header = memo(() => {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
-  const { isClient, restaurantId } = useClient();
+  const { isClient, assignedRestaurantId } = useClient();
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -294,18 +294,37 @@ export const Header = memo(() => {
             )}
 
             {isClient && (
-              <Button
-                onClick={() => router.push(`/admin/update/${restaurantId}`)}
-                variant="ghost"
-                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                aria-label="Ver restaurante asignado"
-              >
-                <FaPencilAlt
-                  className="text-xl text-[#363430]"
-                  aria-hidden="true"
-                />
-                <span>Editar Mi Restaurante</span>
-              </Button>
+              <>
+                {assignedRestaurantId ? (
+                  <Button
+                    onClick={() =>
+                      router.push(`/admin/update/${assignedRestaurantId}`)
+                    }
+                    variant="ghost"
+                    className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                    aria-label="Ver restaurante asignado"
+                  >
+                    <FaPencilAlt
+                      className="text-xl text-[#363430]"
+                      aria-hidden="true"
+                    />
+                    <span>Editar Mi Restaurante</span>
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => router.push('/admin/create')}
+                    variant="ghost"
+                    className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                    aria-label="Crear nuevo restaurante"
+                  >
+                    <FaPlus
+                      className="text-xl text-[#363430]"
+                      aria-hidden="true"
+                    />
+                    <span>Agregar Restaurante</span>
+                  </Button>
+                )}
+              </>
             )}
 
             <div className="relative">

@@ -48,8 +48,9 @@ export default function CreateRestaurant() {
   const params = useParams();
   const { city } = useCity();
   const { isAdmin } = useAdmin();
-  const { isClient, restaurantId } = useClient();
+  const { isClient, assignedRestaurantId } = useClient();
   const [isLoading, setIsLoading] = useState(true);
+  const isEditMode = Boolean(params.id);
   const [formData, setFormData] = useState<RestaurantForm>({
     name: '',
     imageUrl: '',
@@ -77,9 +78,21 @@ export default function CreateRestaurant() {
       return;
     }
 
-    if (params.id && restaurantId && params.id !== restaurantId) {
-      router.push('/');
-      return;
+    if (isEditMode && isClient) {
+      if (
+        params.id &&
+        assignedRestaurantId &&
+        params.id !== assignedRestaurantId
+      ) {
+        router.push('/');
+        return;
+      }
+    } else if (isClient) {
+      // is creating
+      if (assignedRestaurantId) {
+        router.push('/');
+        return;
+      }
     }
 
     const fetchRestaurant = async () => {
@@ -115,7 +128,15 @@ export default function CreateRestaurant() {
     };
 
     fetchRestaurant();
-  }, [params.id, city, isAdmin, router, restaurantId, isClient]);
+  }, [
+    params.id,
+    city,
+    isAdmin,
+    router,
+    assignedRestaurantId,
+    isClient,
+    isEditMode
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,11 +275,13 @@ export default function CreateRestaurant() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {params.id ? 'Actualizar Restaurante' : 'Crear Nuevo Restaurante'}
+              {isEditMode
+                ? 'Actualizar Restaurante'
+                : 'Crear Nuevo Restaurante'}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!params.id && (
+            {!isEditMode && isAdmin && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-1">
                   Copiar datos de un restaurante existente
@@ -922,7 +945,7 @@ export default function CreateRestaurant() {
                   </label>
                 </div>
                 <Button type="submit" className="ml-auto">
-                  {params.id ? 'Actualizar Restaurante' : 'Crear Restaurante'}
+                  {isEditMode ? 'Actualizar Restaurante' : 'Crear Restaurante'}
                 </Button>
               </div>
             </form>

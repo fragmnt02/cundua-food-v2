@@ -40,14 +40,6 @@ export async function PUT(request: Request) {
       );
     }
 
-    // If the role is client and no restaurant is selected
-    if (newRole === UserRole.CLIENT && !restaurantId) {
-      return NextResponse.json(
-        { error: 'Restaurant must be selected for client role' },
-        { status: 400 }
-      );
-    }
-
     // Get current user data to check previous role
     const userRecord = await auth.getUser(userId);
     const currentRole =
@@ -69,8 +61,8 @@ export async function PUT(request: Request) {
         role: newRole,
         updatedAt: new Date().toISOString()
       });
-    } else if (currentRole === UserRole.CLIENT) {
-      // If user was previously a client, remove restaurant assignment
+    } else if (currentRole === UserRole.CLIENT && newRole !== UserRole.CLIENT) {
+      // If user was previously a client and is changing to a different role, remove restaurant assignment
       const userRestaurantRef = doc(db, 'userRestaurants', userId);
       await deleteDoc(userRestaurantRef);
     }
