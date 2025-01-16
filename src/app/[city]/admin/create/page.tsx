@@ -59,12 +59,31 @@ export default function CreateRestaurant() {
     socialMedia: {},
     delivery: {},
     priceRange: '$',
-    features: {},
-    paymentMethods: [PaymentMethod.Efectivo],
-    location: {},
-    hours: {},
-    information: '',
-    videoUrl: '',
+    features: {
+      reservations: false,
+      outdoorSeating: false,
+      wifi: false,
+      hasAC: false,
+      hasParking: false,
+      kidsFriendly: false,
+      freeDelivery: false
+    },
+    paymentMethods: [],
+    location: {
+      address: '',
+      mapUrl: '',
+      coordinates: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
+    hours: Object.values(Day).reduce(
+      (acc, day) => ({
+        ...acc,
+        [day]: { open: '', close: '' }
+      }),
+      {}
+    ),
     type: RestaurantType.Restaurant,
     isIncomplete: true
   });
@@ -258,6 +277,51 @@ export default function CreateRestaurant() {
     Day.Domingo
   ];
 
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      location: {
+        ...prev.location,
+        coordinates: {
+          latitude:
+            name === 'latitude'
+              ? parseFloat(value) || 0
+              : prev.location?.coordinates?.latitude || 0,
+          longitude:
+            name === 'longitude'
+              ? parseFloat(value) || 0
+              : prev.location?.coordinates?.longitude || 0
+        }
+      }
+    }));
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData((prev) => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            coordinates: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          }
+        }));
+      },
+      () => {
+        alert('Unable to retrieve your location');
+      }
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -313,6 +377,7 @@ export default function CreateRestaurant() {
                   <TabsTrigger value="menu">Menú</TabsTrigger>
                   <TabsTrigger value="details">Detalles</TabsTrigger>
                   <TabsTrigger value="hours">Horarios</TabsTrigger>
+                  <TabsTrigger value="location">Ubicación</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-6 mt-6">
@@ -922,6 +987,94 @@ export default function CreateRestaurant() {
                       </div>
                     </CardContent>
                   </Card>
+                </TabsContent>
+
+                <TabsContent value="location" className="space-y-4">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="address" className="text-sm font-medium">
+                        Dirección
+                      </label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        value={formData.location?.address || ''}
+                        onChange={handleChange}
+                        className="w-full rounded-md border p-2"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="mapUrl" className="text-sm font-medium">
+                        URL de Google Maps
+                      </label>
+                      <input
+                        type="text"
+                        id="mapUrl"
+                        name="mapUrl"
+                        value={formData.location?.mapUrl || ''}
+                        onChange={handleChange}
+                        className="w-full rounded-md border p-2"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium">Coordenadas</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={getCurrentLocation}
+                        >
+                          Usar ubicación actual
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="latitude"
+                            className="text-sm font-medium"
+                          >
+                            Latitud
+                          </label>
+                          <input
+                            type="number"
+                            id="latitude"
+                            name="latitude"
+                            value={
+                              formData.location?.coordinates?.latitude || 0
+                            }
+                            onChange={handleLocationChange}
+                            step="any"
+                            className="w-full rounded-md border p-2"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="longitude"
+                            className="text-sm font-medium"
+                          >
+                            Longitud
+                          </label>
+                          <input
+                            type="number"
+                            id="longitude"
+                            name="longitude"
+                            value={
+                              formData.location?.coordinates?.longitude || 0
+                            }
+                            onChange={handleLocationChange}
+                            step="any"
+                            className="w-full rounded-md border p-2"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
 

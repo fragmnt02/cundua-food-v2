@@ -30,7 +30,7 @@ interface Filters {
   paymentMethods: PaymentMethod[];
   type: string;
   showOnlyOpen: boolean;
-  sort: 'name' | 'rating';
+  sort: 'name' | 'rating' | 'distance';
 }
 
 interface FilterSectionProps {
@@ -207,6 +207,7 @@ export default function FilterSection({
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="distance">Distancia</SelectItem>
                 <SelectItem value="name">Nombre</SelectItem>
                 <SelectItem value="rating">Calificación</SelectItem>
               </SelectContent>

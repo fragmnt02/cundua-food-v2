@@ -1,36 +1,10 @@
 'use client';
 
-import RestaurantList from '@/components/RestaurantList';
+import { RestaurantList } from '@/components/RestaurantList';
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
 import { useParams } from 'next/navigation';
-
-const RestaurantListSkeleton = () => (
-  <div className="container mx-auto px-4 py-8">
-    <Skeleton className="h-10 w-64 mb-8" />
-    <div className="space-y-4 mb-6">
-      <Skeleton className="h-10 w-full" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Skeleton className="h-8" />
-        <Skeleton className="h-8" />
-        <Skeleton className="h-8" />
-        <Skeleton className="h-8" />
-      </div>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="space-y-3">
-          <Skeleton className="h-48 w-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import { useRestaurant } from '@/hooks/useRestaurant';
 
 export default function CityPage() {
   const params = useParams();
@@ -39,6 +13,7 @@ export default function CityPage() {
     CITY_USER_FRIENDLY_NAME[
       params.city as keyof typeof CITY_USER_FRIENDLY_NAME
     ];
+  const { restaurants, loading } = useRestaurant();
 
   return (
     <>
@@ -62,8 +37,10 @@ export default function CityPage() {
           })
         }}
       />
-      <Suspense fallback={<RestaurantListSkeleton />}>
-        <RestaurantList />
+      <Suspense>
+        {restaurants && (
+          <RestaurantList restaurants={restaurants} loading={loading} />
+        )}
       </Suspense>
     </>
   );

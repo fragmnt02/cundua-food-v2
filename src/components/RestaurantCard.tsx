@@ -12,7 +12,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useCity } from '@/hooks/useCity';
 
-export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
+export const RestaurantCard = ({
+  restaurant,
+  distance
+}: {
+  restaurant: Restaurant;
+  distance?: number;
+}) => {
   const { isFavorite, toggleFavorite, isLoading } = useFavorite(restaurant.id);
   const { user } = useAuth();
   const { city } = useCity();
@@ -48,45 +54,26 @@ export const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
                 }}
                 disabled={isLoading}
               >
-                <Heart
-                  className={cn('h-5 w-5', isFavorite && 'fill-current')}
-                />
+                <Heart className="h-5 w-5" />
               </Button>
             )}
-            <div className="absolute bottom-2 right-2 flex gap-2">
-              {restaurant.isOpen ? (
-                <Badge
-                  variant="default"
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  Abierto
-                </Badge>
-              ) : restaurant.isOpeningSoon ? (
-                <Badge
-                  variant="default"
-                  className="bg-yellow-500 hover:bg-yellow-600"
-                >
-                  Abre Pronto
-                </Badge>
-              ) : (
-                <Badge variant="destructive">Cerrado</Badge>
-              )}
-              <Badge variant="secondary">{restaurant.priceRange}</Badge>
-            </div>
           </div>
         </CardHeader>
-      </Link>
-
-      <Link href={`/${city}/restaurant/${restaurant.id}`}>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-semibold line-clamp-1">{restaurant.name}</h3>
-            <div className="flex items-center gap-1 text-yellow-500">
-              <span>★</span>
-              <span className="text-sm text-muted-foreground">
-                {restaurant.rating.toFixed(1)}
-              </span>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="font-semibold">{restaurant.name}</h3>
+              {distance !== undefined && (
+                <p className="text-sm text-muted-foreground">
+                  {distance < 1
+                    ? `${Math.round(distance * 1000)}m de distancia`
+                    : `${distance.toFixed(1)}km de distancia`}
+                </p>
+              )}
             </div>
+            <Badge variant={restaurant.isOpen ? 'default' : 'secondary'}>
+              {restaurant.isOpen ? 'Abierto' : 'Cerrado'}
+            </Badge>
           </div>
           {restaurant.isIncomplete && (
             <Badge

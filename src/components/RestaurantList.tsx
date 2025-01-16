@@ -1,14 +1,25 @@
 'use client';
 
-import { Cuisine, PaymentMethod } from '@/types/restaurant';
-import { useState, useMemo, useCallback, Suspense, useEffect } from 'react';
-import { RestaurantCard } from '@/components/RestaurantCard';
-import { useRestaurant } from '@/hooks/useRestaurant';
-import dynamic from 'next/dynamic';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Restaurant, Cuisine, PaymentMethod } from '@/types/restaurant';
+import { RestaurantCard } from './RestaurantCard';
+import { useNearbyRestaurants } from '@/hooks/useNearbyRestaurants';
+import FilterSection from './FilterSection';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-import { analytics } from '@/utils/analytics';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { analytics } from '@/utils/analytics';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from './ui/alert';
+import { Loader2 } from 'lucide-react';
+
+type SortOption = 'distance' | 'rating' | 'name';
 
 // Constants moved outside component to prevent recreation
 const FEATURES = ['hasAC', 'hasParking', 'freeDelivery'] as const;
@@ -20,34 +31,6 @@ const FEATURE_LABELS: Record<Feature, string> = {
   freeDelivery: 'Envío gratis'
 };
 
-// Lazy load the filter section for better initial load
-const FilterSection = dynamic(() => import('./FilterSection'), {
-  ssr: false,
-  loading: () => <FilterSectionSkeleton />
-});
-
-const FilterSectionSkeleton = () => (
-  <div className="space-y-4 mb-6">
-    <Skeleton className="h-10 w-full" />
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Skeleton className="h-8" />
-      <Skeleton className="h-8" />
-      <Skeleton className="h-8" />
-      <Skeleton className="h-8" />
-    </div>
-  </div>
-);
-
-const RestaurantCardSkeleton = () => (
-  <div className="space-y-3">
-    <Skeleton className="h-48 w-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-6 w-3/4" />
-      <Skeleton className="h-4 w-1/2" />
-    </div>
-  </div>
-);
-
 interface Filters {
   searchQuery: string;
   cuisine: string;
@@ -56,14 +39,48 @@ interface Filters {
   paymentMethods: PaymentMethod[];
   type: string;
   showOnlyOpen: boolean;
-  sort: 'name' | 'rating';
-  clearAll?: boolean;
+  sort: 'name' | 'rating' | 'distance';
 }
 
-export default function RestaurantList() {
-  const { restaurants, loading } = useRestaurant();
+const RestaurantListSkeleton = () => (
+  <div className="space-y-4 mb-6">
+    <Skeleton className="h-10 w-full" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+      <Skeleton className="h-8" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="space-y-3">
+          <Skeleton className="h-48 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export const RestaurantList = ({
+  restaurants,
+  loading
+}: {
+  restaurants: Restaurant[];
+  loading?: boolean;
+}) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const {
+    nearbyRestaurants,
+    isLoading: isLoadingLocation,
+    error: locationError,
+    refreshLocation
+  } = useNearbyRestaurants(restaurants);
 
   // Initialize filters from URL query parameters
   const [filters, setFilters] = useState<Filters>(() => {
@@ -76,9 +93,18 @@ export default function RestaurantList() {
         []) as PaymentMethod[],
       type: searchParams.get('type') || 'all',
       showOnlyOpen: searchParams.get('open') === 'true',
-      sort: (searchParams.get('sort') as 'name' | 'rating') || 'name'
+      sort:
+        (searchParams.get('sort') as 'name' | 'rating' | 'distance') ||
+        'distance'
     };
   });
+
+  // Track search analytics
+  useEffect(() => {
+    if (filters.searchQuery) {
+      analytics.trackSearch(filters.searchQuery);
+    }
+  }, [filters.searchQuery]);
 
   // Update URL when filters change
   const updateFilters = useCallback(
@@ -95,7 +121,7 @@ export default function RestaurantList() {
           paymentMethods: [],
           type: 'all',
           showOnlyOpen: false,
-          sort: 'name'
+          sort: 'distance'
         };
         setFilters(newFilters);
         router.push(window.location.pathname, { scroll: false });
@@ -120,7 +146,8 @@ export default function RestaurantList() {
         newParams.set('payment', newFilters.paymentMethods.join(','));
       if (newFilters.type !== 'all') newParams.set('type', newFilters.type);
       if (newFilters.showOnlyOpen) newParams.set('open', 'true');
-      if (newFilters.sort !== 'name') newParams.set('sort', newFilters.sort);
+      if (newFilters.sort !== 'distance')
+        newParams.set('sort', newFilters.sort);
 
       // Update URL without refresh
       const query = newParams.toString();
@@ -128,7 +155,7 @@ export default function RestaurantList() {
         scroll: false
       });
 
-      // Track analytics
+      // Track analytics for filter usage
       if (key !== 'searchQuery') {
         analytics.trackFilterUse(
           key,
@@ -139,105 +166,141 @@ export default function RestaurantList() {
     [router, filters]
   );
 
-  useEffect(() => {
-    if (filters.searchQuery) {
-      analytics.trackSearch(filters.searchQuery);
-    }
-  }, [filters.searchQuery]);
+  const filteredAndSortedRestaurants = useMemo(() => {
+    let result = restaurants;
 
-  // Memoized filter function
-  const filteredRestaurants = useMemo(() => {
-    if (!restaurants) return [];
-
-    return restaurants
-      .filter((restaurant) => {
-        const matchesSearch = restaurant.name
-          .toLowerCase()
-          ?.includes(filters.searchQuery.toLowerCase());
-        const matchesCuisine =
-          filters.cuisine === 'all' ||
-          restaurant.cuisine?.includes(filters.cuisine as keyof typeof Cuisine);
-        const matchesType =
-          filters.type === 'all' || restaurant.type === filters.type;
-        const matchesPriceRange =
-          filters.priceRange === 'all' ||
-          restaurant.priceRange === filters.priceRange;
-        const matchesFeatures =
-          filters.features.length === 0 ||
-          filters.features.every(
-            (feature) =>
-              restaurant.features[feature as keyof typeof restaurant.features]
-          );
-        const matchesPaymentMethods =
-          filters.paymentMethods.length === 0 ||
-          filters.paymentMethods.every((method) =>
-            restaurant.paymentMethods?.includes(method)
-          );
-        const matchesOpenStatus = !filters.showOnlyOpen || restaurant.isOpen;
-
-        return (
-          matchesSearch &&
-          matchesCuisine &&
-          matchesType &&
-          matchesPriceRange &&
-          matchesFeatures &&
-          matchesPaymentMethods &&
-          matchesOpenStatus
+    // Apply filters
+    result = result.filter((restaurant) => {
+      const matchesSearch = restaurant.name
+        .toLowerCase()
+        .includes(filters.searchQuery.toLowerCase());
+      const matchesCuisine =
+        filters.cuisine === 'all' ||
+        restaurant.cuisine?.includes(filters.cuisine as keyof typeof Cuisine);
+      const matchesType =
+        filters.type === 'all' || restaurant.type === filters.type;
+      const matchesPriceRange =
+        filters.priceRange === 'all' ||
+        restaurant.priceRange === filters.priceRange;
+      const matchesFeatures =
+        filters.features.length === 0 ||
+        filters.features.every(
+          (feature) =>
+            restaurant.features[feature as keyof typeof restaurant.features]
         );
-      })
-      .sort((a, b) => {
-        // First sort by open status
-        if (a.isOpen !== b.isOpen) return a.isOpen ? -1 : 1;
-        if (a.isOpeningSoon !== b.isOpeningSoon)
-          return a.isOpeningSoon ? -1 : 1;
+      const matchesPaymentMethods =
+        filters.paymentMethods.length === 0 ||
+        filters.paymentMethods.every((method) =>
+          restaurant.paymentMethods?.includes(method)
+        );
+      const matchesOpenStatus = !filters.showOnlyOpen || restaurant.isOpen;
 
-        // Then sort by selected sort option
-        if (filters.sort === 'rating') {
-          return (b.rating || 0) - (a.rating || 0);
-        }
-        return a.name.localeCompare(b.name);
-      });
-  }, [restaurants, filters]);
+      return (
+        matchesSearch &&
+        matchesCuisine &&
+        matchesType &&
+        matchesPriceRange &&
+        matchesFeatures &&
+        matchesPaymentMethods &&
+        matchesOpenStatus
+      );
+    });
+
+    // Apply sorting
+    if (filters.sort === 'distance' && nearbyRestaurants.length > 0) {
+      const distanceMap = new Map(
+        nearbyRestaurants.map((r) => [r.id, r.distance])
+      );
+      return result
+        .map((r) => ({
+          ...r,
+          distance: distanceMap.get(r.id)
+        }))
+        .sort((a, b) => {
+          if (a.distance === undefined && b.distance === undefined) return 0;
+          if (a.distance === undefined) return 1;
+          if (b.distance === undefined) return -1;
+          return a.distance - b.distance;
+        });
+    }
+
+    return result.sort((a, b) => {
+      switch (filters.sort) {
+        case 'rating':
+          return b.rating - a.rating;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+  }, [restaurants, nearbyRestaurants, filters]);
 
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Restaurantes</h1>
 
-      {/* Lazy loaded filter section */}
-      <Suspense fallback={<FilterSectionSkeleton />}>
-        <FilterSection
-          filters={filters}
-          onFilterChange={updateFilters}
-          features={FEATURES}
-          featureLabels={FEATURE_LABELS}
-        />
-      </Suspense>
-
-      {/* Loading state */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <RestaurantCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : filteredRestaurants.length === 0 ? (
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            No se encontraron restaurantes
-          </h2>
-          <p className="text-gray-600">
-            Intenta ajustar los filtros para ver más resultados
-          </p>
-        </div>
+        <RestaurantListSkeleton />
       ) : (
-        <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
-            {filteredRestaurants.map((restaurant) => (
-              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-            ))}
-          </div>
-        </ScrollArea>
+        <>
+          <FilterSection
+            filters={filters}
+            onFilterChange={updateFilters}
+            features={FEATURES}
+            featureLabels={FEATURE_LABELS}
+          />
+
+          {isLoadingLocation && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Obteniendo ubicación...
+            </div>
+          )}
+
+          {locationError && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {locationError ===
+                'Geolocation is not supported by your browser'
+                  ? 'Tu navegador no soporta geolocalización'
+                  : 'No se pudo obtener tu ubicación'}
+                <button onClick={refreshLocation} className="ml-2 underline">
+                  Intentar de nuevo
+                </button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <ScrollArea className="h-[calc(100vh-300px)]">
+            {filteredAndSortedRestaurants.length === 0 ? (
+              <div className="text-center py-12">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  No se encontraron restaurantes
+                </h2>
+                <p className="text-gray-600">
+                  Intenta ajustar los filtros para ver más resultados
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
+                {filteredAndSortedRestaurants.map((restaurant) => (
+                  <RestaurantCard
+                    key={restaurant.id}
+                    restaurant={restaurant}
+                    distance={
+                      'distance' in restaurant &&
+                      typeof restaurant.distance === 'number'
+                        ? restaurant.distance
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </>
       )}
     </main>
   );
-}
+};
