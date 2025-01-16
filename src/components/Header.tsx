@@ -182,7 +182,7 @@ export const Header = memo(() => {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
   const { isClient, assignedRestaurantId } = useClient();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -198,6 +198,31 @@ export const Header = memo(() => {
     await logout();
     closeDropdown();
   }, [logout, closeDropdown]);
+
+  if (loading) {
+    return (
+      <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav
+            className="flex items-center justify-between h-16"
+            aria-label="Navegación principal"
+          >
+            <div className="flex items-center gap-4 flex-1">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gray-200 animate-pulse" />
+              <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
+              <div className="h-8 w-32 bg-gray-200 rounded-md animate-pulse" />
+            </div>
+            <div className="hidden sm:flex gap-2">
+              <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse" />
+            </div>
+            <div className="sm:hidden">
+              <div className="h-10 w-10 bg-gray-200 rounded-md animate-pulse" />
+            </div>
+          </nav>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
