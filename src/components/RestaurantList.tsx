@@ -55,6 +55,7 @@ interface Filters {
   paymentMethods: PaymentMethod[];
   type: string;
   showOnlyOpen: boolean;
+  sort: 'name' | 'rating';
 }
 
 const INITIAL_FILTERS: Filters = {
@@ -64,7 +65,8 @@ const INITIAL_FILTERS: Filters = {
   features: [],
   paymentMethods: [],
   type: 'all',
-  showOnlyOpen: false
+  showOnlyOpen: false,
+  sort: 'name'
 };
 
 export default function RestaurantList() {
@@ -84,7 +86,10 @@ export default function RestaurantList() {
       ),
       type: localStorage.getItem('restaurantFilters.type') || 'all',
       showOnlyOpen:
-        localStorage.getItem('restaurantFilters.showOnlyOpen') === 'true'
+        localStorage.getItem('restaurantFilters.showOnlyOpen') === 'true',
+      sort:
+        (localStorage.getItem('restaurantFilters.sort') as 'name' | 'rating') ||
+        'name'
     };
   });
 
@@ -129,9 +134,15 @@ export default function RestaurantList() {
         );
       })
       .sort((a, b) => {
+        // First sort by open status
         if (a.isOpen !== b.isOpen) return a.isOpen ? -1 : 1;
         if (a.isOpeningSoon !== b.isOpeningSoon)
           return a.isOpeningSoon ? -1 : 1;
+
+        // Then sort by selected sort option
+        if (filters.sort === 'rating') {
+          return (b.rating || 0) - (a.rating || 0);
+        }
         return a.name.localeCompare(b.name);
       });
   }, [restaurants, filters]);

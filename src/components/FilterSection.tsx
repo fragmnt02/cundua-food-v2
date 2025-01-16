@@ -30,6 +30,7 @@ interface Filters {
   paymentMethods: PaymentMethod[];
   type: string;
   showOnlyOpen: boolean;
+  sort: 'name' | 'rating';
 }
 
 interface FilterSectionProps {
@@ -200,6 +201,20 @@ export default function FilterSection({
                 <SelectItem value="$$$$">
                   $$$$ (Más de $600 MXN por persona)
                 </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Sort Select */}
+            <Select
+              value={filters.sort}
+              onValueChange={(value) => onFilterChange('sort', value)}
+            >
+              <SelectTrigger aria-label="Ordenar por">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Nombre</SelectItem>
+                <SelectItem value="rating">Calificación</SelectItem>
               </SelectContent>
             </Select>
           </div>
