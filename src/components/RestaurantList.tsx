@@ -9,17 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/utils/analytics';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2 } from 'lucide-react';
-
-type SortOption = 'distance' | 'rating' | 'name';
 
 // Constants moved outside component to prevent recreation
 const FEATURES = ['hasAC', 'hasParking', 'freeDelivery'] as const;
