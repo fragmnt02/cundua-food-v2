@@ -139,6 +139,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || 'Failed to login');
       }
       checkUser();
+
+      // Check for user's city preference
+      const cityResponse = await fetch('/api/user/city');
+      if (cityResponse.ok) {
+        const { city } = await cityResponse.json();
+        if (city) {
+          router.push(`/${city}`);
+          return;
+        }
+      }
+
       router.push('/');
     } catch (error) {
       throw error;
