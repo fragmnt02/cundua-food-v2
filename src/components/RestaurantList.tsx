@@ -4,11 +4,11 @@ import { Cuisine, PaymentMethod } from '@/types/restaurant';
 import { useState, useMemo, useCallback, Suspense, useEffect } from 'react';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { useRestaurant } from '@/hooks/useRestaurant';
-import { isClient } from '@/hooks/isClient';
 import dynamic from 'next/dynamic';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { analytics } from '@/utils/analytics';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Constants moved outside component to prevent recreation
 const FEATURES = ['hasAC', 'hasParking', 'freeDelivery'] as const;
@@ -57,42 +57,93 @@ interface Filters {
   type: string;
   showOnlyOpen: boolean;
   sort: 'name' | 'rating';
+  clearAll?: boolean;
 }
-
-const INITIAL_FILTERS: Filters = {
-  searchQuery: '',
-  cuisine: 'all',
-  priceRange: 'all',
-  features: [],
-  paymentMethods: [],
-  type: 'all',
-  showOnlyOpen: false,
-  sort: 'name'
-};
 
 export default function RestaurantList() {
   const { restaurants, loading } = useRestaurant();
-  const [filters, setFilters] = useState<Filters>(() => {
-    if (!isClient()) return INITIAL_FILTERS;
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // Initialize filters from URL query parameters
+  const [filters, setFilters] = useState<Filters>(() => {
     return {
-      searchQuery: localStorage.getItem('restaurantFilters.searchQuery') || '',
-      cuisine: localStorage.getItem('restaurantFilters.cuisine') || 'all',
-      priceRange: localStorage.getItem('restaurantFilters.priceRange') || 'all',
-      features: JSON.parse(
-        localStorage.getItem('restaurantFilters.features') || '[]'
-      ),
-      paymentMethods: JSON.parse(
-        localStorage.getItem('restaurantFilters.paymentMethods') || '[]'
-      ),
-      type: localStorage.getItem('restaurantFilters.type') || 'all',
-      showOnlyOpen:
-        localStorage.getItem('restaurantFilters.showOnlyOpen') === 'true',
-      sort:
-        (localStorage.getItem('restaurantFilters.sort') as 'name' | 'rating') ||
-        'name'
+      searchQuery: searchParams.get('q') || '',
+      cuisine: searchParams.get('cuisine') || 'all',
+      priceRange: searchParams.get('price') || 'all',
+      features: (searchParams.get('features')?.split(',') || []) as Feature[],
+      paymentMethods: (searchParams.get('payment')?.split(',') ||
+        []) as PaymentMethod[],
+      type: searchParams.get('type') || 'all',
+      showOnlyOpen: searchParams.get('open') === 'true',
+      sort: (searchParams.get('sort') as 'name' | 'rating') || 'name'
     };
   });
+
+  // Update URL when filters change
+  const updateFilters = useCallback(
+    (key: keyof Filters, value: string | string[] | boolean) => {
+      let newFilters: Filters;
+
+      // Special case for clearing all filters
+      if (key === 'searchQuery' && value === '') {
+        newFilters = {
+          searchQuery: '',
+          cuisine: 'all',
+          priceRange: 'all',
+          features: [],
+          paymentMethods: [],
+          type: 'all',
+          showOnlyOpen: false,
+          sort: 'name'
+        };
+        setFilters(newFilters);
+        router.push(window.location.pathname, { scroll: false });
+        return;
+      }
+
+      newFilters = { ...filters, [key]: value };
+      setFilters(newFilters);
+
+      // Create new URLSearchParams object
+      const newParams = new URLSearchParams();
+
+      // Only add non-default values to URL
+      if (newFilters.searchQuery) newParams.set('q', newFilters.searchQuery);
+      if (newFilters.cuisine !== 'all')
+        newParams.set('cuisine', newFilters.cuisine);
+      if (newFilters.priceRange !== 'all')
+        newParams.set('price', newFilters.priceRange);
+      if (newFilters.features.length > 0)
+        newParams.set('features', newFilters.features.join(','));
+      if (newFilters.paymentMethods.length > 0)
+        newParams.set('payment', newFilters.paymentMethods.join(','));
+      if (newFilters.type !== 'all') newParams.set('type', newFilters.type);
+      if (newFilters.showOnlyOpen) newParams.set('open', 'true');
+      if (newFilters.sort !== 'name') newParams.set('sort', newFilters.sort);
+
+      // Update URL without refresh
+      const query = newParams.toString();
+      router.push(window.location.pathname + (query ? `?${query}` : ''), {
+        scroll: false
+      });
+
+      // Track analytics
+      if (key !== 'searchQuery') {
+        analytics.trackFilterUse(
+          key,
+          typeof value === 'object' ? JSON.stringify(value) : String(value)
+        );
+      }
+    },
+    [router, filters]
+  );
+
+  useEffect(() => {
+    if (filters.searchQuery) {
+      analytics.trackSearch(filters.searchQuery);
+    }
+  }, [filters.searchQuery]);
 
   // Memoized filter function
   const filteredRestaurants = useMemo(() => {
@@ -147,35 +198,6 @@ export default function RestaurantList() {
         return a.name.localeCompare(b.name);
       });
   }, [restaurants, filters]);
-
-  // Update filters and cache
-  const updateFilters = useCallback(
-    (key: keyof Filters, value: string | string[] | boolean) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
-      if (isClient()) {
-        localStorage.setItem(
-          `restaurantFilters.${key}`,
-          typeof value === 'object' ? JSON.stringify(value) : String(value)
-        );
-      }
-      // Track filter usage
-      if (key !== 'searchQuery') {
-        // Search is tracked separately
-        analytics.trackFilterUse(
-          key,
-          typeof value === 'object' ? JSON.stringify(value) : String(value)
-        );
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (filters.searchQuery) {
-      // Track search
-      analytics.trackSearch(filters.searchQuery);
-    }
-  }, [filters.searchQuery]);
 
   return (
     <main className="container mx-auto px-4 py-8">

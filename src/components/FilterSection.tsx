@@ -72,12 +72,6 @@ export default function FilterSection({
 
   const clearFilters = () => {
     onFilterChange('searchQuery', '');
-    onFilterChange('cuisine', 'all');
-    onFilterChange('priceRange', 'all');
-    onFilterChange('features', []);
-    onFilterChange('paymentMethods', []);
-    onFilterChange('type', 'all');
-    onFilterChange('showOnlyOpen', false);
   };
 
   return (

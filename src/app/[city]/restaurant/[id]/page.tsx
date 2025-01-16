@@ -149,8 +149,9 @@ export default function RestaurantPage() {
 
   // Track time spent when component unmounts
   useEffect(() => {
+    const startTime = startTimeRef.current;
     return () => {
-      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
       analytics.trackTimeSpent(params.id as string, timeSpent);
     };
   }, [params.id]);
