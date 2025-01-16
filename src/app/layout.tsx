@@ -11,6 +11,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { analytics } from '@/utils/analytics';
 import { CookieConsent } from '@/components/CookieConsent';
+import { FavoritesProvider } from '@/providers/FavoritesProvider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -70,10 +71,12 @@ export default function RootLayout({
           <Analytics />
         </Suspense>
         <AuthProvider>
-          <Header />
-          {children}
-          <Toaster />
-          <CookieConsent />
+          <FavoritesProvider>
+            <Header />
+            {children}
+            <Toaster />
+            <CookieConsent />
+          </FavoritesProvider>
         </AuthProvider>
       </body>
     </html>
