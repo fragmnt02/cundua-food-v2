@@ -163,7 +163,9 @@ export default function RestaurantPage() {
       <div className="relative h-96 bg-gray-200">
         {isAdmin && (
           <Button
-            onClick={() => router.push(`/admin/update/${params.id}`)}
+            onClick={() =>
+              router.push(`/${params.city}/admin/update/${params.id}`)
+            }
             className="absolute top-4 right-4 z-10"
             variant="default"
           >
