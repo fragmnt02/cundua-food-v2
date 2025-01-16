@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   FaInstagram,
@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { analytics } from '@/utils/analytics';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -108,12 +109,17 @@ export default function RestaurantPage() {
   const router = useRouter();
   const { isAdmin } = useAdmin();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
+  const startTimeRef = useRef(Date.now());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [maxScroll, setMaxScroll] = useState(0);
 
   useEffect(() => {
     const fetchRestaurant = async () => {
       const data = await getRestaurant(params.id as string);
       if (data) {
         setRestaurant(data);
+        // Track restaurant view
+        analytics.trackRestaurantView(data.id, data.name);
       }
     };
     fetchRestaurant();
@@ -141,6 +147,37 @@ export default function RestaurantPage() {
     }
   };
 
+  // Track time spent when component unmounts
+  useEffect(() => {
+    return () => {
+      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      analytics.trackTimeSpent(params.id as string, timeSpent);
+    };
+  }, [params.id]);
+
+  // Track scroll depth
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollRef.current) return;
+
+      const element = scrollRef.current;
+      const scrollTop = window.scrollY;
+      const scrollHeight = element.scrollHeight - window.innerHeight;
+      const scrollPercentage = Math.min(
+        Math.round((scrollTop / scrollHeight) * 100),
+        100
+      );
+
+      if (scrollPercentage > maxScroll) {
+        setMaxScroll(scrollPercentage);
+        analytics.trackScrollDepth(params.id as string, scrollPercentage);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [params.id, maxScroll]);
+
   if (!restaurant) {
     return (
       <div className="min-h-screen p-8">
@@ -158,7 +195,7 @@ export default function RestaurantPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50" ref={scrollRef}>
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
         {isAdmin && (
@@ -201,7 +238,13 @@ export default function RestaurantPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="info" className="w-full">
+        <Tabs
+          defaultValue="info"
+          className="w-full"
+          onValueChange={(value) =>
+            analytics.trackTabView(params.id as string, value)
+          }
+        >
           <TabsList className="flex w-full overflow-x-auto space-x-2 mb-8 h-auto p-1 sm:grid sm:grid-cols-5">
             <TabsTrigger value="info" className="flex-shrink-0 h-10">
               Información
@@ -340,7 +383,10 @@ export default function RestaurantPage() {
                       <Card
                         key={index}
                         className="cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => setSelectedImage(menuItem.imageUrl)}
+                        onClick={() => {
+                          setSelectedImage(menuItem.imageUrl);
+                          analytics.trackMenuImageView(params.id as string);
+                        }}
                       >
                         <div className="relative h-48">
                           <Image
@@ -380,6 +426,12 @@ export default function RestaurantPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+                          onClick={() =>
+                            analytics.trackSocialMediaClick(
+                              params.id as string,
+                              'instagram'
+                            )
+                          }
                         >
                           <FaInstagram className="text-xl" />
                           Instagram
@@ -391,6 +443,12 @@ export default function RestaurantPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          onClick={() =>
+                            analytics.trackSocialMediaClick(
+                              params.id as string,
+                              'facebook'
+                            )
+                          }
                         >
                           <FaFacebook className="text-xl" />
                           Facebook
@@ -411,6 +469,12 @@ export default function RestaurantPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          onClick={() =>
+                            analytics.trackDeliveryClick(
+                              params.id as string,
+                              'whatsapp'
+                            )
+                          }
                         >
                           <FaWhatsapp className="text-xl" />
                           WhatsApp
@@ -422,6 +486,12 @@ export default function RestaurantPage() {
                             formatPhoneNumber(restaurant.delivery.phone).clean
                           }`}
                           className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                          onClick={() =>
+                            analytics.trackDeliveryClick(
+                              params.id as string,
+                              'phone'
+                            )
+                          }
                         >
                           <FaPhone className="text-xl" />
                           {
@@ -435,6 +505,12 @@ export default function RestaurantPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                        onClick={() =>
+                          analytics.trackDeliveryClick(
+                            params.id as string,
+                            'rapidito'
+                          )
+                        }
                       >
                         <FaBiking className="text-xl" />
                         Rapidito
@@ -444,6 +520,12 @@ export default function RestaurantPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        onClick={() =>
+                          analytics.trackDeliveryClick(
+                            params.id as string,
+                            'turbomoto'
+                          )
+                        }
                       >
                         <FaBiking className="text-xl" />
                         Turbomoto

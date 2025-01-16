@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { analytics } from '@/utils/analytics';
 
 interface CommentsProps {
   restaurantId: string;
@@ -25,6 +26,7 @@ export function Comments({ restaurantId }: CommentsProps) {
     const success = await addComment(newComment);
     if (success) {
       setNewComment('');
+      analytics.trackComment(restaurantId);
     }
     setIsSubmitting(false);
   };

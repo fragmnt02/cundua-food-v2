@@ -1,13 +1,14 @@
 'use client';
 
 import { Cuisine, PaymentMethod } from '@/types/restaurant';
-import { useState, useMemo, useCallback, Suspense } from 'react';
+import { useState, useMemo, useCallback, Suspense, useEffect } from 'react';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { isClient } from '@/hooks/isClient';
 import dynamic from 'next/dynamic';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { analytics } from '@/utils/analytics';
 
 // Constants moved outside component to prevent recreation
 const FEATURES = ['hasAC', 'hasParking', 'freeDelivery'] as const;
@@ -157,9 +158,24 @@ export default function RestaurantList() {
           typeof value === 'object' ? JSON.stringify(value) : String(value)
         );
       }
+      // Track filter usage
+      if (key !== 'searchQuery') {
+        // Search is tracked separately
+        analytics.trackFilterUse(
+          key,
+          typeof value === 'object' ? JSON.stringify(value) : String(value)
+        );
+      }
     },
     []
   );
+
+  useEffect(() => {
+    if (filters.searchQuery) {
+      // Track search
+      analytics.trackSearch(filters.searchQuery);
+    }
+  }, [filters.searchQuery]);
 
   return (
     <main className="container mx-auto px-4 py-8">
