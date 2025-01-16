@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useClient } from '@/hooks/useClient';
 
 type RestaurantForm = Omit<
   Restaurant,
@@ -47,6 +48,7 @@ export default function CreateRestaurant() {
   const params = useParams();
   const { city } = useCity();
   const { isAdmin } = useAdmin();
+  const { isClient, restaurantId } = useClient();
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<RestaurantForm>({
     name: '',
@@ -70,18 +72,22 @@ export default function CreateRestaurant() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
 
   useEffect(() => {
-    if (isAdmin === false) {
+    if (isAdmin === false && isClient === false) {
+      router.push('/');
+      return;
+    }
+
+    if (params.id && restaurantId && params.id !== restaurantId) {
       router.push('/');
       return;
     }
 
     const fetchRestaurant = async () => {
-      if (!params.id || !city) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
+        if (!params.id || !city) {
+          setIsLoading(false);
+          return;
+        }
         const response = await fetch(`/api/restaurants/${city}/${params.id}`);
         if (response.ok) {
           const restaurant = await response.json();
@@ -109,7 +115,7 @@ export default function CreateRestaurant() {
     };
 
     fetchRestaurant();
-  }, [params.id, city, isAdmin, router]);
+  }, [params.id, city, isAdmin, router, restaurantId, isClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

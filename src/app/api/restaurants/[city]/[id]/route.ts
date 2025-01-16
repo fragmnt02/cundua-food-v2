@@ -22,12 +22,23 @@ export async function PUT(
       );
     }
 
+    const { city, id } = await params;
+
     const auth = initAdmin();
     const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
     const userRecord = await auth.getUser(decodedClaims.uid);
     const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
-    if (role !== UserRole.ADMIN) {
+    const assignedRestaurantRef = doc(db, 'userRestaurants', userRecord.uid);
+    const assignedRestaurantDoc = await getDoc(assignedRestaurantRef);
+    const assignedRestaurantId =
+      assignedRestaurantDoc.data()?.restaurantId ?? null;
+
+    const shouldUpdate =
+      role === UserRole.ADMIN ||
+      (role === UserRole.CLIENT && assignedRestaurantId === id);
+
+    if (!shouldUpdate) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }
@@ -35,7 +46,6 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { city, id } = await params;
 
     // Update the restaurant in Firestore
     const restaurantRef = doc(db, 'cities', city, 'restaurants', id);

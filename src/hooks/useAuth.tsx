@@ -11,7 +11,15 @@ import { useRouter } from 'next/navigation';
 import { UserRole } from '@/lib/roles';
 
 interface AuthContextType {
-  user: { email: string; role?: UserRole } | null;
+  user: {
+    email: string;
+    role?: UserRole;
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    telephone?: string;
+    restaurantId?: string;
+  } | null;
   loading: boolean;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
@@ -41,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName?: string;
     dateOfBirth?: string;
     telephone?: string;
+    restaurantId?: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -57,7 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             firstName: data.user.firstName,
             lastName: data.user.lastName,
             dateOfBirth: data.user.dateOfBirth,
-            telephone: data.user.telephone
+            telephone: data.user.telephone,
+            restaurantId: data.user.restaurantId
           });
         }
       }

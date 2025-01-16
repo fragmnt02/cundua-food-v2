@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
 import { UserRole } from '@/lib/roles';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export async function GET() {
   try {
@@ -17,6 +19,15 @@ export async function GET() {
     const userRecord = await auth.getUser(decodedClaims.uid);
     const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
+    let restaurantId = null;
+    if (role === UserRole.CLIENT) {
+      const restaurantRef = doc(db, 'userRestaurants', userRecord.uid);
+      const restaurantDoc = await getDoc(restaurantRef);
+      if (restaurantDoc.exists()) {
+        restaurantId = restaurantDoc.data().restaurantId;
+      }
+    }
+
     return NextResponse.json({
       user: {
         email: decodedClaims.email,
@@ -24,7 +35,8 @@ export async function GET() {
         firstName: userRecord.customClaims?.firstName,
         lastName: userRecord.customClaims?.lastName,
         dateOfBirth: userRecord.customClaims?.dateOfBirth,
-        telephone: userRecord.customClaims?.telephone
+        telephone: userRecord.customClaims?.telephone,
+        restaurantId
       }
     });
   } catch (error) {

@@ -10,7 +10,8 @@ import {
   FaUser,
   FaMapMarkerAlt,
   FaBars,
-  FaHeart
+  FaHeart,
+  FaPencilAlt
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
@@ -24,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet';
+import { useClient } from '@/hooks/useClient';
 
 interface DropdownProps {
   isOpen: boolean;
@@ -179,6 +181,7 @@ MobileMenu.displayName = 'MobileMenu';
 export const Header = memo(() => {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
+  const { isClient, restaurantId } = useClient();
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -288,6 +291,21 @@ export const Header = memo(() => {
                 </Button>
                 <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
               </>
+            )}
+
+            {isClient && (
+              <Button
+                onClick={() => router.push(`/admin/update/${restaurantId}`)}
+                variant="ghost"
+                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                aria-label="Ver restaurante asignado"
+              >
+                <FaPencilAlt
+                  className="text-xl text-[#363430]"
+                  aria-hidden="true"
+                />
+                <span>Editar Mi Restaurante</span>
+              </Button>
             )}
 
             <div className="relative">
