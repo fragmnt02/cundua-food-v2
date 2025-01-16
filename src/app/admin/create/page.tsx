@@ -175,13 +175,15 @@ export default function CreateRestaurant() {
   };
 
   const handleMenuImageAdd = useCallback(() => {
-    setFormData((prev) => {
-      const newMenu = [...prev.menu, newMenuImage].sort(
-        (a, b) => a.order - b.order
-      );
-      setNewMenuImage({ imageUrl: '', order: newMenu.length + 1 });
-      return { ...prev, menu: newMenu };
-    });
+    if (newMenuImage.imageUrl) {
+      setFormData((prev) => {
+        const newMenu = [...prev.menu, newMenuImage].sort(
+          (a, b) => a.order - b.order
+        );
+        setNewMenuImage({ imageUrl: '', order: newMenu.length + 1 });
+        return { ...prev, menu: newMenu };
+      });
+    }
   }, [newMenuImage]);
 
   useEffect(() => {
@@ -315,16 +317,17 @@ export default function CreateRestaurant() {
                         <span className="text-destructive">*</span>
                       </label>
                       <div className="flex flex-col gap-2">
-                        {formData.imageUrl && (
-                          <div className="relative w-32 h-32">
-                            <Image
-                              src={formData.imageUrl}
-                              alt="Preview"
-                              className="object-cover rounded"
-                              fill
-                            />
-                          </div>
-                        )}
+                        {formData.imageUrl &&
+                          formData.imageUrl.trim() !== '' && (
+                            <div className="relative w-32 h-32">
+                              <Image
+                                src={formData.imageUrl}
+                                alt="Preview"
+                                className="object-cover rounded"
+                                fill
+                              />
+                            </div>
+                          )}
                         <input
                           type="file"
                           id="imageUrl"
@@ -467,52 +470,34 @@ export default function CreateRestaurant() {
                       Imágenes del Menú
                     </label>
                     <div className="grid gap-4">
-                      {formData.menu.map((img, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-4 p-4 border rounded-lg"
-                        >
-                          <div className="relative w-20 h-20 shrink-0">
-                            <Image
-                              src={img.imageUrl}
-                              alt={`Menu image ${index + 1}`}
-                              fill
-                              className="object-cover rounded"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <input
-                              type="url"
-                              value={img.imageUrl}
-                              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              placeholder="URL de la Imágen"
-                              readOnly
-                            />
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <input
-                              type="number"
-                              value={img.order}
-                              className="w-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              readOnly
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  menu: prev.menu.filter((_, i) => i !== index)
-                                }));
-                              }}
-                            >
-                              Eliminar
-                            </Button>
-                          </div>
+                      {formData.menu.map((menuImage, index) => (
+                        <div key={index} className="flex items-center gap-4">
+                          {menuImage.imageUrl &&
+                            menuImage.imageUrl.trim() !== '' && (
+                              <div className="relative w-32 h-32">
+                                <Image
+                                  src={menuImage.imageUrl}
+                                  alt={`Menu ${index + 1}`}
+                                  className="object-cover rounded"
+                                  fill
+                                />
+                              </div>
+                            )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                menu: prev.menu.filter((_, i) => i !== index)
+                              }))
+                            }
+                          >
+                            Eliminar
+                          </Button>
                         </div>
                       ))}
-                      <div className="flex gap-4 p-4 border rounded-lg">
+                      <div className="flex gap-4">
                         <input
                           type="file"
                           accept="image/*"

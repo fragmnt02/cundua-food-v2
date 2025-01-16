@@ -2,102 +2,26 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Suspense, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  FaInstagram,
-  FaFacebook,
-  FaWhatsapp,
-  FaPhone,
-  FaBiking
-} from 'react-icons/fa';
-import { Restaurant, RestaurantType, Day, Cuisine } from '@/types/restaurant';
+import { Restaurant } from '@/types/restaurant';
 import { useRestaurant } from '@/hooks/useRestaurant';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useVote } from '@/hooks/useVote';
-import { VoteStars } from '@/components/VoteStars';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/hooks/useAuth';
+import { useFavorite } from '@/hooks/useFavorite';
+import { Heart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
   ssr: false,
   loading: () => <Skeleton className="w-full h-96" />
 });
-
-const Comments = dynamic(
-  () => import('@/components/Comments').then((mod) => mod.Comments),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="space-y-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    )
-  }
-);
-
-// Constants moved outside component to prevent recreation
-const restaurantTypeMap: { [key in RestaurantType]: string } = {
-  [RestaurantType.Restaurant]: 'Restaurante',
-  [RestaurantType.FoodTruck]: 'Food Truck',
-  [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
-  [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)',
-  [RestaurantType.TakeAway]: 'Para Llevar'
-};
-
-const featureTranslations: { [key: string]: string } = {
-  reservations: 'Reservaciones',
-  outdoorSeating: 'Asientos al aire libre',
-  wifi: 'WiFi',
-  hasAC: 'Aire acondicionado',
-  hasParking: 'Estacionamiento',
-  kidsFriendly: 'Amigable para niños',
-  freeDelivery: 'Envío gratis'
-};
-
-const days = [
-  Day.Domingo,
-  Day.Lunes,
-  Day.Martes,
-  Day.Miercoles,
-  Day.Jueves,
-  Day.Viernes,
-  Day.Sabado
-];
-
-// Helper functions moved outside component
-const getCurrentDayInSpanish = () => days[new Date().getDay()];
-
-const formatPhoneNumber = (
-  phone: string
-): { formatted: string; clean: string } => {
-  // Remove all non-numeric characters
-  const cleaned = phone.replace(/\D/g, '');
-
-  // Format for display - assuming Mexican format (10 digits)
-  // This will handle different formats gracefully
-  const match = cleaned.match(/^(\d{2,3})(\d{3})(\d{4})$/);
-
-  if (match) {
-    return {
-      formatted: `(${match[1]}) ${match[2]}-${match[3]}`,
-      clean: cleaned
-    };
-  }
-
-  // If the number doesn't match expected format, return original
-  return {
-    formatted: phone,
-    clean: cleaned
-  };
-};
 
 export default function RestaurantPage() {
   const { getRestaurant } = useRestaurant();
@@ -107,7 +31,12 @@ export default function RestaurantPage() {
   const [scale, setScale] = useState(1);
   const router = useRouter();
   const { isAdmin } = useAdmin();
-  const { userRating, submitVote, isLoading } = useVote(params.id as string);
+  const { user } = useAuth();
+  const {
+    isFavorite,
+    toggleFavorite,
+    isLoading: isFavoriteLoading
+  } = useFavorite(params.id as string);
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -126,20 +55,6 @@ export default function RestaurantPage() {
       document.title = `${restaurant.name} | Cundua Food`;
     }
   }, [restaurant]);
-
-  const handleVote = async (rating: number) => {
-    const newAverageRating = await submitVote(rating);
-    if (newAverageRating) {
-      setRestaurant((prev) =>
-        prev
-          ? {
-              ...prev,
-              rating: newAverageRating
-            }
-          : null
-      );
-    }
-  };
 
   if (!restaurant) {
     return (
@@ -161,25 +76,42 @@ export default function RestaurantPage() {
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
-        {isAdmin && (
-          <Button
-            onClick={() => router.push(`/admin/update/${params.id}`)}
-            className="absolute top-4 right-4 z-10"
-            variant="default"
-          >
-            Editar Restaurante
-          </Button>
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'bg-white/80 hover:bg-white/90',
+                isFavorite && 'text-red-500'
+              )}
+              onClick={toggleFavorite}
+              disabled={isFavoriteLoading}
+            >
+              <Heart className={cn('h-5 w-5', isFavorite && 'fill-current')} />
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              onClick={() => router.push(`/admin/update/${params.id}`)}
+              variant="default"
+            >
+              Editar Restaurante
+            </Button>
+          )}
+        </div>
+        {restaurant.imageUrl && restaurant.imageUrl.trim() !== '' && (
+          <Image
+            src={restaurant.imageUrl}
+            alt={restaurant.name}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            placeholder="blur"
+            blurDataURL="/restaurant.svg"
+          />
         )}
-        <Image
-          src={restaurant.imageUrl}
-          alt={restaurant.name}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-          placeholder="blur"
-          blurDataURL="/restaurant.svg"
-        />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-8">
           <h1 className="text-4xl font-bold text-white" tabIndex={0}>
             {restaurant.name}
@@ -224,329 +156,48 @@ export default function RestaurantPage() {
                 <CardTitle>Información del restaurante</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      Precio y tipo de comida
-                    </h3>
-                    <p>
-                      {restaurant.priceRange} •{' '}
-                      {restaurant.cuisine
-                        .map(
-                          (cuisine) => Cuisine[cuisine as keyof typeof Cuisine]
-                        )
-                        .join(', ')}
-                      • {restaurantTypeMap[restaurant.type]}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-lg">Calificación</h3>
-                    {restaurant && (
-                      <VoteStars
-                        rating={restaurant.rating}
-                        voteCount={restaurant.voteCount}
-                        userRating={userRating}
-                        onVote={handleVote}
-                        isLoading={isLoading}
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-lg">Características</h3>
-                    <ul className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {Object.entries(restaurant.features).map(
-                        ([key, value]) =>
-                          value && (
-                            <li key={key} className="flex items-center gap-2">
-                              <span className="text-green-600">✓</span>
-                              {featureTranslations[key] || key}
-                            </li>
-                          )
-                      )}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-lg">Métodos de pago</h3>
-                    <ul className="flex flex-wrap gap-2 mt-2">
-                      {restaurant.paymentMethods.map((method) => (
-                        <li
-                          key={method}
-                          className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                        >
-                          {method}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="hours">
-            <Card>
-              <CardHeader>
-                <CardTitle>Horario de operación</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {restaurant.hours.map((schedule) => {
-                      const isCurrentDay =
-                        schedule.day === getCurrentDayInSpanish();
-                      return (
-                        <div
-                          key={schedule.day}
-                          className={`flex justify-between p-2 rounded shadow ${
-                            isCurrentDay
-                              ? 'bg-blue-100 border-2 border-blue-500'
-                              : 'bg-white'
-                          }`}
-                        >
-                          <span
-                            className={`font-medium ${
-                              isCurrentDay ? 'text-blue-700' : ''
-                            }`}
+                <section className="mb-12">
+                  <h2 className="text-2xl font-bold mb-4">Menú</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {restaurant.menu.map(
+                      (menuImage, index) =>
+                        menuImage.imageUrl &&
+                        menuImage.imageUrl.trim() !== '' && (
+                          <div
+                            key={index}
+                            className="relative aspect-[3/4] cursor-pointer"
+                            onClick={() => {
+                              setSelectedImage(menuImage.imageUrl);
+                              setScale(1);
+                            }}
                           >
-                            {schedule.day}
-                            {isCurrentDay && ' (Hoy)'}
-                          </span>
-                          <span className={isCurrentDay ? 'text-blue-700' : ''}>
-                            {schedule.open} - {schedule.close}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="menu">
-            <Card>
-              <CardHeader>
-                <CardTitle>Menú</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {restaurant.menu?.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {restaurant.menu.map((menuItem, index) => (
-                      <Card
-                        key={index}
-                        className="cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => setSelectedImage(menuItem.imageUrl)}
-                      >
-                        <div className="relative h-48">
-                          <Image
-                            src={menuItem.imageUrl}
-                            alt={`Menu item ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover rounded-t-lg"
-                            loading="lazy"
-                          />
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    No hay menú disponible.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="contact">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contacto y redes sociales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">Redes Sociales</h2>
-                    <div className="flex gap-4">
-                      {restaurant.socialMedia?.instagram && (
-                        <a
-                          href={restaurant.socialMedia.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
-                        >
-                          <FaInstagram className="text-xl" />
-                          Instagram
-                        </a>
-                      )}
-                      {restaurant.socialMedia?.facebook && (
-                        <a
-                          href={restaurant.socialMedia.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                          <FaFacebook className="text-xl" />
-                          Facebook
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">A Domicilio</h2>
-                    <div className="flex flex-wrap gap-4">
-                      {restaurant.delivery?.whatsapp && (
-                        <a
-                          href={`https://wa.me/+521${
-                            formatPhoneNumber(restaurant.delivery.whatsapp)
-                              .clean
-                          }`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                        >
-                          <FaWhatsapp className="text-xl" />
-                          WhatsApp
-                        </a>
-                      )}
-                      {restaurant.delivery?.phone && (
-                        <a
-                          href={`tel:${
-                            formatPhoneNumber(restaurant.delivery.phone).clean
-                          }`}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                        >
-                          <FaPhone className="text-xl" />
-                          {
-                            formatPhoneNumber(restaurant.delivery.phone)
-                              .formatted
-                          }
-                        </a>
-                      )}
-                      <a
-                        href={`https://wa.me/+5219141139222`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                      >
-                        <FaBiking className="text-xl" />
-                        Rapidito
-                      </a>
-                      <a
-                        href={`https://wa.me/+5219141222478`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                      >
-                        <FaBiking className="text-xl" />
-                        Turbomoto
-                      </a>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Location Section */}
-                {restaurant?.location?.address && (
-                  <section className="mb-12">
-                    <h2 className="text-2xl font-bold mb-4">Ubicación</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-white p-4 rounded-lg shadow">
-                        <h3 className="font-semibold text-lg mb-2">
-                          Dirección
-                        </h3>
-                        <p className="mb-4">{restaurant.location?.address}</p>
-                        <Suspense fallback={<div>Loading map...</div>}>
-                          <iframe
-                            width="100%"
-                            height="450"
-                            style={{ border: 0, margin: '1rem 0' }}
-                            src={restaurant.location?.mapUrl}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                          />
-                        </Suspense>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {/* Information Section */}
-                <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
-                    Información adicional
-                  </h2>
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="prose max-w-none">
-                      {restaurant.information && (
-                        <div>{restaurant.information}</div>
-                      )}
-                      {!restaurant.information && (
-                        <p className="text-gray-500 italic">
-                          No hay información adicional disponible.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </section>
-
-                {/* Video Section */}
-                <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">Video</h2>
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    {restaurant.videoUrl ? (
-                      <div className="aspect-w-16 aspect-h-9">
-                        <Suspense fallback={<div>Loading video...</div>}>
-                          <iframe
-                            src={restaurant.videoUrl}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full rounded-lg"
-                            loading="lazy"
-                          ></iframe>
-                        </Suspense>
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 italic">
-                        No hay video disponible.
-                      </p>
+                            <Image
+                              src={menuImage.imageUrl}
+                              alt={`Menu ${index + 1}`}
+                              fill
+                              className="object-cover rounded-lg"
+                              placeholder="blur"
+                              blurDataURL="/restaurant.svg"
+                            />
+                          </div>
+                        )
                     )}
                   </div>
                 </section>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="comments">
-            <Card>
-              <CardHeader>
-                <CardTitle>Comentarios</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Comments restaurantId={params.id as string} />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Image Modal */}
-        {selectedImage && (
-          <ImageModal
-            imageUrl={selectedImage}
-            onClose={() => {
-              setSelectedImage(null);
-              setScale(1);
-            }}
-            scale={scale}
-            onScaleChange={setScale}
-          />
-        )}
       </div>
+
+      {selectedImage && selectedImage.trim() !== '' && (
+        <ImageModal
+          imageUrl={selectedImage}
+          onClose={() => setSelectedImage(null)}
+          scale={scale}
+          onScaleChange={setScale}
+        />
+      )}
     </main>
   );
 }

@@ -14,6 +14,11 @@ export default function ImageModal({
   scale,
   onScaleChange
 }: ImageModalProps) {
+  if (!imageUrl || imageUrl.trim() === '') {
+    onClose();
+    return null;
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"

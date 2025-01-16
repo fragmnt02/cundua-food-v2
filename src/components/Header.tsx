@@ -9,7 +9,8 @@ import {
   FaPlus,
   FaUser,
   FaMapMarkerAlt,
-  FaBars
+  FaBars,
+  FaHeart
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
@@ -110,6 +111,16 @@ const MobileMenu = memo(
             <SheetTitle>Menú</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-4 mt-4">
+            {user && (
+              <Button
+                onClick={() => router.push('/favorites')}
+                variant="ghost"
+                className="justify-start gap-2"
+              >
+                <FaHeart className="text-xl" />
+                Mis Favoritos
+              </Button>
+            )}
             {isAdmin && (
               <>
                 <Button
@@ -235,6 +246,20 @@ export const Header = memo(() => {
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex items-center gap-4">
+            {user && (
+              <Button
+                onClick={() => router.push('/favorites')}
+                variant="ghost"
+                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                aria-label="Ver mis favoritos"
+              >
+                <FaHeart
+                  className="text-xl text-[#363430]"
+                  aria-hidden="true"
+                />
+                <span>Mis Favoritos</span>
+              </Button>
+            )}
             {isAdmin && (
               <>
                 <Button
