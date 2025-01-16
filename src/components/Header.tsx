@@ -153,6 +153,13 @@ const MobileMenu = memo(
                   {user.email}
                 </div>
                 <Button
+                  onClick={() => router.push('/contact')}
+                  variant="ghost"
+                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                >
+                  Contáctanos
+                </Button>
+                <Button
                   onClick={onLogout}
                   variant="ghost"
                   className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
@@ -161,13 +168,22 @@ const MobileMenu = memo(
                 </Button>
               </>
             ) : (
-              <Button
-                onClick={() => router.push('/auth/login')}
-                variant="ghost"
-                className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-              >
-                Iniciar Sesión
-              </Button>
+              <>
+                <Button
+                  onClick={() => router.push('/contact')}
+                  variant="ghost"
+                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                >
+                  Contáctanos
+                </Button>
+                <Button
+                  onClick={() => router.push('/auth/login')}
+                  variant="ghost"
+                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                >
+                  Iniciar Sesión
+                </Button>
+              </>
             )}
           </nav>
         </SheetContent>
@@ -393,6 +409,14 @@ export const Header = memo(() => {
                       {user.email}
                     </div>
                     <Button
+                      onClick={() => router.push('/contact')}
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                      role="menuitem"
+                    >
+                      Contáctanos
+                    </Button>
+                    <Button
                       onClick={handleLogout}
                       variant="ghost"
                       className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
@@ -403,12 +427,12 @@ export const Header = memo(() => {
                   </>
                 ) : (
                   <Button
-                    onClick={() => router.push('/auth/login')}
+                    onClick={() => router.push('/contact')}
                     variant="ghost"
                     className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                     role="menuitem"
                   >
-                    Iniciar Sesión
+                    Contáctanos
                   </Button>
                 )}
               </Dropdown>
