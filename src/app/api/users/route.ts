@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
 import { UserRole } from '@/lib/roles';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export async function GET() {
   try {
@@ -29,12 +31,24 @@ export async function GET() {
 
     // List all users
     const { users } = await auth.listUsers();
+
+    // Get all user-restaurant relationships
+    const userRestaurantsRef = collection(db, 'userRestaurants');
+    const userRestaurantsSnapshot = await getDocs(userRestaurantsRef);
+    const userRestaurants = new Map();
+
+    userRestaurantsSnapshot.forEach((doc) => {
+      const data = doc.data();
+      userRestaurants.set(data.userId, data.restaurantId);
+    });
+
     const formattedUsers = users.map((user) => ({
       uid: user.uid,
       email: user.email,
       emailVerified: user.emailVerified,
       role: (user.customClaims?.role as UserRole) || UserRole.USER,
-      createdAt: user.metadata.creationTime
+      createdAt: user.metadata.creationTime,
+      restaurantId: userRestaurants.get(user.uid)
     }));
 
     return NextResponse.json(formattedUsers);

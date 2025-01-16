@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { initAdmin } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { UserRole } from '@/lib/roles';
 
 export async function PUT(request: Request) {
   try {
@@ -20,7 +23,7 @@ export async function PUT(request: Request) {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
 
     // Check if the requester is an admin
-    if (!decodedClaims.admin) {
+    if (decodedClaims.role !== UserRole.ADMIN) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required' },
         { status: 403 }
@@ -28,7 +31,7 @@ export async function PUT(request: Request) {
     }
 
     // Get request body
-    const { userId, newRole } = await request.json();
+    const { userId, newRole, restaurantId } = await request.json();
 
     if (!userId || !newRole) {
       return NextResponse.json(
@@ -37,8 +40,55 @@ export async function PUT(request: Request) {
       );
     }
 
+    // If the role is client and no restaurant is selected
+    if (newRole === UserRole.CLIENT && !restaurantId) {
+      return NextResponse.json(
+        { error: 'Restaurant must be selected for client role' },
+        { status: 400 }
+      );
+    }
+
+    // Get current user data to check previous role
+    const userRecord = await auth.getUser(userId);
+    const currentRole =
+      (userRecord.customClaims?.role as UserRole) || UserRole.USER;
+
     // Set custom claims for the target user
-    await auth.setCustomUserClaims(userId, { [newRole]: true });
+    await auth.setCustomUserClaims(userId, {
+      ...userRecord.customClaims,
+      role: newRole
+    });
+
+    // Handle restaurant assignment
+    if (newRole === UserRole.CLIENT && restaurantId) {
+      // Add restaurant-user relationship
+      const userRestaurantRef = doc(db, 'userRestaurants', userId);
+      await setDoc(userRestaurantRef, {
+        userId,
+        restaurantId,
+        role: newRole,
+        updatedAt: new Date().toISOString()
+      });
+    } else if (currentRole === UserRole.CLIENT) {
+      // If user was previously a client, remove restaurant assignment
+      const userRestaurantRef = doc(db, 'userRestaurants', userId);
+      await deleteDoc(userRestaurantRef);
+    }
+
+    // If just updating restaurant for existing client
+    if (
+      currentRole === UserRole.CLIENT &&
+      newRole === UserRole.CLIENT &&
+      restaurantId
+    ) {
+      const userRestaurantRef = doc(db, 'userRestaurants', userId);
+      await setDoc(userRestaurantRef, {
+        userId,
+        restaurantId,
+        role: newRole,
+        updatedAt: new Date().toISOString()
+      });
+    }
 
     return NextResponse.json(
       { message: 'User role updated successfully' },
