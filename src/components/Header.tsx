@@ -426,14 +426,24 @@ export const Header = memo(() => {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    onClick={() => router.push('/contact')}
-                    variant="ghost"
-                    className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                    role="menuitem"
-                  >
-                    Contáctanos
-                  </Button>
+                  <>
+                    <Button
+                      onClick={() => router.push('/contact')}
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                      role="menuitem"
+                    >
+                      Contáctanos
+                    </Button>
+                    <Button
+                      onClick={() => router.push('/auth/login')}
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+                      role="menuitem"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  </>
                 )}
               </Dropdown>
             </div>
