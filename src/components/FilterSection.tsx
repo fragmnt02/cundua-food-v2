@@ -153,10 +153,12 @@ export default function FilterSection({
               onValueChange={(value) => onFilterChange('type', value)}
             >
               <SelectTrigger aria-label="Seleccionar tipo de restaurante">
-                <SelectValue placeholder="Todos los tipos" />
+                <SelectValue placeholder="Todos los tipos de restaurante" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="all">
+                  Todos los tipos de restaurante
+                </SelectItem>
                 {Object.values(RestaurantType).map((type) => (
                   <SelectItem key={type} value={type}>
                     {type === RestaurantType.Restaurant

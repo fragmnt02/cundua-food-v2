@@ -93,10 +93,11 @@ interface MobileMenuProps {
   router: {
     push: (path: string) => void;
   };
+  city: string;
 }
 
 const MobileMenu = memo(
-  ({ isAdmin, user, onLogout, router }: MobileMenuProps) => {
+  ({ isAdmin, user, onLogout, router, city }: MobileMenuProps) => {
     const [open, setOpen] = useState(false);
 
     const handleNavigation = useCallback((callback: () => void) => {
@@ -123,7 +124,7 @@ const MobileMenu = memo(
             {user && (
               <Button
                 onClick={() =>
-                  handleNavigation(() => router.push('/favorites'))
+                  handleNavigation(() => router.push(`/${city}/favorites`))
                 }
                 variant="ghost"
                 className="justify-start gap-2"
@@ -136,7 +137,7 @@ const MobileMenu = memo(
               <>
                 <Button
                   onClick={() =>
-                    handleNavigation(() => router.push('/admin/create'))
+                    handleNavigation(() => router.push(`/${city}/admin/create`))
                   }
                   variant="ghost"
                   className="justify-start gap-2"
@@ -474,6 +475,7 @@ export const Header = memo(() => {
             user={user}
             onLogout={handleLogout}
             router={router}
+            city={city}
           />
         </nav>
       </div>
