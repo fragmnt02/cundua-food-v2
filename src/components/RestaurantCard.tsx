@@ -28,9 +28,15 @@ export const RestaurantCard = ({
       <Link href={`/${city}/restaurant/${restaurant.id}`}>
         <CardHeader className="p-0">
           <div className="relative aspect-video">
-            {restaurant.imageUrl && restaurant.imageUrl.trim() !== '' && (
+            {/* Cover image - use coverImageUrl if available, otherwise fallback to legacy imageUrl */}
+            {(restaurant.coverImageUrl?.trim() ||
+              restaurant.imageUrl?.trim()) && (
               <Image
-                src={restaurant.imageUrl}
+                src={
+                  restaurant.coverImageUrl?.trim() ||
+                  restaurant.imageUrl?.trim() ||
+                  '/restaurant.svg'
+                }
                 alt={restaurant.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -38,6 +44,23 @@ export const RestaurantCard = ({
                 placeholder="blur"
                 blurDataURL="/restaurant.svg"
               />
+            )}
+            {/* Logo overlay - use logoUrl if available, otherwise fallback to legacy imageUrl */}
+            {(restaurant.logoUrl?.trim() || restaurant.imageUrl?.trim()) && (
+              <div className="absolute left-4 bottom-4 w-12 h-12 rounded-full border-2 border-white bg-white shadow-md overflow-hidden z-10">
+                <Image
+                  src={
+                    restaurant.logoUrl?.trim() ||
+                    restaurant.imageUrl?.trim() ||
+                    '/restaurant.svg'
+                  }
+                  alt={`${restaurant.name} logo`}
+                  fill
+                  className="object-cover"
+                  placeholder="blur"
+                  blurDataURL="/restaurant.svg"
+                />
+              </div>
             )}
             {user && (
               <Button

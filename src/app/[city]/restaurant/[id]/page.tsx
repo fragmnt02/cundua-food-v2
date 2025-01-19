@@ -209,9 +209,14 @@ export default function RestaurantPage() {
             Editar Restaurante
           </Button>
         )}
+        {/* Cover image - use coverImageUrl if available, otherwise fallback to legacy imageUrl */}
         <Image
-          src={restaurant.imageUrl}
-          alt={restaurant.name}
+          src={
+            restaurant.coverImageUrl?.trim() ||
+            restaurant.imageUrl?.trim() ||
+            '/restaurant.svg'
+          }
+          alt={`${restaurant.name} cover`}
           fill
           priority
           sizes="100vw"
@@ -219,11 +224,26 @@ export default function RestaurantPage() {
           placeholder="blur"
           blurDataURL="/restaurant.svg"
         />
+        {/* Logo overlay - use logoUrl if available, otherwise fallback to legacy imageUrl */}
+        <div className="absolute left-8 -bottom-12 w-24 h-24 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden z-20">
+          <Image
+            src={
+              restaurant.logoUrl?.trim() ||
+              restaurant.imageUrl?.trim() ||
+              '/restaurant.svg'
+            }
+            alt={`${restaurant.name} logo`}
+            fill
+            className="object-cover"
+            placeholder="blur"
+            blurDataURL="/restaurant.svg"
+          />
+        </div>
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-8">
-          <h1 className="text-4xl font-bold text-white" tabIndex={0}>
+          <h1 className="text-4xl font-bold text-white ml-32" tabIndex={0}>
             {restaurant.name}
           </h1>
-          <div className="flex flex-wrap gap-2 mt-2 overflow-x-auto pb-2">
+          <div className="flex flex-wrap gap-2 mt-2 overflow-x-auto pb-2 ml-32">
             {restaurant.cuisine.map((cuisine) => (
               <Badge
                 key={cuisine}
@@ -237,7 +257,7 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 pt-16 pb-8">
         <Tabs
           defaultValue="info"
           className="w-full"

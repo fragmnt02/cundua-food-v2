@@ -1,7 +1,10 @@
 export interface Restaurant {
   id: string;
   name: string;
-  imageUrl: string;
+  logoUrl: string;
+  coverImageUrl: string;
+  /** @deprecated Use logoUrl instead */
+  imageUrl?: string;
   isOpen: boolean;
   isOpeningSoon: boolean;
   cuisine: (keyof typeof Cuisine)[];

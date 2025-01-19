@@ -40,6 +40,8 @@ type RestaurantForm = Omit<
   videoUrl?: string;
   type: RestaurantType;
   isIncomplete?: boolean;
+  logoUrl: string;
+  coverImageUrl: string;
 };
 
 export default function CreateRestaurant() {
@@ -53,7 +55,8 @@ export default function CreateRestaurant() {
   const isEditMode = Boolean(params.id);
   const [formData, setFormData] = useState<RestaurantForm>({
     name: '',
-    imageUrl: '',
+    logoUrl: '',
+    coverImageUrl: '',
     cuisine: [],
     menu: [],
     socialMedia: {},
@@ -402,58 +405,129 @@ export default function CreateRestaurant() {
                       />
                     </div>
 
-                    <div>
-                      <label
-                        htmlFor="imageUrl"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Imágen Principal{' '}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <div className="flex flex-col gap-2">
-                        {formData.imageUrl &&
-                          formData.imageUrl.trim() !== '' && (
-                            <div className="relative w-32 h-32">
-                              <Image
-                                src={formData.imageUrl}
-                                alt="Preview"
-                                className="object-cover rounded"
-                                fill
-                              />
-                            </div>
-                          )}
-                        <input
-                          type="file"
-                          id="imageUrl"
-                          name="imageUrl"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                const formData = new FormData();
-                                formData.append('file', file);
+                    {/* Image Upload Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Logo Upload */}
+                      <div>
+                        <label
+                          htmlFor="logoUrl"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Logo del Restaurante{' '}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {formData.logoUrl &&
+                            formData.logoUrl.trim() !== '' && (
+                              <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                                <Image
+                                  src={formData.logoUrl}
+                                  alt="Logo Preview"
+                                  className="object-cover"
+                                  fill
+                                />
+                              </div>
+                            )}
+                          <input
+                            type="file"
+                            id="logoUrl"
+                            name="logoUrl"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const formData = new FormData();
+                                  formData.append('file', file);
 
-                                const response = await fetch('/api/upload', {
-                                  method: 'POST',
-                                  body: formData
-                                });
+                                  const response = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    body: formData
+                                  });
 
-                                if (response.ok) {
-                                  const { url } = await response.json();
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    imageUrl: url
-                                  }));
+                                  if (response.ok) {
+                                    const { url } = await response.json();
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      logoUrl: url
+                                    }));
+                                  }
+                                } catch (error) {
+                                  console.error('Error uploading logo:', error);
                                 }
-                              } catch (error) {
-                                console.error('Error uploading image:', error);
                               }
-                            }
-                          }}
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          required={!formData.imageUrl}
-                        />
+                            }}
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            required={!formData.logoUrl}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Sube el logo o ícono del restaurante. Recomendado:
+                            400x400px
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Cover Image Upload */}
+                      <div>
+                        <label
+                          htmlFor="coverImageUrl"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Imagen de Portada{' '}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {formData.coverImageUrl &&
+                            formData.coverImageUrl.trim() !== '' && (
+                              <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
+                                <Image
+                                  src={formData.coverImageUrl}
+                                  alt="Cover Preview"
+                                  className="object-cover"
+                                  fill
+                                />
+                              </div>
+                            )}
+                          <input
+                            type="file"
+                            id="coverImageUrl"
+                            name="coverImageUrl"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const formData = new FormData();
+                                  formData.append('file', file);
+
+                                  const response = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    body: formData
+                                  });
+
+                                  if (response.ok) {
+                                    const { url } = await response.json();
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      coverImageUrl: url
+                                    }));
+                                  }
+                                } catch (error) {
+                                  console.error(
+                                    'Error uploading cover image:',
+                                    error
+                                  );
+                                }
+                              }
+                            }}
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            required={!formData.coverImageUrl}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Sube una imagen de portada atractiva. Recomendado:
+                            1920x1080px
+                          </p>
+                        </div>
                       </div>
                     </div>
 
