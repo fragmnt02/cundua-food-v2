@@ -3,6 +3,7 @@
 import localFont from 'next/font/local';
 import './globals.css';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import Script from 'next/script';
@@ -75,7 +76,8 @@ export default function RootLayout({
           <CityProvider>
             <FavoritesProvider>
               <Header />
-              {children}
+              <main className="min-h-[calc(100vh-64px)]">{children}</main>
+              <Footer />
               <Toaster />
               <CookieConsent />
             </FavoritesProvider>

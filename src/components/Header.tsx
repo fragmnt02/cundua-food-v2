@@ -3,6 +3,7 @@
 import { useCity } from '@/hooks/useCity';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
+import { useClient } from '@/hooks/useClient';
 import Image from 'next/image';
 import {
   FaUserCircle,
@@ -15,7 +16,7 @@ import {
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,85 +26,147 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet';
-import { useClient } from '@/hooks/useClient';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
-interface DropdownProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-const Dropdown = memo(({ isOpen, onClose, children }: DropdownProps) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  return (
-    <div
-      ref={dropdownRef}
-      className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 transform transition-all duration-200 ease-in-out z-50
-        ${
-          isOpen
-            ? 'opacity-100 translate-y-0 visible'
-            : 'opacity-0 -translate-y-2 invisible'
-        }`}
-      role="menu"
-      aria-orientation="vertical"
-      aria-labelledby="user-menu"
-      onKeyDown={handleKeyDown}
-      tabIndex={isOpen ? 0 : -1}
-    >
-      {children}
-    </div>
-  );
-});
-
-Dropdown.displayName = 'Dropdown';
-
-interface MobileMenuProps {
-  isAdmin: boolean;
+interface MenuItemsProps {
   user: { email: string } | null;
-  onLogout: () => void;
-  router: {
-    push: (path: string) => void;
-  };
+  isAdmin: boolean;
+  isClient: boolean;
+  assignedRestaurantId?: string;
   city: string;
+  onClose?: () => void;
+  onLogout: () => void;
+  router: ReturnType<typeof useRouter>;
 }
+
+const MenuItems = memo(
+  ({
+    user,
+    isAdmin,
+    isClient,
+    assignedRestaurantId,
+    city,
+    onClose,
+    onLogout,
+    router
+  }: MenuItemsProps) => {
+    const handleNavigation = useCallback(
+      (path: string) => {
+        router.push(path);
+        onClose?.();
+      },
+      [router, onClose]
+    );
+
+    return (
+      <>
+        {user && (
+          <Button
+            onClick={() => handleNavigation(`/${city}/favorites`)}
+            variant="ghost"
+            className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+          >
+            <FaHeart className="text-xl text-[#363430]" />
+            <span>Mis Favoritos</span>
+          </Button>
+        )}
+
+        {isAdmin && (
+          <>
+            <Button
+              onClick={() => handleNavigation(`/${city}/admin/create`)}
+              variant="ghost"
+              className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              <FaPlus className="text-xl text-[#363430]" />
+              <span>Agregar Restaurante</span>
+            </Button>
+            <Button
+              onClick={() => handleNavigation('/admin/users')}
+              variant="ghost"
+              className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              <FaUser className="text-xl text-[#363430]" />
+              <span>Usuarios</span>
+            </Button>
+          </>
+        )}
+
+        {isClient && (
+          <>
+            {assignedRestaurantId ? (
+              <Button
+                onClick={() =>
+                  handleNavigation(
+                    `/${city}/admin/update/${assignedRestaurantId}`
+                  )
+                }
+                variant="ghost"
+                className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+              >
+                <FaPencilAlt className="text-xl text-[#363430]" />
+                <span>Editar Mi Restaurante</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => handleNavigation(`/${city}/admin/create`)}
+                variant="ghost"
+                className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+              >
+                <FaPlus className="text-xl text-[#363430]" />
+                <span>Agregar Restaurante</span>
+              </Button>
+            )}
+          </>
+        )}
+
+        {user ? (
+          <>
+            <div className="px-4 py-2 text-sm text-gray-700 border-t truncate">
+              {user.email}
+            </div>
+            <Button
+              onClick={() => {
+                onLogout();
+                onClose?.();
+              }}
+              variant="ghost"
+              className="w-full justify-start hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              Cerrar Sesión
+            </Button>
+          </>
+        ) : (
+          <Button
+            onClick={() => handleNavigation('/auth/login')}
+            variant="ghost"
+            className="w-full justify-start hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+          >
+            Iniciar Sesión
+          </Button>
+        )}
+      </>
+    );
+  }
+);
+
+MenuItems.displayName = 'MenuItems';
 
 const MobileMenu = memo(
-  ({ isAdmin, user, onLogout, router, city }: MobileMenuProps) => {
+  ({
+    user,
+    isAdmin,
+    isClient,
+    assignedRestaurantId,
+    city,
+    onLogout,
+    router
+  }: Omit<MenuItemsProps, 'onClose'>) => {
     const [open, setOpen] = useState(false);
-
-    const handleNavigation = useCallback((callback: () => void) => {
-      callback();
-      setOpen(false);
-    }, []);
 
     return (
       <Sheet open={open} onOpenChange={setOpen}>
@@ -113,7 +176,7 @@ const MobileMenu = memo(
             className="sm:hidden hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
             aria-label="Abrir menú"
           >
-            <FaBars className="text-xl text-[#363430]" aria-hidden="true" />
+            <FaBars className="text-xl text-[#363430]" />
           </Button>
         </SheetTrigger>
         <SheetContent>
@@ -121,90 +184,15 @@ const MobileMenu = memo(
             <SheetTitle>Menú</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-4 mt-4">
-            {user && (
-              <Button
-                onClick={() =>
-                  handleNavigation(() => router.push(`/${city}/favorites`))
-                }
-                variant="ghost"
-                className="justify-start gap-2"
-              >
-                <FaHeart className="text-xl" />
-                Mis Favoritos
-              </Button>
-            )}
-            {isAdmin && (
-              <>
-                <Button
-                  onClick={() =>
-                    handleNavigation(() => router.push(`/${city}/admin/create`))
-                  }
-                  variant="ghost"
-                  className="justify-start gap-2"
-                >
-                  <FaPlus className="text-xl" />
-                  Agregar Restaurante
-                </Button>
-                <Button
-                  onClick={() =>
-                    handleNavigation(() => router.push('/admin/users'))
-                  }
-                  variant="ghost"
-                  className="justify-start gap-2"
-                >
-                  <FaUser className="text-xl" />
-                  Usuarios
-                </Button>
-              </>
-            )}
-
-            {user ? (
-              <>
-                <div
-                  className="px-2 py-1 text-sm text-gray-700 border-t"
-                  role="status"
-                >
-                  {user.email}
-                </div>
-                <Button
-                  onClick={() =>
-                    handleNavigation(() => router.push('/contact'))
-                  }
-                  variant="ghost"
-                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                >
-                  Contáctanos
-                </Button>
-                <Button
-                  onClick={() => handleNavigation(onLogout)}
-                  variant="ghost"
-                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                >
-                  Cerrar Sesión
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  onClick={() =>
-                    handleNavigation(() => router.push('/contact'))
-                  }
-                  variant="ghost"
-                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                >
-                  Contáctanos
-                </Button>
-                <Button
-                  onClick={() =>
-                    handleNavigation(() => router.push('/auth/login'))
-                  }
-                  variant="ghost"
-                  className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                >
-                  Iniciar Sesión
-                </Button>
-              </>
-            )}
+            <MenuItems
+              user={user}
+              isAdmin={isAdmin}
+              isClient={isClient}
+              assignedRestaurantId={assignedRestaurantId}
+              city={city}
+              onLogout={onLogout}
+              router={router}
+            />
           </nav>
         </SheetContent>
       </Sheet>
@@ -214,51 +202,66 @@ const MobileMenu = memo(
 
 MobileMenu.displayName = 'MobileMenu';
 
+const DesktopMenu = memo(
+  ({
+    user,
+    isAdmin,
+    isClient,
+    assignedRestaurantId,
+    city,
+    onLogout,
+    router
+  }: Omit<MenuItemsProps, 'onClose'>) => {
+    return (
+      <div className="hidden sm:flex items-center gap-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              {user ? (
+                <>
+                  <FaUser className="text-2xl text-[#363430]" />
+                  <span>Mi Cuenta</span>
+                </>
+              ) : (
+                <>
+                  <FaUserCircle className="text-2xl text-[#363430]" />
+                  <span>Iniciar Sesión</span>
+                </>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <MenuItems
+              user={user}
+              isAdmin={!!isAdmin}
+              isClient={!!isClient}
+              assignedRestaurantId={assignedRestaurantId || undefined}
+              city={city}
+              onLogout={onLogout}
+              router={router}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+);
+
+DesktopMenu.displayName = 'DesktopMenu';
+
 export const Header = memo(() => {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
   const { isClient, assignedRestaurantId } = useClient();
-  const { user, logout, loading } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const toggleDropdown = useCallback(() => {
-    setIsDropdownOpen((prev) => !prev);
-  }, []);
-
-  const closeDropdown = useCallback(() => {
-    setIsDropdownOpen(false);
-  }, []);
 
   const handleLogout = useCallback(async () => {
     await logout();
-    closeDropdown();
-  }, [logout, closeDropdown]);
-
-  if (loading) {
-    return (
-      <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav
-            className="flex items-center justify-between h-16"
-            aria-label="Navegación principal"
-          >
-            <div className="flex items-center gap-4 flex-1">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gray-200 animate-pulse" />
-              <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
-              <div className="h-8 w-32 bg-gray-200 rounded-md animate-pulse" />
-            </div>
-            <div className="hidden sm:flex gap-2">
-              <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse" />
-            </div>
-            <div className="sm:hidden">
-              <div className="h-10 w-10 bg-gray-200 rounded-md animate-pulse" />
-            </div>
-          </nav>
-        </div>
-      </header>
-    );
-  }
+  }, [logout]);
 
   return (
     <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -308,174 +311,24 @@ export const Header = memo(() => {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden sm:flex items-center gap-4">
-            {user && (
-              <Button
-                onClick={() => router.push(`/${city}/favorites`)}
-                variant="ghost"
-                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                aria-label="Ver mis favoritos"
-              >
-                <FaHeart
-                  className="text-xl text-[#363430]"
-                  aria-hidden="true"
-                />
-                <span>Mis Favoritos</span>
-              </Button>
-            )}
-            {isAdmin && (
-              <>
-                <Button
-                  onClick={() => router.push(`/${city}/admin/create`)}
-                  variant="ghost"
-                  className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                  aria-label="Crear nuevo restaurante"
-                >
-                  <FaPlus
-                    className="text-xl text-[#363430]"
-                    aria-hidden="true"
-                  />
-                  <span>Agregar Restaurante</span>
-                </Button>
-                <Button
-                  onClick={() => router.push('/admin/users')}
-                  variant="ghost"
-                  className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                  aria-label="Administrar usuarios"
-                >
-                  <FaUser
-                    className="text-xl text-[#363430]"
-                    aria-hidden="true"
-                  />
-                  <span>Usuarios</span>
-                </Button>
-                <div className="h-8 w-px bg-gray-200 mx-2" aria-hidden="true" />
-              </>
-            )}
-
-            {isClient && (
-              <>
-                {assignedRestaurantId ? (
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/${city}/admin/update/${assignedRestaurantId}`
-                      )
-                    }
-                    variant="ghost"
-                    className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                    aria-label="Ver restaurante asignado"
-                  >
-                    <FaPencilAlt
-                      className="text-xl text-[#363430]"
-                      aria-hidden="true"
-                    />
-                    <span>Editar Mi Restaurante</span>
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => router.push(`/${city}/admin/create`)}
-                    variant="ghost"
-                    className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                    aria-label="Crear nuevo restaurante"
-                  >
-                    <FaPlus
-                      className="text-xl text-[#363430]"
-                      aria-hidden="true"
-                    />
-                    <span>Agregar Restaurante</span>
-                  </Button>
-                )}
-              </>
-            )}
-
-            <div className="relative">
-              <Button
-                onClick={toggleDropdown}
-                variant="ghost"
-                className="hover:bg-[#ffb400] gap-2 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                aria-expanded={isDropdownOpen}
-                aria-haspopup="true"
-                aria-controls="user-dropdown"
-                id="user-menu"
-              >
-                {user ? (
-                  <>
-                    <FaUser
-                      className="text-2xl text-[#363430]"
-                      aria-hidden="true"
-                    />
-                    <span>Mi Cuenta</span>
-                  </>
-                ) : (
-                  <>
-                    <FaUserCircle
-                      className="text-2xl text-[#363430]"
-                      aria-hidden="true"
-                    />
-                    <span>Iniciar Sesión</span>
-                  </>
-                )}
-              </Button>
-
-              <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown}>
-                {user ? (
-                  <>
-                    <div
-                      className="px-4 py-2 text-sm text-gray-700 border-b truncate"
-                      role="status"
-                    >
-                      {user.email}
-                    </div>
-                    <Button
-                      onClick={() => router.push('/contact')}
-                      variant="ghost"
-                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                      role="menuitem"
-                    >
-                      Contáctanos
-                    </Button>
-                    <Button
-                      onClick={handleLogout}
-                      variant="ghost"
-                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                      role="menuitem"
-                    >
-                      Cerrar Sesión
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      onClick={() => router.push('/contact')}
-                      variant="ghost"
-                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                      role="menuitem"
-                    >
-                      Contáctanos
-                    </Button>
-                    <Button
-                      onClick={() => router.push('/auth/login')}
-                      variant="ghost"
-                      className="w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-                      role="menuitem"
-                    >
-                      Iniciar Sesión
-                    </Button>
-                  </>
-                )}
-              </Dropdown>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          <MobileMenu
-            isAdmin={!!isAdmin}
+          <DesktopMenu
             user={user}
+            isAdmin={!!isAdmin}
+            isClient={!!isClient}
+            assignedRestaurantId={assignedRestaurantId || undefined}
+            city={city}
             onLogout={handleLogout}
             router={router}
+          />
+
+          <MobileMenu
+            user={user}
+            isAdmin={!!isAdmin}
+            isClient={!!isClient}
+            assignedRestaurantId={assignedRestaurantId || undefined}
             city={city}
+            onLogout={handleLogout}
+            router={router}
           />
         </nav>
       </div>
