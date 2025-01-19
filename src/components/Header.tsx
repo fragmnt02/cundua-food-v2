@@ -97,8 +97,15 @@ interface MobileMenuProps {
 
 const MobileMenu = memo(
   ({ isAdmin, user, onLogout, router }: MobileMenuProps) => {
+    const [open, setOpen] = useState(false);
+
+    const handleNavigation = useCallback((callback: () => void) => {
+      callback();
+      setOpen(false);
+    }, []);
+
     return (
-      <Sheet>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
@@ -115,7 +122,9 @@ const MobileMenu = memo(
           <nav className="flex flex-col gap-4 mt-4">
             {user && (
               <Button
-                onClick={() => router.push('/favorites')}
+                onClick={() =>
+                  handleNavigation(() => router.push('/favorites'))
+                }
                 variant="ghost"
                 className="justify-start gap-2"
               >
@@ -126,7 +135,9 @@ const MobileMenu = memo(
             {isAdmin && (
               <>
                 <Button
-                  onClick={() => router.push('/admin/create')}
+                  onClick={() =>
+                    handleNavigation(() => router.push('/admin/create'))
+                  }
                   variant="ghost"
                   className="justify-start gap-2"
                 >
@@ -134,7 +145,9 @@ const MobileMenu = memo(
                   Agregar Restaurante
                 </Button>
                 <Button
-                  onClick={() => router.push('/admin/users')}
+                  onClick={() =>
+                    handleNavigation(() => router.push('/admin/users'))
+                  }
                   variant="ghost"
                   className="justify-start gap-2"
                 >
@@ -153,14 +166,16 @@ const MobileMenu = memo(
                   {user.email}
                 </div>
                 <Button
-                  onClick={() => router.push('/contact')}
+                  onClick={() =>
+                    handleNavigation(() => router.push('/contact'))
+                  }
                   variant="ghost"
                   className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                 >
                   Contáctanos
                 </Button>
                 <Button
-                  onClick={onLogout}
+                  onClick={() => handleNavigation(onLogout)}
                   variant="ghost"
                   className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                 >
@@ -170,14 +185,18 @@ const MobileMenu = memo(
             ) : (
               <>
                 <Button
-                  onClick={() => router.push('/contact')}
+                  onClick={() =>
+                    handleNavigation(() => router.push('/contact'))
+                  }
                   variant="ghost"
                   className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                 >
                   Contáctanos
                 </Button>
                 <Button
-                  onClick={() => router.push('/auth/login')}
+                  onClick={() =>
+                    handleNavigation(() => router.push('/auth/login'))
+                  }
                   variant="ghost"
                   className="w-full justify-start focus-visible:ring-2 focus-visible:ring-[#ffb400]"
                 >

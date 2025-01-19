@@ -48,7 +48,6 @@ const Comments = dynamic(
 const restaurantTypeMap: { [key in RestaurantType]: string } = {
   [RestaurantType.Restaurant]: 'Restaurante',
   [RestaurantType.FoodTruck]: 'Food Truck',
-  [RestaurantType.DarkKitchen]: 'Cocina Fantasma',
   [RestaurantType.FoodCourt]: 'Plaza de Comidas (Pasatiempo)',
   [RestaurantType.TakeAway]: 'Para Llevar'
 };

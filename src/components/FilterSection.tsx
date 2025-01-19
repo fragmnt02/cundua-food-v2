@@ -134,11 +134,11 @@ export default function FilterSection({
               value={filters.cuisine}
               onValueChange={(value) => onFilterChange('cuisine', value)}
             >
-              <SelectTrigger aria-label="Seleccionar tipo de cocina">
+              <SelectTrigger aria-label="Seleccionar tipo de comida">
                 <SelectValue placeholder="Todas las cocinas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las cocinas</SelectItem>
+                <SelectItem value="all">Todas las comidas</SelectItem>
                 {Object.keys(Cuisine).map((cuisine) => (
                   <SelectItem key={cuisine} value={cuisine}>
                     {Cuisine[cuisine as keyof typeof Cuisine]}
@@ -163,8 +163,6 @@ export default function FilterSection({
                       ? 'Restaurante'
                       : type === RestaurantType.FoodTruck
                       ? 'Food Truck'
-                      : type === RestaurantType.DarkKitchen
-                      ? 'Cocina Fantasma'
                       : type === RestaurantType.FoodCourt
                       ? 'Plaza de Comidas (Pasatiempo)'
                       : 'Para Llevar'}
@@ -230,7 +228,7 @@ export default function FilterSection({
                   filters.showOnlyOpen && 'text-primary-foreground'
                 )}
               >
-                Solo abiertos
+                Abierto Ahora
               </Button>
               {features.map((feature) => (
                 <Button

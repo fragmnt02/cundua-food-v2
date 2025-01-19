@@ -117,7 +117,7 @@ export enum Day {
 export enum RestaurantType {
   Restaurant = 'restaurant',
   FoodTruck = 'foodTruck',
-  DarkKitchen = 'darkKitchen',
+  //DarkKitchen = 'darkKitchen',
   FoodCourt = 'foodCourt',
   TakeAway = 'takeAway'
 }

@@ -509,8 +509,6 @@ export default function CreateRestaurant() {
                                   ? 'Restaurante'
                                   : value === RestaurantType.FoodTruck
                                   ? 'Food Truck'
-                                  : value === RestaurantType.DarkKitchen
-                                  ? 'Cocina Fantasma'
                                   : value === RestaurantType.FoodCourt
                                   ? 'Plaza de Comidas (Pasatiempo)'
                                   : 'Para Llevar'}
