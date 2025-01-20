@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_MX',
-    url: 'https://cunduafood.com',
+    url: 'https://catalogo.tabacomiendo.com',
     siteName: 'Cundua Food'
   }
 };

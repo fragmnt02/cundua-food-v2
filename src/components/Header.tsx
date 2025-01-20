@@ -192,6 +192,7 @@ const MobileMenu = memo(
               city={city}
               onLogout={onLogout}
               router={router}
+              onClose={() => setOpen(false)}
             />
           </nav>
         </SheetContent>

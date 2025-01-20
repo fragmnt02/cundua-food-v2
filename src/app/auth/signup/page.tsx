@@ -94,7 +94,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="flex-1 flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 mb-16">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-center">
@@ -238,6 +238,6 @@ export default function SignupPage() {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </main>
   );
 }
