@@ -340,19 +340,19 @@ export default function CreateRestaurant() {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-4rem)] px-6 py-8">
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardHeader>
+    <ScrollArea className="px-1 sm:px-6 py-4 sm:py-8 mb-20 !block">
+      <div className="w-full max-w-4xl mx-auto">
+        <Card className="w-full overflow-hidden">
+          <CardHeader className="px-3 sm:px-6">
             <CardTitle>
               {isEditMode
                 ? 'Actualizar Restaurante'
                 : 'Crear Nuevo Restaurante'}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0 relative">
             {!isEditMode && isAdmin && (
-              <div className="mb-6">
+              <div className="mb-6 px-3 sm:px-6">
                 <label className="block text-sm font-medium mb-1">
                   Copiar datos de un restaurante existente
                 </label>
@@ -376,125 +376,343 @@ export default function CreateRestaurant() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit}>
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="w-full justify-start">
-                  <TabsTrigger value="basic">Información Básica</TabsTrigger>
-                  <TabsTrigger value="menu">Menú</TabsTrigger>
-                  <TabsTrigger value="details">Detalles</TabsTrigger>
-                  <TabsTrigger value="hours">Horarios</TabsTrigger>
-                  <TabsTrigger value="location">Ubicación</TabsTrigger>
-                </TabsList>
+                <div className="sticky top-0 z-10 min-[460px]:w-[460px] bg-card border-b px-3 sm:px-6 pb-2">
+                  <TabsList className="flex overflow-x-auto rounded-lg bg-muted p-1 no-scrollbar max-w-full">
+                    <TabsTrigger
+                      value="basic"
+                      data-tab="basic"
+                      className="rounded-md px-2 sm:px-3 py-1.5 whitespace-nowrap text-xs sm:text-sm"
+                    >
+                      Información
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="menu"
+                      data-tab="menu"
+                      className="rounded-md px-2 sm:px-3 py-1.5 whitespace-nowrap text-xs sm:text-sm"
+                    >
+                      Menú
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="details"
+                      data-tab="details"
+                      className="rounded-md px-2 sm:px-3 py-1.5 whitespace-nowrap text-xs sm:text-sm"
+                    >
+                      Detalles
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="hours"
+                      data-tab="hours"
+                      className="rounded-md px-2 sm:px-3 py-1.5 whitespace-nowrap text-xs sm:text-sm"
+                    >
+                      Horarios
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="location"
+                      data-tab="location"
+                      className="rounded-md px-2 sm:px-3 py-1.5 whitespace-nowrap text-xs sm:text-sm"
+                    >
+                      Ubicación
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-                <TabsContent value="basic" className="space-y-6 mt-6">
-                  {/* Basic Info Section */}
-                  <div className="grid gap-6">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Nombre del Restaurante{' '}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        required
-                      />
-                    </div>
-
-                    {/* Image Upload Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Logo Upload */}
+                <div className="px-3 sm:px-6 space-y-6">
+                  <TabsContent value="basic" className="mt-4 space-y-6">
+                    {/* Basic Info Section */}
+                    <div className="grid gap-6">
                       <div>
                         <label
-                          htmlFor="logoUrl"
+                          htmlFor="name"
                           className="block text-sm font-medium mb-1"
                         >
-                          Logo del Restaurante{' '}
+                          Nombre del Restaurante{' '}
                           <span className="text-destructive">*</span>
                         </label>
-                        <div className="flex flex-col gap-2">
-                          {formData.logoUrl &&
-                            formData.logoUrl.trim() !== '' && (
-                              <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-                                <Image
-                                  src={formData.logoUrl}
-                                  alt="Logo Preview"
-                                  className="object-cover"
-                                  fill
-                                />
-                              </div>
-                            )}
-                          <input
-                            type="file"
-                            id="logoUrl"
-                            name="logoUrl"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  const formData = new FormData();
-                                  formData.append('file', file);
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          required
+                        />
+                      </div>
 
-                                  const response = await fetch('/api/upload', {
-                                    method: 'POST',
-                                    body: formData
-                                  });
+                      {/* Image Upload Section */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Logo Upload */}
+                        <div>
+                          <label
+                            htmlFor="logoUrl"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Logo del Restaurante{' '}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {formData.logoUrl &&
+                              formData.logoUrl.trim() !== '' && (
+                                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                                  <Image
+                                    src={formData.logoUrl}
+                                    alt="Logo Preview"
+                                    className="object-cover"
+                                    fill
+                                  />
+                                </div>
+                              )}
+                            <input
+                              type="file"
+                              id="logoUrl"
+                              name="logoUrl"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  try {
+                                    const formData = new FormData();
+                                    formData.append('file', file);
 
-                                  if (response.ok) {
-                                    const { url } = await response.json();
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      logoUrl: url
-                                    }));
+                                    const response = await fetch(
+                                      '/api/upload',
+                                      {
+                                        method: 'POST',
+                                        body: formData
+                                      }
+                                    );
+
+                                    if (response.ok) {
+                                      const { url } = await response.json();
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        logoUrl: url
+                                      }));
+                                    }
+                                  } catch (error) {
+                                    console.error(
+                                      'Error uploading logo:',
+                                      error
+                                    );
                                   }
-                                } catch (error) {
-                                  console.error('Error uploading logo:', error);
                                 }
-                              }
-                            }}
-                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            required={!formData.logoUrl}
-                          />
-                          <p className="text-sm text-muted-foreground">
-                            Sube el logo o ícono del restaurante. Recomendado:
-                            400x400px
-                          </p>
+                              }}
+                              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                              required={!formData.logoUrl}
+                            />
+                            <p className="text-sm text-muted-foreground">
+                              Sube el logo o ícono del restaurante. Recomendado:
+                              400x400px
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Cover Image Upload */}
+                        <div>
+                          <label
+                            htmlFor="coverImageUrl"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Imagen de Portada{' '}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {formData.coverImageUrl &&
+                              formData.coverImageUrl.trim() !== '' && (
+                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
+                                  <Image
+                                    src={formData.coverImageUrl}
+                                    alt="Cover Preview"
+                                    className="object-cover"
+                                    fill
+                                  />
+                                </div>
+                              )}
+                            <input
+                              type="file"
+                              id="coverImageUrl"
+                              name="coverImageUrl"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  try {
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+
+                                    const response = await fetch(
+                                      '/api/upload',
+                                      {
+                                        method: 'POST',
+                                        body: formData
+                                      }
+                                    );
+
+                                    if (response.ok) {
+                                      const { url } = await response.json();
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        coverImageUrl: url
+                                      }));
+                                    }
+                                  } catch (error) {
+                                    console.error(
+                                      'Error uploading cover image:',
+                                      error
+                                    );
+                                  }
+                                }
+                              }}
+                              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                              required={!formData.coverImageUrl}
+                            />
+                            <p className="text-sm text-muted-foreground">
+                              Sube una imagen de portada atractiva. Recomendado:
+                              1920x1080px
+                            </p>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Cover Image Upload */}
                       <div>
-                        <label
-                          htmlFor="coverImageUrl"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          Imagen de Portada{' '}
+                        <label className="block text-sm font-medium mb-1">
+                          Tipos de Cocina{' '}
                           <span className="text-destructive">*</span>
                         </label>
-                        <div className="flex flex-col gap-2">
-                          {formData.coverImageUrl &&
-                            formData.coverImageUrl.trim() !== '' && (
-                              <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
-                                <Image
-                                  src={formData.coverImageUrl}
-                                  alt="Cover Preview"
-                                  className="object-cover"
-                                  fill
-                                />
-                              </div>
+                        <Select
+                          value={formData.cuisine[0]}
+                          onValueChange={(value) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              cuisine: [value as keyof typeof Cuisine]
+                            }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar tipo de cocina" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(Cuisine).map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {Cuisine[type as keyof typeof Cuisine]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Tipo de Establecimiento{' '}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <Select
+                          value={formData.type}
+                          onValueChange={(value) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              type: value as RestaurantType
+                            }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(RestaurantType).map(
+                              ([key, value]) => (
+                                <SelectItem key={key} value={value}>
+                                  {value === RestaurantType.Restaurant
+                                    ? 'Restaurante'
+                                    : value === RestaurantType.FoodTruck
+                                    ? 'Food Truck'
+                                    : value === RestaurantType.FoodCourt
+                                    ? 'Plaza de Comidas (Pasatiempo)'
+                                    : 'Para Llevar'}
+                                </SelectItem>
+                              )
                             )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Rango de Precios{' '}
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <Select
+                          value={formData.priceRange}
+                          onValueChange={(
+                            value: '$' | '$$' | '$$$' | '$$$$'
+                          ) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              priceRange: value
+                            }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar rango de precios" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="$">
+                              $ (Menos de $100 MXN por persona)
+                            </SelectItem>
+                            <SelectItem value="$$">
+                              $$ ($100-200 MXN por persona)
+                            </SelectItem>
+                            <SelectItem value="$$$">
+                              $$$ ($200-600 MXN por persona)
+                            </SelectItem>
+                            <SelectItem value="$$$$">
+                              $$$$ (Más de $600 MXN por persona)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="menu" className="space-y-6 mt-6">
+                    {/* Menu Images Section */}
+                    <div className="space-y-4">
+                      <label className="block text-sm font-medium">
+                        Imágenes del Menú
+                      </label>
+                      <div className="grid gap-4">
+                        {formData.menu.map((menuImage, index) => (
+                          <div key={index} className="flex items-center gap-4">
+                            {menuImage.imageUrl &&
+                              menuImage.imageUrl.trim() !== '' && (
+                                <div className="relative w-32 h-32">
+                                  <Image
+                                    src={menuImage.imageUrl}
+                                    alt={`Menu ${index + 1}`}
+                                    className="object-cover rounded"
+                                    fill
+                                  />
+                                </div>
+                              )}
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  menu: prev.menu.filter((_, i) => i !== index)
+                                }))
+                              }
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        ))}
+                        <div className="flex gap-4">
                           <input
                             type="file"
-                            id="coverImageUrl"
-                            name="coverImageUrl"
                             accept="image/*"
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
@@ -510,672 +728,521 @@ export default function CreateRestaurant() {
 
                                   if (response.ok) {
                                     const { url } = await response.json();
-                                    setFormData((prev) => ({
+                                    setNewMenuImage((prev) => ({
                                       ...prev,
-                                      coverImageUrl: url
+                                      imageUrl: url
                                     }));
                                   }
                                 } catch (error) {
                                   console.error(
-                                    'Error uploading cover image:',
+                                    'Error uploading image:',
                                     error
                                   );
                                 }
                               }
                             }}
-                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            required={!formData.coverImageUrl}
+                            className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           />
-                          <p className="text-sm text-muted-foreground">
-                            Sube una imagen de portada atractiva. Recomendado:
-                            1920x1080px
-                          </p>
+                          <input
+                            type="number"
+                            value={newMenuImage.order}
+                            className="w-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            placeholder="Orden"
+                            readOnly
+                          />
                         </div>
                       </div>
                     </div>
+                  </TabsContent>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Tipos de Cocina{' '}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <Select
-                        value={formData.cuisine[0]}
-                        onValueChange={(value) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            cuisine: [value as keyof typeof Cuisine]
-                          }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar tipo de cocina" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.keys(Cuisine).map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {Cuisine[type as keyof typeof Cuisine]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Tipo de Establecimiento{' '}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <Select
-                        value={formData.type}
-                        onValueChange={(value) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            type: value as RestaurantType
-                          }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(RestaurantType).map(
-                            ([key, value]) => (
-                              <SelectItem key={key} value={value}>
-                                {value === RestaurantType.Restaurant
-                                  ? 'Restaurante'
-                                  : value === RestaurantType.FoodTruck
-                                  ? 'Food Truck'
-                                  : value === RestaurantType.FoodCourt
-                                  ? 'Plaza de Comidas (Pasatiempo)'
-                                  : 'Para Llevar'}
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Rango de Precios{' '}
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <Select
-                        value={formData.priceRange}
-                        onValueChange={(value: '$' | '$$' | '$$$' | '$$$$') => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            priceRange: value
-                          }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar rango de precios" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="$">
-                            $ (Menos de $100 MXN por persona)
-                          </SelectItem>
-                          <SelectItem value="$$">
-                            $$ ($100-200 MXN por persona)
-                          </SelectItem>
-                          <SelectItem value="$$$">
-                            $$$ ($200-600 MXN por persona)
-                          </SelectItem>
-                          <SelectItem value="$$$$">
-                            $$$$ (Más de $600 MXN por persona)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="menu" className="space-y-6 mt-6">
-                  {/* Menu Images Section */}
-                  <div className="space-y-4">
-                    <label className="block text-sm font-medium">
-                      Imágenes del Menú
-                    </label>
-                    <div className="grid gap-4">
-                      {formData.menu.map((menuImage, index) => (
-                        <div key={index} className="flex items-center gap-4">
-                          {menuImage.imageUrl &&
-                            menuImage.imageUrl.trim() !== '' && (
-                              <div className="relative w-32 h-32">
-                                <Image
-                                  src={menuImage.imageUrl}
-                                  alt={`Menu ${index + 1}`}
-                                  className="object-cover rounded"
-                                  fill
-                                />
-                              </div>
-                            )}
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={() =>
+                  <TabsContent value="details" className="space-y-6 mt-6">
+                    {/* Social Media Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Social Media</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="instagram"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Instagram
+                          </label>
+                          <input
+                            type="url"
+                            id="instagram"
+                            placeholder="URL de Instagram"
+                            value={formData.socialMedia?.instagram || ''}
+                            onChange={(e) =>
                               setFormData((prev) => ({
                                 ...prev,
-                                menu: prev.menu.filter((_, i) => i !== index)
+                                socialMedia: {
+                                  ...prev.socialMedia,
+                                  instagram: e.target.value
+                                }
                               }))
                             }
-                          >
-                            Eliminar
-                          </Button>
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
                         </div>
-                      ))}
-                      <div className="flex gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                const formData = new FormData();
-                                formData.append('file', file);
-
-                                const response = await fetch('/api/upload', {
-                                  method: 'POST',
-                                  body: formData
-                                });
-
-                                if (response.ok) {
-                                  const { url } = await response.json();
-                                  setNewMenuImage((prev) => ({
-                                    ...prev,
-                                    imageUrl: url
-                                  }));
-                                }
-                              } catch (error) {
-                                console.error('Error uploading image:', error);
-                              }
-                            }
-                          }}
-                          className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                        <input
-                          type="number"
-                          value={newMenuImage.order}
-                          className="w-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          placeholder="Orden"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="details" className="space-y-6 mt-6">
-                  {/* Social Media Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Social Media</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <label
-                          htmlFor="instagram"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          Instagram
-                        </label>
-                        <input
-                          type="url"
-                          id="instagram"
-                          placeholder="URL de Instagram"
-                          value={formData.socialMedia?.instagram || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              socialMedia: {
-                                ...prev.socialMedia,
-                                instagram: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="facebook"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          Facebook
-                        </label>
-                        <input
-                          type="url"
-                          id="facebook"
-                          placeholder="URL de Facebook"
-                          value={formData.socialMedia?.facebook || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              socialMedia: {
-                                ...prev.socialMedia,
-                                facebook: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Contact Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        Información de Contacto
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <label
-                          htmlFor="whatsapp"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          WhatsApp
-                        </label>
-                        <input
-                          type="tel"
-                          id="whatsapp"
-                          placeholder="WhatsApp"
-                          value={formData.delivery?.whatsapp || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              delivery: {
-                                ...prev.delivery,
-                                whatsapp: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="phone"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          Teléfono
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          placeholder="Teléfono"
-                          value={formData.delivery?.phone || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              delivery: {
-                                ...prev.delivery,
-                                phone: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Features Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Características</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        {[
-                          { key: 'reservations', label: 'Reservaciones' },
-                          { key: 'outdoorSeating', label: 'Sillas Exteriores' },
-                          { key: 'wifi', label: 'WiFi' },
-                          { key: 'hasAC', label: 'Aire Acondicionado' },
-                          { key: 'hasParking', label: 'Estacionamiento' },
-                          { key: 'kidsFriendly', label: 'Amigable para Niños' },
-                          { key: 'freeDelivery', label: 'Envío Gratis' }
-                        ].map(({ key, label }) => (
-                          <label key={key} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={
-                                formData.features[
-                                  key as keyof typeof formData.features
-                                ] || false
-                              }
-                              onChange={() => handleFeatureChange(key)}
-                              className="h-4 w-4 rounded border-input"
-                            />
-                            <span className="text-sm">{label}</span>
+                        <div>
+                          <label
+                            htmlFor="facebook"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Facebook
                           </label>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Payment Methods Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        Métodos de Pago{' '}
-                        <span className="text-destructive">*</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.values(PaymentMethod).map((method) => (
-                          <Button
-                            key={method}
-                            type="button"
-                            variant={
-                              formData.paymentMethods.includes(method)
-                                ? 'default'
-                                : 'outline'
-                            }
-                            size="sm"
-                            onClick={() => {
+                          <input
+                            type="url"
+                            id="facebook"
+                            placeholder="URL de Facebook"
+                            value={formData.socialMedia?.facebook || ''}
+                            onChange={(e) =>
                               setFormData((prev) => ({
                                 ...prev,
-                                paymentMethods: prev.paymentMethods.includes(
-                                  method
-                                )
-                                  ? prev.paymentMethods.filter(
-                                      (m) => m !== method
-                                    )
-                                  : [...prev.paymentMethods, method]
-                              }));
-                            }}
-                          >
-                            {method}
-                          </Button>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                                socialMedia: {
+                                  ...prev.socialMedia,
+                                  facebook: e.target.value
+                                }
+                              }))
+                            }
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                  {/* Location Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Ubicación</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
+                    {/* Contact Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Información de Contacto
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="whatsapp"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            WhatsApp
+                          </label>
+                          <input
+                            type="tel"
+                            id="whatsapp"
+                            placeholder="WhatsApp"
+                            value={formData.delivery?.whatsapp || ''}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                delivery: {
+                                  ...prev.delivery,
+                                  whatsapp: e.target.value
+                                }
+                              }))
+                            }
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="phone"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Teléfono
+                          </label>
+                          <input
+                            type="tel"
+                            id="phone"
+                            placeholder="Teléfono"
+                            value={formData.delivery?.phone || ''}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                delivery: {
+                                  ...prev.delivery,
+                                  phone: e.target.value
+                                }
+                              }))
+                            }
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Features Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Características
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { key: 'reservations', label: 'Reservaciones' },
+                            {
+                              key: 'outdoorSeating',
+                              label: 'Sillas Exteriores'
+                            },
+                            { key: 'wifi', label: 'WiFi' },
+                            { key: 'hasAC', label: 'Aire Acondicionado' },
+                            { key: 'hasParking', label: 'Estacionamiento' },
+                            {
+                              key: 'kidsFriendly',
+                              label: 'Amigable para Niños'
+                            },
+                            { key: 'freeDelivery', label: 'Envío Gratis' }
+                          ].map(({ key, label }) => (
+                            <label
+                              key={key}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  formData.features[
+                                    key as keyof typeof formData.features
+                                  ] || false
+                                }
+                                onChange={() => handleFeatureChange(key)}
+                                className="h-4 w-4 rounded border-input"
+                              />
+                              <span className="text-sm">{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Payment Methods Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Métodos de Pago{' '}
+                          <span className="text-destructive">*</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.values(PaymentMethod).map((method) => (
+                            <Button
+                              key={method}
+                              type="button"
+                              variant={
+                                formData.paymentMethods.includes(method)
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              size="sm"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  paymentMethods: prev.paymentMethods.includes(
+                                    method
+                                  )
+                                    ? prev.paymentMethods.filter(
+                                        (m) => m !== method
+                                      )
+                                    : [...prev.paymentMethods, method]
+                                }));
+                              }}
+                            >
+                              {method}
+                            </Button>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Location Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Ubicación</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="address"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Dirección
+                          </label>
+                          <input
+                            type="text"
+                            id="address"
+                            placeholder="Dirección"
+                            value={formData.location?.address || ''}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                location: {
+                                  ...prev.location,
+                                  address: e.target.value
+                                }
+                              }))
+                            }
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="mapUrl"
+                            className="block text-sm font-medium mb-1"
+                          >
+                            URL del Mapa
+                          </label>
+                          <input
+                            type="text"
+                            id="mapUrl"
+                            placeholder="URL del Mapa"
+                            value={formData.location?.mapUrl || ''}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                location: {
+                                  ...prev.location,
+                                  mapUrl: e.target.value
+                                }
+                              }))
+                            }
+                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="hours" className="space-y-6 mt-6">
+                    {/* Operating Hours Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Horarios de Operación
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {daysOfWeek.map((day, index) => (
+                            <div
+                              key={day}
+                              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                            >
+                              <span className="w-24 capitalize font-medium">
+                                {day}
+                              </span>
+                              <div className="flex items-center gap-2 flex-1">
+                                <input
+                                  type="time"
+                                  value={
+                                    formData.hours[
+                                      day as keyof typeof formData.hours
+                                    ]?.open || ''
+                                  }
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      hours: {
+                                        ...prev.hours,
+                                        [day]: {
+                                          ...prev.hours[
+                                            day as keyof typeof formData.hours
+                                          ],
+                                          open: e.target.value
+                                        }
+                                      }
+                                    }))
+                                  }
+                                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                />
+                                <span className="text-muted-foreground">a</span>
+                                <input
+                                  type="time"
+                                  value={
+                                    formData.hours[
+                                      day as keyof typeof formData.hours
+                                    ]?.close || ''
+                                  }
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      hours: {
+                                        ...prev.hours,
+                                        [day]: {
+                                          ...prev.hours[
+                                            day as keyof typeof formData.hours
+                                          ],
+                                          close: e.target.value
+                                        }
+                                      }
+                                    }))
+                                  }
+                                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                />
+                              </div>
+                              {index === 0 && (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => {
+                                    const firstDay = daysOfWeek[0];
+                                    const firstDayHours =
+                                      formData.hours[firstDay];
+                                    if (
+                                      firstDayHours?.open &&
+                                      firstDayHours?.close
+                                    ) {
+                                      const updatedHours = daysOfWeek.reduce(
+                                        (acc, currentDay) => ({
+                                          ...acc,
+                                          [currentDay]: {
+                                            open: firstDayHours.open,
+                                            close: firstDayHours.close
+                                          }
+                                        }),
+                                        {}
+                                      );
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        hours: updatedHours
+                                      }));
+                                    }
+                                  }}
+                                >
+                                  Copiar a Todos
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="location" className="space-y-4">
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
                         <label
                           htmlFor="address"
-                          className="block text-sm font-medium mb-1"
+                          className="text-sm font-medium"
                         >
                           Dirección
                         </label>
                         <input
                           type="text"
                           id="address"
-                          placeholder="Dirección"
+                          name="address"
                           value={formData.location?.address || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              location: {
-                                ...prev.location,
-                                address: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          onChange={handleChange}
+                          className="w-full rounded-md border p-2"
                         />
                       </div>
-                      <div>
-                        <label
-                          htmlFor="mapUrl"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          URL del Mapa
+
+                      <div className="space-y-2">
+                        <label htmlFor="mapUrl" className="text-sm font-medium">
+                          URL de Google Maps
                         </label>
                         <input
                           type="text"
                           id="mapUrl"
-                          placeholder="URL del Mapa"
+                          name="mapUrl"
                           value={formData.location?.mapUrl || ''}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              location: {
-                                ...prev.location,
-                                mapUrl: e.target.value
-                              }
-                            }))
-                          }
-                          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          onChange={handleChange}
+                          className="w-full rounded-md border p-2"
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
 
-                <TabsContent value="hours" className="space-y-6 mt-6">
-                  {/* Operating Hours Section */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        Horarios de Operación
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
                       <div className="space-y-4">
-                        {daysOfWeek.map((day, index) => (
-                          <div
-                            key={day}
-                            className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-medium">Coordenadas</h3>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={getCurrentLocation}
                           >
-                            <span className="w-24 capitalize font-medium">
-                              {day}
-                            </span>
-                            <div className="flex items-center gap-2 flex-1">
-                              <input
-                                type="time"
-                                value={
-                                  formData.hours[
-                                    day as keyof typeof formData.hours
-                                  ]?.open || ''
-                                }
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    hours: {
-                                      ...prev.hours,
-                                      [day]: {
-                                        ...prev.hours[
-                                          day as keyof typeof formData.hours
-                                        ],
-                                        open: e.target.value
-                                      }
-                                    }
-                                  }))
-                                }
-                                className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              />
-                              <span className="text-muted-foreground">a</span>
-                              <input
-                                type="time"
-                                value={
-                                  formData.hours[
-                                    day as keyof typeof formData.hours
-                                  ]?.close || ''
-                                }
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    hours: {
-                                      ...prev.hours,
-                                      [day]: {
-                                        ...prev.hours[
-                                          day as keyof typeof formData.hours
-                                        ],
-                                        close: e.target.value
-                                      }
-                                    }
-                                  }))
-                                }
-                                className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              />
-                            </div>
-                            {index === 0 && (
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => {
-                                  const firstDay = daysOfWeek[0];
-                                  const firstDayHours =
-                                    formData.hours[firstDay];
-                                  if (
-                                    firstDayHours?.open &&
-                                    firstDayHours?.close
-                                  ) {
-                                    const updatedHours = daysOfWeek.reduce(
-                                      (acc, currentDay) => ({
-                                        ...acc,
-                                        [currentDay]: {
-                                          open: firstDayHours.open,
-                                          close: firstDayHours.close
-                                        }
-                                      }),
-                                      {}
-                                    );
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      hours: updatedHours
-                                    }));
-                                  }
-                                }}
-                              >
-                                Copiar a Todos
-                              </Button>
-                            )}
+                            Usar ubicación actual
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="latitude"
+                              className="text-sm font-medium"
+                            >
+                              Latitud
+                            </label>
+                            <input
+                              type="number"
+                              id="latitude"
+                              name="latitude"
+                              value={
+                                formData.location?.coordinates?.latitude || 0
+                              }
+                              onChange={handleLocationChange}
+                              step="any"
+                              className="w-full rounded-md border p-2"
+                            />
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
 
-                <TabsContent value="location" className="space-y-4">
-                  <div className="grid gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="address" className="text-sm font-medium">
-                        Dirección
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        value={formData.location?.address || ''}
-                        onChange={handleChange}
-                        className="w-full rounded-md border p-2"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="mapUrl" className="text-sm font-medium">
-                        URL de Google Maps
-                      </label>
-                      <input
-                        type="text"
-                        id="mapUrl"
-                        name="mapUrl"
-                        value={formData.location?.mapUrl || ''}
-                        onChange={handleChange}
-                        className="w-full rounded-md border p-2"
-                      />
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium">Coordenadas</h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={getCurrentLocation}
-                        >
-                          Usar ubicación actual
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="latitude"
-                            className="text-sm font-medium"
-                          >
-                            Latitud
-                          </label>
-                          <input
-                            type="number"
-                            id="latitude"
-                            name="latitude"
-                            value={
-                              formData.location?.coordinates?.latitude || 0
-                            }
-                            onChange={handleLocationChange}
-                            step="any"
-                            className="w-full rounded-md border p-2"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="longitude"
-                            className="text-sm font-medium"
-                          >
-                            Longitud
-                          </label>
-                          <input
-                            type="number"
-                            id="longitude"
-                            name="longitude"
-                            value={
-                              formData.location?.coordinates?.longitude || 0
-                            }
-                            onChange={handleLocationChange}
-                            step="any"
-                            className="w-full rounded-md border p-2"
-                          />
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="longitude"
+                              className="text-sm font-medium"
+                            >
+                              Longitud
+                            </label>
+                            <input
+                              type="number"
+                              id="longitude"
+                              name="longitude"
+                              value={
+                                formData.location?.coordinates?.longitude || 0
+                              }
+                              onChange={handleLocationChange}
+                              step="any"
+                              className="w-full rounded-md border p-2"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-
-              <div className="flex items-center gap-4 pt-6 border-t">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isIncomplete"
-                    name="isIncomplete"
-                    checked={formData.isIncomplete || false}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isIncomplete: e.target.checked
-                      }))
-                    }
-                    className="h-4 w-4 rounded border-input"
-                  />
-                  <label htmlFor="isIncomplete" className="text-sm font-medium">
-                    Marcar como restaurante incompleto
-                  </label>
+                  </TabsContent>
                 </div>
-                <Button type="submit" className="ml-auto">
-                  {isEditMode ? 'Actualizar Restaurante' : 'Crear Restaurante'}
-                </Button>
-              </div>
+
+                <div className="flex items-center gap-4 pt-6 mx-6">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="isIncomplete"
+                      name="isIncomplete"
+                      checked={formData.isIncomplete || false}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          isIncomplete: e.target.checked
+                        }))
+                      }
+                      className="h-4 w-4 rounded border-input"
+                    />
+                    <label
+                      htmlFor="isIncomplete"
+                      className="text-sm font-medium"
+                    >
+                      Marcar como restaurante incompleto
+                    </label>
+                  </div>
+                  <Button type="submit" className="ml-auto">
+                    {isEditMode
+                      ? 'Actualizar Restaurante'
+                      : 'Crear Restaurante'}
+                  </Button>
+                </div>
+              </Tabs>
             </form>
           </CardContent>
         </Card>
