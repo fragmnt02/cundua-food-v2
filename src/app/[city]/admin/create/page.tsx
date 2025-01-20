@@ -96,7 +96,7 @@ export default function CreateRestaurant() {
 
   useEffect(() => {
     if (isAdmin === false && isClient === false) {
-      router.push('/');
+      router.push(`/${city}`);
       return;
     }
 
@@ -106,13 +106,13 @@ export default function CreateRestaurant() {
         assignedRestaurantId &&
         params.id !== assignedRestaurantId
       ) {
-        router.push('/');
+        router.push(`/${city}`);
         return;
       }
     } else if (isClient) {
       // is creating
       if (assignedRestaurantId) {
-        router.push('/');
+        router.push(`/${city}`);
         return;
       }
     }
@@ -186,15 +186,18 @@ export default function CreateRestaurant() {
       };
 
       let ok: boolean | undefined = undefined;
+      let id = params.id;
 
       if (params.id) {
         ok = await updateRestaurant(params.id as string, transformedFormData);
       } else {
-        ok = await createRestaurant(transformedFormData);
+        const res = await createRestaurant(transformedFormData);
+        ok = res?.ok;
+        id = res?.id;
       }
 
       if (ok) {
-        router.push('/');
+        router.push(`/${city}/restaurant/${id}`);
       }
     } catch (error) {
       console.error('Error saving restaurant:', error);

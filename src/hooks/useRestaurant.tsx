@@ -28,7 +28,7 @@ interface UseRestaurantReturn {
       Restaurant,
       'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
     >
-  ) => Promise<boolean | undefined>;
+  ) => Promise<{ ok?: boolean; id?: string } | undefined>;
   updateRestaurant: (
     id: string,
     restaurantData: Omit<
@@ -135,10 +135,12 @@ export function useRestaurant(): UseRestaurantReturn {
         // Refresh the restaurants list after creation
         await fetchRestaurants();
 
-        return true;
+        const data = await response.json();
+
+        return { ok: true, id: data?.id };
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
-        return false;
+        return { ok: false };
       } finally {
         setLoading(false);
       }
