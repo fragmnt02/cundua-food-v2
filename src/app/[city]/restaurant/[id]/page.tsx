@@ -195,7 +195,7 @@ export default function RestaurantPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50" ref={scrollRef}>
+    <main className="min-h-screen bg-gray-50 mb-16" ref={scrollRef}>
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
         {isAdmin && (
