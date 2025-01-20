@@ -21,8 +21,13 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { analytics } from '@/utils/analytics';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -105,12 +110,63 @@ export default function RestaurantPage() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+  const [showHours, setShowHours] = useState(false);
   const router = useRouter();
   const { isAdmin } = useAdmin();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
   const startTimeRef = useRef(Date.now());
   const scrollRef = useRef<HTMLDivElement>(null);
   const [maxScroll, setMaxScroll] = useState(0);
+
+  // Get initial tab from URL hash or default to 'info'
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '');
+      return hash || 'info';
+    }
+    return 'info';
+  });
+
+  // Listen for hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['info', 'menu', 'comments'].includes(hash)) {
+        setActiveTab(hash);
+        // Add a small delay to ensure the content is rendered
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+          if (element) {
+            const headerOffset = 120; // Height of sticky header + some padding
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition =
+              elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    // Also handle initial hash on page load
+    if (window.location.hash) {
+      handleHashChange();
+    }
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update URL hash when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Update URL without triggering scroll
+    const newUrl = `${window.location.pathname}#${value}`;
+    window.history.pushState(null, '', newUrl);
+    analytics.trackTabView(params.id as string, value);
+  };
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -243,53 +299,113 @@ export default function RestaurantPage() {
           <h1 className="text-4xl font-bold text-white ml-32" tabIndex={0}>
             {restaurant.name}
           </h1>
-          <div className="flex flex-wrap gap-2 mt-2 overflow-x-auto pb-2 ml-32">
-            {restaurant.cuisine.map((cuisine) => (
-              <Badge
-                key={cuisine}
-                variant="secondary"
-                className="whitespace-nowrap"
-              >
-                {cuisine}
-              </Badge>
-            ))}
+          <div className="flex flex-col gap-2 mt-2 pb-2 ml-32 max-w-[calc(100%-8rem)]">
+            <div className="flex flex-wrap items-center gap-2">
+              {restaurant.cuisine.map((cuisine) => (
+                <Badge
+                  key={cuisine}
+                  variant="secondary"
+                  className="whitespace-nowrap"
+                >
+                  {cuisine}
+                </Badge>
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              className="text-white hover:text-white hover:bg-white/20 whitespace-nowrap w-fit flex flex-col sm:flex-row mt-2"
+              onClick={() => setShowHours(true)}
+            >
+              <span className="font-medium">
+                {
+                  restaurant.hours.find(
+                    (h) => h.day === getCurrentDayInSpanish()
+                  )?.open
+                }{' '}
+                -{' '}
+                {
+                  restaurant.hours.find(
+                    (h) => h.day === getCurrentDayInSpanish()
+                  )?.close
+                }
+              </span>
+              <span className="ml-1 text-sm opacity-80">Ver horarios</span>
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-16 pb-8">
-        <Tabs
-          defaultValue="info"
-          className="w-full"
-          onValueChange={(value) =>
-            analytics.trackTabView(params.id as string, value)
-          }
-        >
-          <TabsList className="flex w-full overflow-x-auto space-x-2 mb-8 h-auto p-1 sm:grid sm:grid-cols-5">
-            <TabsTrigger value="info" className="flex-shrink-0 h-10">
-              Información
-            </TabsTrigger>
-            <TabsTrigger value="hours" className="flex-shrink-0 h-10">
-              Horario
-            </TabsTrigger>
-            <TabsTrigger value="menu" className="flex-shrink-0 h-10">
-              Menú
-            </TabsTrigger>
-            <TabsTrigger value="contact" className="flex-shrink-0 h-10">
-              Contacto
-            </TabsTrigger>
-            <TabsTrigger value="comments" className="flex-shrink-0 h-10">
-              Comentarios
-            </TabsTrigger>
-          </TabsList>
+      <Dialog open={showHours} onOpenChange={setShowHours}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Horario de {restaurant.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {restaurant.hours.map((schedule) => {
+              const isCurrentDay = schedule.day === getCurrentDayInSpanish();
+              return (
+                <div
+                  key={schedule.day}
+                  className={`flex justify-between p-3 rounded-lg ${
+                    isCurrentDay
+                      ? 'bg-primary/10 border border-primary'
+                      : 'bg-muted'
+                  }`}
+                >
+                  <span
+                    className={`font-medium ${
+                      isCurrentDay ? 'text-primary' : ''
+                    }`}
+                  >
+                    {schedule.day}
+                    {isCurrentDay && ' (Hoy)'}
+                  </span>
+                  <span className={isCurrentDay ? 'text-primary' : ''}>
+                    {schedule.open} - {schedule.close}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-          <TabsContent value="info">
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 overflow-x-hidden">
+        <Tabs
+          value={activeTab}
+          className="w-full"
+          onValueChange={handleTabChange}
+        >
+          <div className="sticky top-16 bg-background z-30">
+            <TabsList className="w-full flex overflow-x-auto no-scrollbar h-12 border-b border-border bg-transparent p-0">
+              <TabsTrigger
+                value="info"
+                className="flex-1 min-w-[100px] h-full rounded-none border-b-2 border-transparent px-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-sm"
+              >
+                Información
+              </TabsTrigger>
+              <TabsTrigger
+                value="menu"
+                className="flex-1 min-w-[100px] h-full rounded-none border-b-2 border-transparent px-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-sm"
+              >
+                Menú
+              </TabsTrigger>
+              <TabsTrigger
+                value="comments"
+                className="flex-1 min-w-[100px] h-full rounded-none border-b-2 border-transparent px-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-sm"
+              >
+                Comentarios
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="info" id="info">
             <Card>
               <CardHeader>
                 <CardTitle>Información del restaurante</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div>
                     <h3 className="font-semibold text-lg">
                       Precio y tipo de comida
@@ -346,52 +462,189 @@ export default function RestaurantPage() {
                       ))}
                     </ul>
                   </div>
+
+                  <div>
+                    <h3 className="font-semibold text-lg mb-4">
+                      Contacto y redes sociales
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div>
+                        <h4 className="text-base font-medium mb-3">
+                          Redes Sociales
+                        </h4>
+                        <div className="flex gap-4">
+                          {restaurant.socialMedia?.instagram && (
+                            <a
+                              href={restaurant.socialMedia.instagram}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+                              onClick={() =>
+                                analytics.trackSocialMediaClick(
+                                  params.id as string,
+                                  'instagram'
+                                )
+                              }
+                            >
+                              <FaInstagram className="text-xl" />
+                              Instagram
+                            </a>
+                          )}
+                          {restaurant.socialMedia?.facebook && (
+                            <a
+                              href={restaurant.socialMedia.facebook}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                              onClick={() =>
+                                analytics.trackSocialMediaClick(
+                                  params.id as string,
+                                  'facebook'
+                                )
+                              }
+                            >
+                              <FaFacebook className="text-xl" />
+                              Facebook
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-base font-medium mb-3">
+                          A Domicilio
+                        </h4>
+                        <div className="flex flex-wrap gap-4">
+                          {restaurant.delivery?.whatsapp && (
+                            <a
+                              href={`https://wa.me/+521${
+                                formatPhoneNumber(restaurant.delivery.whatsapp)
+                                  .clean
+                              }`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                              onClick={() =>
+                                analytics.trackDeliveryClick(
+                                  params.id as string,
+                                  'whatsapp'
+                                )
+                              }
+                            >
+                              <FaWhatsapp className="text-xl" />
+                              WhatsApp
+                            </a>
+                          )}
+                          {restaurant.delivery?.phone && (
+                            <a
+                              href={`tel:${
+                                formatPhoneNumber(restaurant.delivery.phone)
+                                  .clean
+                              }`}
+                              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                              onClick={() =>
+                                analytics.trackDeliveryClick(
+                                  params.id as string,
+                                  'phone'
+                                )
+                              }
+                            >
+                              <FaPhone className="text-xl" />
+                              {
+                                formatPhoneNumber(restaurant.delivery.phone)
+                                  .formatted
+                              }
+                            </a>
+                          )}
+                          <a
+                            href={`https://wa.me/+5219141139222`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                            onClick={() =>
+                              analytics.trackDeliveryClick(
+                                params.id as string,
+                                'rapidito'
+                              )
+                            }
+                          >
+                            <FaBiking className="text-xl" />
+                            Rapidito
+                          </a>
+                          <a
+                            href={`https://wa.me/+5219141222478`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            onClick={() =>
+                              analytics.trackDeliveryClick(
+                                params.id as string,
+                                'turbomoto'
+                              )
+                            }
+                          >
+                            <FaBiking className="text-xl" />
+                            Turbomoto
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {restaurant?.location?.address && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-4">Ubicación</h3>
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="mb-4">{restaurant.location?.address}</p>
+                        <Suspense fallback={<div>Loading map...</div>}>
+                          <iframe
+                            width="100%"
+                            height="300"
+                            style={{ border: 0 }}
+                            src={restaurant.location?.mapUrl}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            className="rounded-lg"
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  )}
+
+                  {restaurant.information && (
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        Información adicional
+                      </h3>
+                      <div className="prose max-w-none mt-2">
+                        {restaurant.information}
+                      </div>
+                    </div>
+                  )}
+
+                  {restaurant.videoUrl && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-4">Video</h3>
+                      <div className="aspect-w-16 aspect-h-9 bg-muted rounded-lg overflow-hidden">
+                        <Suspense fallback={<div>Loading video...</div>}>
+                          <iframe
+                            src={restaurant.videoUrl}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full"
+                            loading="lazy"
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="hours">
-            <Card>
-              <CardHeader>
-                <CardTitle>Horario de operación</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {restaurant.hours.map((schedule) => {
-                      const isCurrentDay =
-                        schedule.day === getCurrentDayInSpanish();
-                      return (
-                        <div
-                          key={schedule.day}
-                          className={`flex justify-between p-2 rounded shadow ${
-                            isCurrentDay
-                              ? 'bg-blue-100 border-2 border-blue-500'
-                              : 'bg-white'
-                          }`}
-                        >
-                          <span
-                            className={`font-medium ${
-                              isCurrentDay ? 'text-blue-700' : ''
-                            }`}
-                          >
-                            {schedule.day}
-                            {isCurrentDay && ' (Hoy)'}
-                          </span>
-                          <span className={isCurrentDay ? 'text-blue-700' : ''}>
-                            {schedule.open} - {schedule.close}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="menu">
+          <TabsContent value="menu" id="menu">
             <Card>
               <CardHeader>
                 <CardTitle>Menú</CardTitle>
@@ -430,203 +683,7 @@ export default function RestaurantPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="contact">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contacto y redes sociales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">Redes Sociales</h2>
-                    <div className="flex gap-4">
-                      {restaurant.socialMedia?.instagram && (
-                        <a
-                          href={restaurant.socialMedia.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
-                          onClick={() =>
-                            analytics.trackSocialMediaClick(
-                              params.id as string,
-                              'instagram'
-                            )
-                          }
-                        >
-                          <FaInstagram className="text-xl" />
-                          Instagram
-                        </a>
-                      )}
-                      {restaurant.socialMedia?.facebook && (
-                        <a
-                          href={restaurant.socialMedia.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                          onClick={() =>
-                            analytics.trackSocialMediaClick(
-                              params.id as string,
-                              'facebook'
-                            )
-                          }
-                        >
-                          <FaFacebook className="text-xl" />
-                          Facebook
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">A Domicilio</h2>
-                    <div className="flex flex-wrap gap-4">
-                      {restaurant.delivery?.whatsapp && (
-                        <a
-                          href={`https://wa.me/+521${
-                            formatPhoneNumber(restaurant.delivery.whatsapp)
-                              .clean
-                          }`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                          onClick={() =>
-                            analytics.trackDeliveryClick(
-                              params.id as string,
-                              'whatsapp'
-                            )
-                          }
-                        >
-                          <FaWhatsapp className="text-xl" />
-                          WhatsApp
-                        </a>
-                      )}
-                      {restaurant.delivery?.phone && (
-                        <a
-                          href={`tel:${
-                            formatPhoneNumber(restaurant.delivery.phone).clean
-                          }`}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                          onClick={() =>
-                            analytics.trackDeliveryClick(
-                              params.id as string,
-                              'phone'
-                            )
-                          }
-                        >
-                          <FaPhone className="text-xl" />
-                          {
-                            formatPhoneNumber(restaurant.delivery.phone)
-                              .formatted
-                          }
-                        </a>
-                      )}
-                      <a
-                        href={`https://wa.me/+5219141139222`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                        onClick={() =>
-                          analytics.trackDeliveryClick(
-                            params.id as string,
-                            'rapidito'
-                          )
-                        }
-                      >
-                        <FaBiking className="text-xl" />
-                        Rapidito
-                      </a>
-                      <a
-                        href={`https://wa.me/+5219141222478`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                        onClick={() =>
-                          analytics.trackDeliveryClick(
-                            params.id as string,
-                            'turbomoto'
-                          )
-                        }
-                      >
-                        <FaBiking className="text-xl" />
-                        Turbomoto
-                      </a>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Location Section */}
-                {restaurant?.location?.address && (
-                  <section className="mb-12">
-                    <h2 className="text-2xl font-bold mb-4">Ubicación</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-white p-4 rounded-lg shadow">
-                        <h3 className="font-semibold text-lg mb-2">
-                          Dirección
-                        </h3>
-                        <p className="mb-4">{restaurant.location?.address}</p>
-                        <Suspense fallback={<div>Loading map...</div>}>
-                          <iframe
-                            width="100%"
-                            height="450"
-                            style={{ border: 0, margin: '1rem 0' }}
-                            src={restaurant.location?.mapUrl}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                          />
-                        </Suspense>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {/* Information Section */}
-                <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
-                    Información adicional
-                  </h2>
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="prose max-w-none">
-                      {restaurant.information && (
-                        <div>{restaurant.information}</div>
-                      )}
-                      {!restaurant.information && (
-                        <p className="text-gray-500 italic">
-                          No hay información adicional disponible.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </section>
-
-                {/* Video Section */}
-                <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">Video</h2>
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    {restaurant.videoUrl ? (
-                      <div className="aspect-w-16 aspect-h-9">
-                        <Suspense fallback={<div>Loading video...</div>}>
-                          <iframe
-                            src={restaurant.videoUrl}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full rounded-lg"
-                            loading="lazy"
-                          ></iframe>
-                        </Suspense>
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 italic">
-                        No hay video disponible.
-                      </p>
-                    )}
-                  </div>
-                </section>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="comments">
+          <TabsContent value="comments" id="comments">
             <Card>
               <CardHeader>
                 <CardTitle>Comentarios</CardTitle>
