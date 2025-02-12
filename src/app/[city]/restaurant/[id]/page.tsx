@@ -587,19 +587,21 @@ export default function RestaurantPage() {
                             {restaurant.location?.address}
                           </p>
                         </div>
-                        <Button
-                          size="lg"
-                          onClick={() => {
-                            window.open(
-                              `https://www.google.com/maps?q=${restaurant.location?.coordinates?.latitude},${restaurant.location?.coordinates?.longitude}`,
-                              '_blank'
-                            );
-                          }}
-                          className="w-full flex items-center justify-center gap-2 py-6"
-                        >
-                          <FaMapMarkerAlt className="text-lg" />
-                          Ver en Google Maps
-                        </Button>
+                        {restaurant.location?.mapUrl && (
+                          <Button
+                            size="lg"
+                            onClick={() => {
+                              window.open(
+                                restaurant.location?.mapUrl,
+                                '_blank'
+                              );
+                            }}
+                            className="w-full flex items-center justify-center gap-2 py-6"
+                          >
+                            <FaMapMarkerAlt className="text-lg" />
+                            Ver en Google Maps
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )}

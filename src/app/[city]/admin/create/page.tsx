@@ -77,7 +77,8 @@ export default function CreateRestaurant() {
       coordinates: {
         latitude: 0,
         longitude: 0
-      }
+      },
+      mapUrl: ''
     },
     hours: Object.values(Day).reduce(
       (acc, day) => ({
@@ -945,39 +946,6 @@ export default function CreateRestaurant() {
                         </div>
                       </CardContent>
                     </Card>
-
-                    {/* Location Section */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Ubicación</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <label
-                            htmlFor="address"
-                            className="block text-sm font-medium mb-1"
-                          >
-                            Dirección
-                          </label>
-                          <input
-                            type="text"
-                            id="address"
-                            placeholder="Dirección"
-                            value={formData.location?.address || ''}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                location: {
-                                  ...prev.location,
-                                  address: e.target.value
-                                }
-                              }))
-                            }
-                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
                   </TabsContent>
 
                   <TabsContent value="hours" className="space-y-6 mt-6">
@@ -1106,6 +1074,20 @@ export default function CreateRestaurant() {
                         />
                       </div>
 
+                      <div className="space-y-2">
+                        <label htmlFor="mapUrl" className="text-sm font-medium">
+                          URL de Google Maps
+                        </label>
+                        <input
+                          type="text"
+                          id="mapUrl"
+                          name="mapUrl"
+                          value={formData.location?.mapUrl || ''}
+                          onChange={handleChange}
+                          className="w-full rounded-md border p-2"
+                        />
+                      </div>
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-medium">Coordenadas</h3>
@@ -1131,9 +1113,7 @@ export default function CreateRestaurant() {
                               type="number"
                               id="latitude"
                               name="latitude"
-                              value={
-                                formData.location?.coordinates?.latitude || 0
-                              }
+                              value={formData.location?.coordinates?.latitude}
                               onChange={handleLocationChange}
                               step="any"
                               className="w-full rounded-md border p-2"
@@ -1151,9 +1131,7 @@ export default function CreateRestaurant() {
                               type="number"
                               id="longitude"
                               name="longitude"
-                              value={
-                                formData.location?.coordinates?.longitude || 0
-                              }
+                              value={formData.location?.coordinates?.longitude}
                               onChange={handleLocationChange}
                               step="any"
                               className="w-full rounded-md border p-2"
@@ -1166,27 +1144,6 @@ export default function CreateRestaurant() {
                 </div>
 
                 <div className="flex items-center gap-4 pt-6 mx-6">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="isIncomplete"
-                      name="isIncomplete"
-                      checked={formData.isIncomplete || false}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          isIncomplete: e.target.checked
-                        }))
-                      }
-                      className="h-4 w-4 rounded border-input"
-                    />
-                    <label
-                      htmlFor="isIncomplete"
-                      className="text-sm font-medium"
-                    >
-                      Marcar como restaurante incompleto
-                    </label>
-                  </div>
                   <Button type="submit" className="ml-auto">
                     {isEditMode
                       ? 'Actualizar Restaurante'
