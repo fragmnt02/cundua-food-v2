@@ -55,7 +55,6 @@ $$$$ = Más de $600 MXN por persona
   voteCount: number;
   videoUrl?: string;
   type: RestaurantType;
-  isIncomplete?: boolean;
 }
 
 export enum PaymentMethod {

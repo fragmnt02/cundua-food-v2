@@ -98,14 +98,6 @@ export const RestaurantCard = ({
               {restaurant.isOpen ? 'Abierto' : 'Cerrado'}
             </Badge>
           </div>
-          {restaurant.isIncomplete && (
-            <Badge
-              variant="outline"
-              className="mb-2 bg-orange-100 text-orange-800 hover:bg-orange-200"
-            >
-              Incompleto
-            </Badge>
-          )}
           <p className="text-sm text-muted-foreground line-clamp-1">
             {restaurant.cuisine.join(', ')}
           </p>

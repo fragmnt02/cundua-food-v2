@@ -40,7 +40,6 @@ type RestaurantForm = Omit<
   information?: string;
   videoUrl?: string;
   type: RestaurantType;
-  isIncomplete?: boolean;
   logoUrl: string;
   coverImageUrl: string;
 };
@@ -88,8 +87,7 @@ export default function CreateRestaurant() {
       }),
       {}
     ),
-    type: RestaurantType.Restaurant,
-    isIncomplete: true
+    type: RestaurantType.Restaurant
   });
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
@@ -260,7 +258,6 @@ export default function CreateRestaurant() {
         setFormData({
           ...selectedRestaurant,
           hours: hoursObject,
-          isIncomplete: true,
           id: undefined
         } as RestaurantForm);
         setSelectedRestaurantId(restaurantId);
