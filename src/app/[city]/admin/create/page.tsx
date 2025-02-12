@@ -368,7 +368,7 @@ export default function CreateRestaurant() {
 
             <form onSubmit={handleSubmit}>
               <Tabs defaultValue="basic" className="w-full">
-                <div className="sticky top-0 z-10 min-[460px]:w-[460px] bg-card border-b px-3 sm:px-6 pb-2">
+                <div className="sticky top-0 z-10 min-[460px]:w-[460px] bg-card border-b px-3 sm:px-6 pb-2 mx-auto border-none">
                   <TabsList className="flex overflow-x-auto rounded-lg bg-muted p-1 no-scrollbar max-w-full">
                     <TabsTrigger
                       value="basic"
@@ -923,8 +923,8 @@ export default function CreateRestaurant() {
                               type="button"
                               variant={
                                 formData.paymentMethods.includes(method)
-                                  ? 'default'
-                                  : 'outline'
+                                  ? 'outline'
+                                  : 'default'
                               }
                               size="sm"
                               onClick={() => {
