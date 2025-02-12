@@ -9,7 +9,8 @@ import {
   FaFacebook,
   FaWhatsapp,
   FaPhone,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaMotorcycle
 } from 'react-icons/fa';
 import { Restaurant, RestaurantType, Day, Cuisine } from '@/types/restaurant';
 import { useRestaurant } from '@/hooks/useRestaurant';
@@ -28,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
+import { DeliveryDialog } from '@/components/DeliveryDialog';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -111,6 +113,7 @@ export default function RestaurantPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [showHours, setShowHours] = useState(false);
+  const [showDelivery, setShowDelivery] = useState(false);
   const router = useRouter();
   const { isAdmin } = useAdmin();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
@@ -370,6 +373,8 @@ export default function RestaurantPage() {
         </DialogContent>
       </Dialog>
 
+      <DeliveryDialog open={showDelivery} handleOpenChange={setShowDelivery} />
+
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 overflow-x-hidden">
         <Tabs
           value={activeTab}
@@ -511,10 +516,10 @@ export default function RestaurantPage() {
                       </div>
 
                       <div>
-                        <h4 className="text-base font-medium mb-3">
+                        <h4 className="text-base font-medium mb-3 text-center">
                           A Domicilio
                         </h4>
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-4 justify-center">
                           {restaurant.delivery?.whatsapp && (
                             <a
                               href={`https://wa.me/+521${
@@ -556,6 +561,15 @@ export default function RestaurantPage() {
                               }
                             </a>
                           )}
+                          <Button
+                            variant="default"
+                            size="lg"
+                            className="text-white"
+                            onClick={() => setShowDelivery(true)}
+                          >
+                            <FaMotorcycle className="text-xl" />
+                            Motomandados
+                          </Button>
                         </div>
                       </div>
                     </div>
