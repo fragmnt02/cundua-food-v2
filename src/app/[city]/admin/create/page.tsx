@@ -1160,7 +1160,7 @@ export default function CreateRestaurant() {
                                   className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                 />
                               </div>
-                              {index === 0 && (
+                              {index === 0 ? (
                                 <Button
                                   type="button"
                                   variant="secondary"
@@ -1191,6 +1191,23 @@ export default function CreateRestaurant() {
                                   }}
                                 >
                                   Copiar a Todos
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      hours: {
+                                        ...prev.hours,
+                                        [day]: { open: '', close: '' }
+                                      }
+                                    }));
+                                  }}
+                                >
+                                  Cerrado
                                 </Button>
                               )}
                             </div>
