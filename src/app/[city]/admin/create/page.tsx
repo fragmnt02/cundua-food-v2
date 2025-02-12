@@ -1056,86 +1056,164 @@ export default function CreateRestaurant() {
                   </TabsContent>
 
                   <TabsContent value="location" className="space-y-4">
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="address"
-                          className="text-sm font-medium"
-                        >
-                          Dirección
-                        </label>
-                        <input
-                          type="text"
-                          id="address"
-                          name="address"
-                          value={formData.location?.address || ''}
-                          onChange={handleChange}
-                          className="w-full rounded-md border p-2"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label htmlFor="mapUrl" className="text-sm font-medium">
-                          URL de Google Maps
-                        </label>
-                        <input
-                          type="text"
-                          id="mapUrl"
-                          name="mapUrl"
-                          value={formData.location?.mapUrl || ''}
-                          onChange={handleChange}
-                          className="w-full rounded-md border p-2"
-                        />
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-medium">Coordenadas</h3>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={getCurrentLocation}
-                          >
-                            Usar ubicación actual
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <h3 className="text-sm font-medium">Ubicación</h3>
+                        <div className="rounded-lg border p-4 space-y-4">
                           <div className="space-y-2">
-                            <label
-                              htmlFor="latitude"
-                              className="text-sm font-medium"
-                            >
-                              Latitud
-                            </label>
-                            <input
-                              type="number"
-                              id="latitude"
-                              name="latitude"
-                              value={formData.location?.coordinates?.latitude}
-                              onChange={handleLocationChange}
-                              step="any"
-                              className="w-full rounded-md border p-2"
-                            />
+                            <p className="text-sm text-muted-foreground">
+                              Por favor, ingresa la dirección o URL de Google
+                              Maps del restaurante. Esto nos ayudará a mostrar
+                              la ubicación correctamente.
+                            </p>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <label
+                                  htmlFor="address"
+                                  className="text-sm font-medium"
+                                >
+                                  Dirección
+                                </label>
+                                <input
+                                  type="text"
+                                  id="address"
+                                  name="address"
+                                  value={formData.location?.address || ''}
+                                  onChange={handleChange}
+                                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                  placeholder="Ej: Av. Principal #123, Colonia Centro"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <label
+                                  htmlFor="mapUrl"
+                                  className="text-sm font-medium"
+                                >
+                                  URL de Google Maps
+                                </label>
+                                <input
+                                  type="text"
+                                  id="mapUrl"
+                                  name="mapUrl"
+                                  value={formData.location?.mapUrl || ''}
+                                  onChange={handleChange}
+                                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                  placeholder="https://maps.google.com/..."
+                                />
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <label
-                              htmlFor="longitude"
-                              className="text-sm font-medium"
-                            >
-                              Longitud
-                            </label>
-                            <input
-                              type="number"
-                              id="longitude"
-                              name="longitude"
-                              value={formData.location?.coordinates?.longitude}
-                              onChange={handleLocationChange}
-                              step="any"
-                              className="w-full rounded-md border p-2"
-                            />
+                          <div className="space-y-4 border-t pt-4">
+                            <div className="flex flex-col items-center">
+                              <h4 className="text-sm font-medium mb-2 w-full">
+                                Coordenadas
+                              </h4>
+                              <p className="text-sm text-muted-foreground mb-4 w-full">
+                                Las coordenadas nos ayudan a ubicar el
+                                restaurante con precisión en el mapa.
+                              </p>
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={getCurrentLocation}
+                                className="flex items-center justify-center gap-2 w-fit animate-pulse"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={1.5}
+                                  stroke="currentColor"
+                                  className="w-4 h-4"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                  />
+                                </svg>
+                                Usar ubicación actual
+                              </Button>
+                            </div>
+
+                            <details className="group">
+                              <summary className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-muted-foreground">
+                                <span>
+                                  Ingresar coordenadas manualmente (Avanzado)
+                                </span>
+                                <svg
+                                  className="w-4 h-4 transition-transform group-open:rotate-180"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={2}
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                                  />
+                                </svg>
+                              </summary>
+                              <div className="pt-4 space-y-4">
+                                <p className="text-sm text-muted-foreground">
+                                  Solo usa esta opción si necesitas especificar
+                                  las coordenadas exactas manualmente.
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <label
+                                      htmlFor="latitude"
+                                      className="text-sm font-medium"
+                                    >
+                                      Latitud
+                                    </label>
+                                    <input
+                                      type="number"
+                                      id="latitude"
+                                      name="latitude"
+                                      value={
+                                        formData.location?.coordinates?.latitude
+                                      }
+                                      onChange={handleLocationChange}
+                                      step="any"
+                                      className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <label
+                                      htmlFor="longitude"
+                                      className="text-sm font-medium"
+                                    >
+                                      Longitud
+                                    </label>
+                                    <input
+                                      type="number"
+                                      id="longitude"
+                                      name="longitude"
+                                      value={
+                                        formData.location?.coordinates
+                                          ?.longitude
+                                      }
+                                      onChange={handleLocationChange}
+                                      step="any"
+                                      className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </details>
                           </div>
                         </div>
                       </div>
