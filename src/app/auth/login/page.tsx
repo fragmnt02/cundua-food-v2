@@ -33,7 +33,12 @@ export default function LoginPage() {
       try {
         await login(email, password);
       } catch (err) {
-        setError((err as Error).message);
+        const message = (err as Error).message;
+        setError(
+          message.includes('auth/invalid-credential')
+            ? 'Correo electrónico o contraseña incorrectos'
+            : message
+        );
       } finally {
         setLoading(false);
       }
