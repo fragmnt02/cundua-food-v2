@@ -198,18 +198,6 @@ export default function CreateRestaurant() {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleFeatureChange = (feature: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -428,7 +416,12 @@ export default function CreateRestaurant() {
                           id="name"
                           name="name"
                           value={formData.name}
-                          onChange={handleChange}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              name: e.target.value
+                            }))
+                          }
                           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           required
                         />
@@ -669,8 +662,8 @@ export default function CreateRestaurant() {
                     </div>
                   </TabsContent>
 
+                  {/* Menu Images Section */}
                   <TabsContent value="menu" className="space-y-6 mt-6">
-                    {/* Menu Images Section */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">
@@ -890,8 +883,8 @@ export default function CreateRestaurant() {
                     </Card>
                   </TabsContent>
 
+                  {/* Social Media Section */}
                   <TabsContent value="details" className="space-y-6 mt-6">
-                    {/* Social Media Section */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">Social Media</CardTitle>
@@ -1093,8 +1086,8 @@ export default function CreateRestaurant() {
                     </Card>
                   </TabsContent>
 
+                  {/* Operating Hours Section */}
                   <TabsContent value="hours" className="space-y-6 mt-6">
-                    {/* Operating Hours Section */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">
@@ -1216,7 +1209,7 @@ export default function CreateRestaurant() {
                       </CardContent>
                     </Card>
                   </TabsContent>
-
+                  {/* Location Section */}
                   <TabsContent value="location" className="space-y-4">
                     <div className="space-y-4">
                       <div className="flex flex-col gap-2">
@@ -1241,7 +1234,15 @@ export default function CreateRestaurant() {
                                   id="address"
                                   name="address"
                                   value={formData.location?.address || ''}
-                                  onChange={handleChange}
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      location: {
+                                        ...prev.location,
+                                        address: e.target.value
+                                      }
+                                    }))
+                                  }
                                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                   placeholder="Ej: Av. Principal #123, Colonia Centro"
                                 />
@@ -1259,7 +1260,15 @@ export default function CreateRestaurant() {
                                   id="mapUrl"
                                   name="mapUrl"
                                   value={formData.location?.mapUrl || ''}
-                                  onChange={handleChange}
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      location: {
+                                        ...prev.location,
+                                        mapUrl: e.target.value
+                                      }
+                                    }))
+                                  }
                                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                   placeholder="https://maps.google.com/..."
                                 />
