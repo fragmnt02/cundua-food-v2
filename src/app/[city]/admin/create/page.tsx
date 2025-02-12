@@ -25,6 +25,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useClient } from '@/hooks/useClient';
+import { Badge } from '@/components/ui/badge';
 
 type RestaurantForm = Omit<
   Restaurant,
@@ -93,6 +94,11 @@ export default function CreateRestaurant() {
 
   const [newMenuImage, setNewMenuImage] = useState({ imageUrl: '', order: 1 });
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageScale, setImageScale] = useState(1);
+
+  console.log(formData);
 
   useEffect(() => {
     if (isAdmin === false && isClient === false) {
@@ -668,81 +674,223 @@ export default function CreateRestaurant() {
 
                   <TabsContent value="menu" className="space-y-6 mt-6">
                     {/* Menu Images Section */}
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium">
-                        Imágenes del Menú
-                      </label>
-                      <div className="grid gap-4">
-                        {formData.menu.map((menuImage, index) => (
-                          <div key={index} className="flex items-center gap-4">
-                            {menuImage.imageUrl &&
-                              menuImage.imageUrl.trim() !== '' && (
-                                <div className="relative w-32 h-32">
-                                  <Image
-                                    src={menuImage.imageUrl}
-                                    alt={`Menu ${index + 1}`}
-                                    className="object-cover rounded"
-                                    fill
-                                  />
-                                </div>
-                              )}
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              onClick={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  menu: prev.menu.filter((_, i) => i !== index)
-                                }))
-                              }
-                            >
-                              Eliminar
-                            </Button>
-                          </div>
-                        ))}
-                        <div className="flex gap-4">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  const formData = new FormData();
-                                  formData.append('file', file);
-
-                                  const response = await fetch('/api/upload', {
-                                    method: 'POST',
-                                    body: formData
-                                  });
-
-                                  if (response.ok) {
-                                    const { url } = await response.json();
-                                    setNewMenuImage((prev) => ({
-                                      ...prev,
-                                      imageUrl: url
-                                    }));
-                                  }
-                                } catch (error) {
-                                  console.error(
-                                    'Error uploading image:',
-                                    error
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          Imágenes del Menú
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          Sube las imágenes de tu menú. Puedes reordenarlas
+                          arrastrándolas.
+                        </p>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Image Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          {formData.menu.map((menuImage, index) => (
+                            <div
+                              key={index}
+                              draggable
+                              onDragStart={() => setDraggedIndex(index)}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (
+                                  draggedIndex !== null &&
+                                  draggedIndex !== index
+                                ) {
+                                  const newMenu = [...formData.menu];
+                                  const draggedItem = newMenu[draggedIndex];
+                                  newMenu.splice(draggedIndex, 1);
+                                  newMenu.splice(index, 0, draggedItem);
+                                  // Update order numbers
+                                  const updatedMenu = newMenu.map(
+                                    (item, idx) => ({
+                                      ...item,
+                                      order: idx + 1
+                                    })
                                   );
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    menu: updatedMenu
+                                  }));
                                 }
-                              }
-                            }}
-                            className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          />
-                          <input
-                            type="number"
-                            value={newMenuImage.order}
-                            className="w-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            placeholder="Orden"
-                            readOnly
-                          />
+                                setDraggedIndex(null);
+                              }}
+                              className="group relative aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all cursor-move"
+                            >
+                              {menuImage.imageUrl &&
+                                menuImage.imageUrl.trim() !== '' && (
+                                  <>
+                                    <Image
+                                      src={menuImage.imageUrl}
+                                      alt={`Menu ${index + 1}`}
+                                      className="object-cover transition-transform group-hover:scale-105"
+                                      fill
+                                      onClick={() =>
+                                        setSelectedImage(menuImage.imageUrl)
+                                      }
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="secondary"
+                                        className="text-white"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedImage(menuImage.imageUrl);
+                                        }}
+                                      >
+                                        Ver
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setFormData((prev) => ({
+                                            ...prev,
+                                            menu: prev.menu.filter(
+                                              (_, i) => i !== index
+                                            )
+                                          }));
+                                        }}
+                                      >
+                                        Eliminar
+                                      </Button>
+                                    </div>
+                                    <Badge
+                                      variant="secondary"
+                                      className="absolute top-2 left-2 bg-black/60 text-white"
+                                    >
+                                      {index + 1}
+                                    </Badge>
+                                  </>
+                                )}
+                            </div>
+                          ))}
+
+                          {/* Upload Button */}
+                          <div className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-all">
+                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer group">
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg
+                                  className="w-8 h-8 mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 4v16m8-8H4"
+                                  ></path>
+                                </svg>
+                                <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                                  Agregar imagen
+                                </p>
+                              </div>
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      const formData = new FormData();
+                                      formData.append('file', file);
+
+                                      const response = await fetch(
+                                        '/api/upload',
+                                        {
+                                          method: 'POST',
+                                          body: formData
+                                        }
+                                      );
+
+                                      if (response.ok) {
+                                        const { url } = await response.json();
+                                        setNewMenuImage((prev) => ({
+                                          ...prev,
+                                          imageUrl: url
+                                        }));
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        'Error uploading image:',
+                                        error
+                                      );
+                                    }
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+
+                        {/* Image Preview Modal */}
+                        {selectedImage && (
+                          <div
+                            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
+                            onClick={() => setSelectedImage(null)}
+                          >
+                            <div
+                              className="relative"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                className="absolute top-4 right-4 text-white text-xl bg-black bg-opacity-50 rounded-full w-10 h-10"
+                                onClick={() => setSelectedImage(null)}
+                              >
+                                ×
+                              </button>
+                              <div className="flex gap-4 absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() =>
+                                    setImageScale((prev) =>
+                                      Math.min(prev + 0.5, 3)
+                                    )
+                                  }
+                                >
+                                  +
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() =>
+                                    setImageScale((prev) =>
+                                      Math.max(prev - 0.5, 1)
+                                    )
+                                  }
+                                >
+                                  -
+                                </Button>
+                              </div>
+                              <div className="overflow-auto max-h-[90vh] max-w-[90vw]">
+                                <Image
+                                  src={selectedImage}
+                                  alt="Menu fullscreen"
+                                  width={1000}
+                                  height={1000}
+                                  className="object-contain transition-transform duration-200"
+                                  style={{ transform: `scale(${imageScale})` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </TabsContent>
 
                   <TabsContent value="details" className="space-y-6 mt-6">
