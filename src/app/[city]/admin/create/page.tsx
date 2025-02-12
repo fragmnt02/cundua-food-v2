@@ -74,7 +74,6 @@ export default function CreateRestaurant() {
     paymentMethods: [],
     location: {
       address: '',
-      mapUrl: '',
       coordinates: {
         latitude: 0,
         longitude: 0
@@ -168,16 +167,6 @@ export default function CreateRestaurant() {
         'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
       > = {
         ...formData,
-        location: formData.location
-          ? {
-              ...formData.location,
-              mapUrl: formData.location.mapUrl
-                ? formData.location.mapUrl.includes('<iframe')
-                  ? formData.location.mapUrl.split('src="')[1].split('"')[0]
-                  : formData.location.mapUrl
-                : undefined
-            }
-          : undefined,
         hours: Object.entries(formData.hours).map(([day, hours]) => ({
           day,
           open: hours.open,
@@ -987,30 +976,6 @@ export default function CreateRestaurant() {
                             className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           />
                         </div>
-                        <div>
-                          <label
-                            htmlFor="mapUrl"
-                            className="block text-sm font-medium mb-1"
-                          >
-                            URL del Mapa
-                          </label>
-                          <input
-                            type="text"
-                            id="mapUrl"
-                            placeholder="URL del Mapa"
-                            value={formData.location?.mapUrl || ''}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                location: {
-                                  ...prev.location,
-                                  mapUrl: e.target.value
-                                }
-                              }))
-                            }
-                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          />
-                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -1136,20 +1101,6 @@ export default function CreateRestaurant() {
                           id="address"
                           name="address"
                           value={formData.location?.address || ''}
-                          onChange={handleChange}
-                          className="w-full rounded-md border p-2"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label htmlFor="mapUrl" className="text-sm font-medium">
-                          URL de Google Maps
-                        </label>
-                        <input
-                          type="text"
-                          id="mapUrl"
-                          name="mapUrl"
-                          value={formData.location?.mapUrl || ''}
                           onChange={handleChange}
                           className="w-full rounded-md border p-2"
                         />

@@ -9,7 +9,7 @@ import {
   FaFacebook,
   FaWhatsapp,
   FaPhone,
-  FaBiking
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 import { Restaurant, RestaurantType, Day, Cuisine } from '@/types/restaurant';
 import { useRestaurant } from '@/hooks/useRestaurant';
@@ -556,58 +556,36 @@ export default function RestaurantPage() {
                               }
                             </a>
                           )}
-                          <a
-                            href={`https://wa.me/+5219141139222`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                            onClick={() =>
-                              analytics.trackDeliveryClick(
-                                params.id as string,
-                                'rapidito'
-                              )
-                            }
-                          >
-                            <FaBiking className="text-xl" />
-                            Rapidito
-                          </a>
-                          <a
-                            href={`https://wa.me/+5219141222478`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                            onClick={() =>
-                              analytics.trackDeliveryClick(
-                                params.id as string,
-                                'turbomoto'
-                              )
-                            }
-                          >
-                            <FaBiking className="text-xl" />
-                            Turbomoto
-                          </a>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {restaurant?.location?.address && (
-                    <div>
-                      <h3 className="font-semibold text-lg mb-4">Ubicación</h3>
-                      <div className="bg-muted p-4 rounded-lg">
-                        <p className="mb-4">{restaurant.location?.address}</p>
-                        <Suspense fallback={<div>Loading map...</div>}>
-                          <iframe
-                            width="100%"
-                            height="300"
-                            style={{ border: 0 }}
-                            src={restaurant.location?.mapUrl}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            className="rounded-lg"
-                          />
-                        </Suspense>
+                    <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+                      <div className="p-6">
+                        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+                          <FaMapMarkerAlt className="text-primary" />
+                          Ubicación
+                        </h3>
+                        <div className="bg-muted/50 p-4 rounded-lg mb-4 hover:bg-muted/70 transition-colors">
+                          <p className="text-muted-foreground leading-relaxed">
+                            {restaurant.location?.address}
+                          </p>
+                        </div>
+                        <Button
+                          size="lg"
+                          onClick={() => {
+                            window.open(
+                              `https://www.google.com/maps?q=${restaurant.location?.coordinates?.latitude},${restaurant.location?.coordinates?.longitude}`,
+                              '_blank'
+                            );
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-6"
+                        >
+                          <FaMapMarkerAlt className="text-lg" />
+                          Ver en Google Maps
+                        </Button>
                       </div>
                     </div>
                   )}
