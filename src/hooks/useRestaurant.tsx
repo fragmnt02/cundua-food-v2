@@ -36,6 +36,7 @@ interface UseRestaurantReturn {
       'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
     >
   ) => Promise<boolean | undefined>;
+  deleteRestaurant: (id: string) => Promise<boolean | undefined>;
 }
 
 export function useRestaurant(): UseRestaurantReturn {
@@ -184,6 +185,38 @@ export function useRestaurant(): UseRestaurantReturn {
     [city, fetchRestaurants]
   );
 
+  const deleteRestaurant = useCallback(
+    async (id: string) => {
+      if (!city) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/restaurants/${city}/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete restaurant');
+        }
+
+        localStorage.removeItem(CACHE_KEY);
+
+        // Refresh the restaurants list after deletion
+        await fetchRestaurants();
+
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [city, fetchRestaurants]
+  );
+
   // Clear old cache entries on mount
   useEffect(() => {
     const cleanCache = () => {
@@ -218,6 +251,7 @@ export function useRestaurant(): UseRestaurantReturn {
     getRestaurant,
     refreshData: fetchRestaurants,
     createRestaurant,
-    updateRestaurant
+    updateRestaurant,
+    deleteRestaurant
   };
 }

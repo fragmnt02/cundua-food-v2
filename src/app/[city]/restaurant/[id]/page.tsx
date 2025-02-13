@@ -107,13 +107,15 @@ const formatPhoneNumber = (
 };
 
 export default function RestaurantPage() {
-  const { getRestaurant } = useRestaurant();
+  const { getRestaurant, deleteRestaurant } = useRestaurant();
   const params = useParams();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [showHours, setShowHours] = useState(false);
   const [showDelivery, setShowDelivery] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { isAdmin } = useAdmin();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
@@ -237,6 +239,22 @@ export default function RestaurantPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [params.id, maxScroll]);
 
+  const handleDelete = async () => {
+    if (!restaurant) return;
+    setIsDeleting(true);
+    try {
+      const success = await deleteRestaurant(restaurant.id);
+      if (success) {
+        router.push(`/${params.city}`);
+      }
+    } catch (error) {
+      console.error('Error deleting restaurant:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (!restaurant) {
     return (
       <div className="min-h-screen p-8">
@@ -258,15 +276,24 @@ export default function RestaurantPage() {
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
         {isAdmin && (
-          <Button
-            onClick={() =>
-              router.push(`/${params.city}/admin/update/${params.id}`)
-            }
-            className="absolute top-4 right-4 z-10"
-            variant="default"
-          >
-            Editar Restaurante
-          </Button>
+          <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <Button
+              onClick={() =>
+                router.push(`/${params.city}/admin/update/${params.id}`)
+              }
+              className="bg-primary"
+              variant="default"
+            >
+              Editar Restaurante
+            </Button>
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="destructive"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Borrando...' : 'Borrar Restaurante'}
+            </Button>
+          </div>
         )}
         {/* Cover image - use coverImageUrl if available, otherwise fallback to legacy imageUrl */}
         <Image
@@ -702,6 +729,38 @@ export default function RestaurantPage() {
           />
         )}
       </div>
+
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              ¿Estás seguro que deseas borrar este restaurante?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6">
+            <p className="text-muted-foreground mb-6">
+              Esta acción no se puede deshacer. Se eliminará toda la información
+              del restaurante, incluyendo calificaciones y comentarios.
+            </p>
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Borrando...' : 'Sí, borrar restaurante'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
