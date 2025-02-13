@@ -66,6 +66,9 @@ export async function POST(
     const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
     const userId = decodedClaims.uid;
     const userEmail = decodedClaims.email;
+    const userRecord = await auth.getUser(userId);
+    const firstName = userRecord.customClaims?.firstName || '';
+    const lastName = userRecord.customClaims?.lastName || '';
 
     const { content } = await request.json();
 
@@ -88,6 +91,8 @@ export async function POST(
       id: commentRef.id,
       userId,
       userEmail: userEmail || '',
+      firstName,
+      lastName,
       restaurantId,
       content: content.trim(),
       createdAt: now,

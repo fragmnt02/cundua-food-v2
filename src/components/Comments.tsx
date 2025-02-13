@@ -84,7 +84,11 @@ export function Comments({ restaurantId }: CommentsProps) {
               <Card key={comment.id} className="p-4">
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">{comment.userEmail}</span>
+                    <span className="font-medium">
+                      {comment.firstName && comment.lastName
+                        ? `${comment.firstName} ${comment.lastName}`
+                        : comment.userEmail}
+                    </span>
                     <span className="text-sm text-muted-foreground">
                       {new Date(comment.createdAt).toLocaleDateString('es-MX', {
                         year: 'numeric',

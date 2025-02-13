@@ -136,6 +136,8 @@ export interface Comment {
   id: string;
   userId: string;
   userEmail: string;
+  firstName: string;
+  lastName: string;
   restaurantId: string;
   content: string;
   createdAt: string;
