@@ -12,7 +12,8 @@ import {
   FaMapMarkerAlt,
   FaBars,
   FaHeart,
-  FaPencilAlt
+  FaPencilAlt,
+  FaQuestionCircle
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
@@ -86,12 +87,20 @@ const MenuItems = memo(
               <span>Agregar Restaurante</span>
             </Button>
             <Button
-              onClick={() => handleNavigation('/admin/users')}
+              onClick={() => handleNavigation(`/${city}/admin/users`)}
               variant="ghost"
               className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
             >
               <FaUser className="text-xl text-[#363430]" />
               <span>Usuarios</span>
+            </Button>
+            <Button
+              onClick={() => handleNavigation(`/contact`)}
+              variant="ghost"
+              className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              <FaQuestionCircle className="text-xl text-[#363430]" />
+              <span>Agregar mi restaurante</span>
             </Button>
           </>
         )}
