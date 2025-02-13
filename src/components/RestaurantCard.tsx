@@ -11,6 +11,7 @@ import { useFavorite } from '@/hooks/useFavorite';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useCity } from '@/hooks/useCity';
+import { useState } from 'react';
 
 export const RestaurantCard = ({
   restaurant,
@@ -22,43 +23,54 @@ export const RestaurantCard = ({
   const { isFavorite, toggleFavorite, isLoading } = useFavorite(restaurant.id);
   const { user } = useAuth();
   const { city } = useCity();
+  const [imageError, setImageError] = useState(false);
+
+  const coverImage =
+    restaurant.coverImageUrl?.trim() || restaurant.imageUrl?.trim();
+  const logoImage = restaurant.logoUrl?.trim() || restaurant.imageUrl?.trim();
+  const fallbackImage = '/restaurant.svg';
 
   return (
-    <Card className="overflow-hidden group">
-      <Link href={`/${city}/restaurant/${restaurant.id}`}>
+    <Card
+      className="overflow-hidden group transition-shadow duration-200 hover:shadow-lg"
+      role="article"
+      aria-label={`Restaurante ${restaurant.name}`}
+    >
+      <Link
+        href={`/${city}/restaurant/${restaurant.id}`}
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+        aria-label={`Ver detalles de ${restaurant.name}`}
+      >
         <CardHeader className="p-0">
-          <div className="relative aspect-video">
-            {/* Cover image - use coverImageUrl if available, otherwise fallback to legacy imageUrl */}
-            {(restaurant.coverImageUrl?.trim() ||
-              restaurant.imageUrl?.trim()) && (
+          <div className="relative aspect-video bg-muted">
+            {coverImage && (
               <Image
-                src={
-                  restaurant.coverImageUrl?.trim() ||
-                  restaurant.imageUrl?.trim() ||
-                  '/restaurant.svg'
-                }
-                alt={restaurant.name}
+                src={imageError ? fallbackImage : coverImage}
+                alt={`Portada de ${restaurant.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform group-hover:scale-105"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
                 placeholder="blur"
-                blurDataURL="/restaurant.svg"
+                blurDataURL={fallbackImage}
+                priority={false}
+                onError={() => setImageError(true)}
+                loading="lazy"
               />
             )}
-            {/* Logo overlay - use logoUrl if available, otherwise fallback to legacy imageUrl */}
-            {(restaurant.logoUrl?.trim() || restaurant.imageUrl?.trim()) && (
-              <div className="absolute left-4 bottom-4 w-12 h-12 rounded-full border-2 border-white bg-white shadow-md overflow-hidden z-10">
+            {logoImage && (
+              <div
+                className="absolute left-4 -bottom-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden z-10 transition-transform duration-200 group-hover:scale-110"
+                aria-hidden="true"
+              >
                 <Image
-                  src={
-                    restaurant.logoUrl?.trim() ||
-                    restaurant.imageUrl?.trim() ||
-                    '/restaurant.svg'
-                  }
-                  alt={`${restaurant.name} logo`}
+                  src={imageError ? fallbackImage : logoImage}
+                  alt={`Logo de ${restaurant.name}`}
                   fill
                   className="object-cover"
                   placeholder="blur"
-                  blurDataURL="/restaurant.svg"
+                  blurDataURL={fallbackImage}
+                  onError={() => setImageError(true)}
+                  loading="lazy"
                 />
               </div>
             )}
@@ -67,8 +79,9 @@ export const RestaurantCard = ({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'absolute top-2 right-2 z-10 bg-white/80 hover:bg-white/90',
-                  isFavorite && 'text-red-500'
+                  'absolute top-2 right-2 z-10 bg-white/80 hover:bg-white/90 transition-colors duration-200',
+                  isFavorite && 'text-red-500 hover:text-red-600',
+                  'focus:ring-2 focus:ring-primary focus:ring-offset-2'
                 )}
                 onClick={(e) => {
                   e.preventDefault();
@@ -76,33 +89,59 @@ export const RestaurantCard = ({
                   toggleFavorite();
                 }}
                 disabled={isLoading}
+                aria-label={
+                  isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'
+                }
+                aria-pressed={isFavorite}
               >
-                <Heart className="h-5 w-5" />
+                <Heart
+                  className={cn(
+                    'h-5 w-5 transition-transform duration-200',
+                    isFavorite ? 'scale-110 fill-current' : 'scale-100'
+                  )}
+                />
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-4">
+        <CardContent className="p-4 pt-8 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-semibold">{restaurant.name}</h3>
+              <h3 className="font-semibold text-lg">{restaurant.name}</h3>
               {distance !== undefined && (
-                <p className="text-sm text-muted-foreground">
+                <p
+                  className="text-sm text-muted-foreground"
+                  aria-label="Distancia"
+                >
                   {distance < 1
                     ? `${Math.round(distance * 1000)}m de distancia`
                     : `${distance.toFixed(1)}km de distancia`}
                 </p>
               )}
             </div>
-            <Badge variant={restaurant.isOpen ? 'default' : 'secondary'}>
+            <Badge
+              variant={restaurant.isOpen ? 'default' : 'secondary'}
+              className="transition-colors duration-200"
+            >
               {restaurant.isOpen ? 'Abierto' : 'Cerrado'}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-1">
+          <p
+            className="text-sm text-muted-foreground line-clamp-1"
+            aria-label="Tipos de cocina"
+          >
             {restaurant.cuisine.join(', ')}
           </p>
-          <div className="flex items-center gap-1 mt-1">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+          <div
+            className="flex items-center gap-1"
+            aria-label={`Calificación: ${(restaurant.rating ?? 0).toFixed(
+              1
+            )} de 5 estrellas, ${restaurant.voteCount ?? 0} votos`}
+          >
+            <Star
+              className="w-4 h-4 fill-yellow-400 text-yellow-400"
+              aria-hidden="true"
+            />
             <span className="text-sm text-muted-foreground">
               {(restaurant.rating ?? 0).toFixed(1)} ({restaurant.voteCount ?? 0}{' '}
               votos)
