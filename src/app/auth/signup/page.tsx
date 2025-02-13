@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -25,8 +25,9 @@ export default function SignupPage() {
     dateOfBirth: '',
     telephone: ''
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | JSX.Element>('');
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const { signup } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +62,42 @@ export default function SignupPage() {
     }
   };
 
+  const handleForgotPassword = useCallback(async (emailToReset: string) => {
+    if (!emailToReset) {
+      setError('Por favor, ingresa tu correo electrónico');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: emailToReset })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Error al enviar el correo de recuperación'
+        );
+      }
+
+      setResetSent(true);
+      setError('');
+    } catch (err) {
+      setError((err as Error).message);
+      setResetSent(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -87,7 +124,29 @@ export default function SignupPage() {
         formData.telephone
       );
     } catch (err) {
-      setError((err as Error).message);
+      const message = (err as Error).message;
+      if (
+        message.includes(
+          'The email address is already in use by another account.'
+        )
+      ) {
+        setError(
+          <span>
+            El correo electrónico ya está en uso. ¿Olvidaste tu contraseña?{' '}
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 text-primary hover:underline h-auto font-normal"
+              onClick={() => handleForgotPassword(formData.email)}
+              disabled={loading}
+            >
+              Recuperar contraseña
+            </Button>
+          </span>
+        );
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -112,119 +171,135 @@ export default function SignupPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <ExclamationTriangleIcon className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+            {resetSent ? (
+              <Alert
+                variant="success"
+                className="bg-green-50 border-green-500 text-green-700"
+                role="status"
+                aria-live="polite"
+              >
+                <AlertDescription>
+                  Se ha enviado un enlace de recuperación a tu correo
+                  electrónico
+                </AlertDescription>
               </Alert>
+            ) : (
+              <>
+                {error && (
+                  <Alert variant="destructive">
+                    <ExclamationTriangleIcon className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Nombre</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Juan"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Apellido</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Pérez"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
+                  <Input
+                    id="dateOfBirth"
+                    name="dateOfBirth"
+                    type="date"
+                    required
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telephone">Teléfono</Label>
+                  <Input
+                    id="telephone"
+                    name="telephone"
+                    type="tel"
+                    required
+                    value={formData.telephone}
+                    onChange={handleChange}
+                    placeholder="999-999-9999"
+                    pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                    maxLength={12}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Formato: 999-999-9999
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="tu@ejemplo.com"
+                    aria-describedby="email-description"
+                  />
+                  <p
+                    id="email-description"
+                    className="text-sm text-muted-foreground"
+                  >
+                    Usaremos tu correo para iniciar sesión
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    aria-describedby="password-description"
+                  />
+                  <p
+                    id="password-description"
+                    className="text-sm text-muted-foreground"
+                  >
+                    Mínimo 6 caracteres
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+                  <Input
+                    id="confirm-password"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Nombre</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="Juan"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Apellido</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Pérez"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
-              <Input
-                id="dateOfBirth"
-                name="dateOfBirth"
-                type="date"
-                required
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="telephone">Teléfono</Label>
-              <Input
-                id="telephone"
-                name="telephone"
-                type="tel"
-                required
-                value={formData.telephone}
-                onChange={handleChange}
-                placeholder="999-999-9999"
-                pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                maxLength={12}
-              />
-              <p className="text-sm text-muted-foreground">
-                Formato: 999-999-9999
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="tu@ejemplo.com"
-                aria-describedby="email-description"
-              />
-              <p
-                id="email-description"
-                className="text-sm text-muted-foreground"
-              >
-                Usaremos tu correo para iniciar sesión
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                aria-describedby="password-description"
-              />
-              <p
-                id="password-description"
-                className="text-sm text-muted-foreground"
-              >
-                Mínimo 6 caracteres
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
-              <Input
-                id="confirm-password"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="••••••••"
-              />
-            </div>
           </CardContent>
           <CardFooter>
             <Button

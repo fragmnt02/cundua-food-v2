@@ -28,7 +28,7 @@ export async function POST(
     const userRecord = await auth.getUser(decodedClaims.uid);
     const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
-    if (role !== UserRole.ADMIN) {
+    if (role === UserRole.CLIENT) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }
