@@ -4,7 +4,7 @@ import { Restaurant } from '@/types/restaurant';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useFavorite } from '@/hooks/useFavorite';
@@ -101,6 +101,12 @@ export const RestaurantCard = ({
           <p className="text-sm text-muted-foreground line-clamp-1">
             {restaurant.cuisine.join(', ')}
           </p>
+          <div className="flex items-center gap-1 mt-1">
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-sm text-muted-foreground">
+              {restaurant.rating.toFixed(1)} ({restaurant.voteCount} votos)
+            </span>
+          </div>
         </CardContent>
       </Link>
     </Card>
