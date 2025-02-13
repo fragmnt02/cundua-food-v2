@@ -111,6 +111,7 @@ export default function RestaurantPage() {
   const params = useParams();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
   const [scale, setScale] = useState(1);
   const [showHours, setShowHours] = useState(false);
   const [showDelivery, setShowDelivery] = useState(false);
@@ -253,6 +254,31 @@ export default function RestaurantPage() {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
+  };
+
+  const handleImageClick = (imageUrl: string, index: number) => {
+    setSelectedImage(imageUrl);
+    setSelectedImageIndex(index);
+    analytics.trackMenuImageView(params.id as string);
+  };
+
+  const handleNextImage = () => {
+    if (!restaurant?.menu) return;
+    const nextIndex = (selectedImageIndex + 1) % restaurant.menu.length;
+    setSelectedImageIndex(nextIndex);
+    setSelectedImage(restaurant.menu[nextIndex].imageUrl);
+    setScale(1); // Reset zoom when changing images
+  };
+
+  const handlePreviousImage = () => {
+    if (!restaurant?.menu) return;
+    const prevIndex =
+      selectedImageIndex === 0
+        ? restaurant.menu.length - 1
+        : selectedImageIndex - 1;
+    setSelectedImageIndex(prevIndex);
+    setSelectedImage(restaurant.menu[prevIndex].imageUrl);
+    setScale(1); // Reset zoom when changing images
   };
 
   if (!restaurant) {
@@ -677,10 +703,9 @@ export default function RestaurantPage() {
                       <Card
                         key={index}
                         className="cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => {
-                          setSelectedImage(menuItem.imageUrl);
-                          analytics.trackMenuImageView(params.id as string);
-                        }}
+                        onClick={() =>
+                          handleImageClick(menuItem.imageUrl, index)
+                        }
                       >
                         <div className="relative h-48">
                           <Image
@@ -722,10 +747,28 @@ export default function RestaurantPage() {
             imageUrl={selectedImage}
             onClose={() => {
               setSelectedImage(null);
+              setSelectedImageIndex(-1);
               setScale(1);
             }}
             scale={scale}
             onScaleChange={setScale}
+            onNext={
+              restaurant?.menu && restaurant.menu.length > 1
+                ? handleNextImage
+                : undefined
+            }
+            onPrevious={
+              restaurant?.menu && restaurant.menu.length > 1
+                ? handlePreviousImage
+                : undefined
+            }
+            images={restaurant?.menu}
+            currentIndex={selectedImageIndex}
+            onImageSelect={(index) => {
+              setSelectedImageIndex(index);
+              setSelectedImage(restaurant?.menu[index].imageUrl);
+              setScale(1);
+            }}
           />
         )}
       </div>
