@@ -367,7 +367,7 @@ export default function RestaurantPage() {
                   variant="secondary"
                   className="whitespace-nowrap"
                 >
-                  {cuisine}
+                  {Cuisine[cuisine]}
                 </Badge>
               ))}
             </div>

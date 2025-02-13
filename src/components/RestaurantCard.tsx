@@ -1,6 +1,6 @@
 'use client';
 
-import { Restaurant } from '@/types/restaurant';
+import { Cuisine, Restaurant } from '@/types/restaurant';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -130,7 +130,7 @@ export const RestaurantCard = ({
             className="text-sm text-muted-foreground line-clamp-1"
             aria-label="Tipos de cocina"
           >
-            {restaurant.cuisine.join(', ')}
+            {restaurant.cuisine.map((c) => Cuisine[c]).join(', ')}
           </p>
           <div
             className="flex items-center gap-1"

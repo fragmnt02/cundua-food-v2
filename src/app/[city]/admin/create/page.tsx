@@ -214,6 +214,7 @@ export default function CreateRestaurant() {
       > = {
         ...formData,
         hours: Object.entries(formData.hours)
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .filter(([_, dayData]) =>
             dayData.slots.some((slot) => slot.open && slot.close)
           )
