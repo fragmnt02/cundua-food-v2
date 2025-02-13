@@ -28,7 +28,7 @@ export async function POST(
     const userRecord = await auth.getUser(decodedClaims.uid);
     const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
-    if (role === UserRole.CLIENT) {
+    if (role === UserRole.USER) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }
@@ -97,22 +97,32 @@ export async function GET(
         return { ...restaurant, isOpen: false, isOpeningSoon: false };
       }
 
-      const [openHour, openMinutes] = todaySchedule.open.split(':').map(Number);
-      const [closeHour, closeMinutes] = todaySchedule.close
-        .split(':')
-        .map(Number);
-
       const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-      const openTimeInMinutes = openHour * 60 + openMinutes;
-      const closeTimeInMinutes = closeHour * 60 + closeMinutes;
 
-      const isOpen =
-        currentTimeInMinutes >= openTimeInMinutes &&
-        currentTimeInMinutes < closeTimeInMinutes;
+      // Check if the restaurant is currently open in any of its time slots
+      const isOpen = todaySchedule.slots.some((slot) => {
+        const [openHour, openMinutes] = slot.open.split(':').map(Number);
+        const [closeHour, closeMinutes] = slot.close.split(':').map(Number);
+
+        const openTimeInMinutes = openHour * 60 + openMinutes;
+        const closeTimeInMinutes = closeHour * 60 + closeMinutes;
+
+        return (
+          currentTimeInMinutes >= openTimeInMinutes &&
+          currentTimeInMinutes < closeTimeInMinutes
+        );
+      });
+
+      // Check if the restaurant will open soon in any of its upcoming slots
       const isOpeningSoon =
         !isOpen &&
-        openTimeInMinutes - currentTimeInMinutes > 0 &&
-        openTimeInMinutes - currentTimeInMinutes <= 10;
+        todaySchedule.slots.some((slot) => {
+          const [openHour, openMinutes] = slot.open.split(':').map(Number);
+          const openTimeInMinutes = openHour * 60 + openMinutes;
+          const timeUntilOpen = openTimeInMinutes - currentTimeInMinutes;
+
+          return timeUntilOpen > 0 && timeUntilOpen <= 60; // Changed to 60 minutes notice
+        });
 
       return {
         ...restaurant,

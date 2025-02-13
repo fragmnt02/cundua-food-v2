@@ -10,8 +10,10 @@ export interface Restaurant {
   cuisine: (keyof typeof Cuisine)[];
   hours: {
     day: string;
-    open: string;
-    close: string;
+    slots: {
+      open: string;
+      close: string;
+    }[];
   }[];
   menu: {
     imageUrl: string;

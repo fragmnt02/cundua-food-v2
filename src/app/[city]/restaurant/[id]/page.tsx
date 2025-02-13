@@ -82,6 +82,10 @@ const days = [
 // Helper functions moved outside component
 const getCurrentDayInSpanish = () => days[new Date().getDay()];
 
+const formatTimeSlots = (slots: { open: string; close: string }[]): string => {
+  return slots.map((slot) => `${slot.open} - ${slot.close}`).join(' y ');
+};
+
 const formatPhoneNumber = (
   phone: string
 ): { formatted: string; clean: string } => {
@@ -373,17 +377,11 @@ export default function RestaurantPage() {
               onClick={() => setShowHours(true)}
             >
               <span className="font-medium">
-                {
+                {formatTimeSlots(
                   restaurant.hours.find(
                     (h) => h.day === getCurrentDayInSpanish()
-                  )?.open
-                }{' '}
-                -{' '}
-                {
-                  restaurant.hours.find(
-                    (h) => h.day === getCurrentDayInSpanish()
-                  )?.close
-                }
+                  )?.slots || []
+                )}
               </span>
               <span className="ml-1 text-sm opacity-80">Ver horarios</span>
             </Button>
@@ -402,23 +400,34 @@ export default function RestaurantPage() {
               return (
                 <div
                   key={schedule.day}
-                  className={`flex justify-between p-3 rounded-lg ${
+                  className={`flex flex-col p-3 rounded-lg ${
                     isCurrentDay
                       ? 'bg-primary/10 border border-primary'
                       : 'bg-muted'
                   }`}
                 >
-                  <span
-                    className={`font-medium ${
-                      isCurrentDay ? 'text-primary' : ''
-                    }`}
-                  >
-                    {schedule.day}
-                    {isCurrentDay && ' (Hoy)'}
-                  </span>
-                  <span className={isCurrentDay ? 'text-primary' : ''}>
-                    {schedule.open} - {schedule.close}
-                  </span>
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`font-medium ${
+                        isCurrentDay ? 'text-primary' : ''
+                      }`}
+                    >
+                      {schedule.day}
+                      {isCurrentDay && ' (Hoy)'}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {schedule.slots.map((slot, index) => (
+                      <div
+                        key={index}
+                        className={`text-sm ${
+                          isCurrentDay ? 'text-primary' : ''
+                        }`}
+                      >
+                        {slot.open} - {slot.close}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })}

@@ -104,7 +104,8 @@ export const RestaurantCard = ({
           <div className="flex items-center gap-1 mt-1">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
             <span className="text-sm text-muted-foreground">
-              {restaurant.rating.toFixed(1)} ({restaurant.voteCount} votos)
+              {(restaurant.rating ?? 0).toFixed(1)} ({restaurant.voteCount ?? 0}{' '}
+              votos)
             </span>
           </div>
         </CardContent>

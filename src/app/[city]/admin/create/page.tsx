@@ -33,8 +33,10 @@ type RestaurantForm = Omit<
 > & {
   hours: {
     [key: string]: {
-      open: string;
-      close: string;
+      slots: {
+        open: string;
+        close: string;
+      }[];
     };
   };
   information?: string;
@@ -83,7 +85,7 @@ export default function CreateRestaurant() {
     hours: Object.values(Day).reduce(
       (acc, day) => ({
         ...acc,
-        [day]: { open: '', close: '' }
+        [day]: { slots: [{ open: '', close: '' }] }
       }),
       {}
     ),
@@ -145,8 +147,10 @@ export default function CreateRestaurant() {
           const hoursObject = restaurant.hours.reduce(
             (acc: RestaurantForm['hours'], curr: Restaurant['hours'][0]) => {
               acc[curr.day] = {
-                open: curr.open,
-                close: curr.close
+                slots: curr.slots.map((slot) => ({
+                  open: slot.open,
+                  close: slot.close
+                }))
               };
               return acc;
             },
@@ -182,7 +186,9 @@ export default function CreateRestaurant() {
       formData.coverImageUrl.trim() !== '' &&
       formData.cuisine.length > 0 &&
       formData.paymentMethods.length > 0 &&
-      Object.values(formData.hours).some((day) => day.open && day.close) &&
+      Object.values(formData.hours).some((day) =>
+        day.slots.some((slot) => slot.open && slot.close)
+      ) &&
       formData.location?.address?.trim() !== '' &&
       formData.location?.mapUrl?.trim() !== '' &&
       formData.location?.coordinates?.latitude !== 0 &&
@@ -207,11 +213,14 @@ export default function CreateRestaurant() {
         'id' | 'isOpen' | 'isOpeningSoon' | 'rating' | 'voteCount'
       > = {
         ...formData,
-        hours: Object.entries(formData.hours).map(([day, hours]) => ({
-          day,
-          open: hours.open,
-          close: hours.close
-        }))
+        hours: Object.entries(formData.hours)
+          .filter(([_, dayData]) =>
+            dayData.slots.some((slot) => slot.open && slot.close)
+          )
+          .map(([day, dayData]) => ({
+            day,
+            slots: dayData.slots.filter((slot) => slot.open && slot.close)
+          }))
       };
 
       let ok: boolean | undefined = undefined;
@@ -272,8 +281,10 @@ export default function CreateRestaurant() {
         const hoursObject = selectedRestaurant.hours.reduce(
           (acc: RestaurantForm['hours'], curr: Restaurant['hours'][0]) => {
             acc[curr.day] = {
-              open: curr.open,
-              close: curr.close
+              slots: curr.slots.map((slot) => ({
+                open: slot.open,
+                close: slot.close
+              }))
             };
             return acc;
           },
@@ -1197,98 +1208,154 @@ export default function CreateRestaurant() {
                           {daysOfWeek.map((day, index) => (
                             <div
                               key={day}
-                              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-md p-2 ${
+                              className={`space-y-2 rounded-md p-2 ${
                                 hoursError &&
-                                (!formData.hours[day]?.open ||
-                                  !formData.hours[day]?.close)
+                                !formData.hours[day]?.slots.some(
+                                  (slot) => slot.open && slot.close
+                                )
                                   ? 'border border-destructive/50'
-                                  : formData.hours[day]?.open &&
-                                    formData.hours[day]?.close
+                                  : formData.hours[day]?.slots.some(
+                                      (slot) => slot.open && slot.close
+                                    )
                                   ? 'bg-primary/5'
                                   : ''
                               }`}
                             >
-                              <span className="w-24 capitalize font-medium">
-                                {day}
-                              </span>
-                              <div className="flex items-center gap-2 flex-1">
-                                <input
-                                  type="time"
-                                  value={
-                                    formData.hours[
-                                      day as keyof typeof formData.hours
-                                    ]?.open || ''
-                                  }
-                                  onChange={(e) => {
-                                    setHoursError(false);
+                              <div className="flex items-center justify-between">
+                                <span className="w-24 capitalize font-medium">
+                                  {day}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
                                     setFormData((prev) => ({
                                       ...prev,
                                       hours: {
                                         ...prev.hours,
                                         [day]: {
-                                          ...prev.hours[
-                                            day as keyof typeof formData.hours
-                                          ],
-                                          open: e.target.value
+                                          slots: [
+                                            ...prev.hours[day].slots,
+                                            { open: '', close: '' }
+                                          ]
                                         }
                                       }
                                     }));
                                   }}
-                                  className={`flex-1 rounded-md border ${
-                                    hoursError && !formData.hours[day]?.open
-                                      ? 'border-destructive/50'
-                                      : 'border-input'
-                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
-                                />
-                                <span className="text-muted-foreground">a</span>
-                                <input
-                                  type="time"
-                                  value={
-                                    formData.hours[
-                                      day as keyof typeof formData.hours
-                                    ]?.close || ''
-                                  }
-                                  onChange={(e) => {
-                                    setHoursError(false);
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      hours: {
-                                        ...prev.hours,
-                                        [day]: {
-                                          ...prev.hours[
-                                            day as keyof typeof formData.hours
-                                          ],
-                                          close: e.target.value
-                                        }
-                                      }
-                                    }));
-                                  }}
-                                  className={`flex-1 rounded-md border ${
-                                    hoursError && !formData.hours[day]?.close
-                                      ? 'border-destructive/50'
-                                      : 'border-input'
-                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
-                                />
+                                >
+                                  Agregar Horario
+                                </Button>
                               </div>
-                              {index === 0 ? (
+                              <div className="space-y-2">
+                                {formData.hours[day].slots.map(
+                                  (slot, slotIndex) => (
+                                    <div
+                                      key={slotIndex}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <input
+                                        type="time"
+                                        value={slot.open}
+                                        onChange={(e) => {
+                                          setHoursError(false);
+                                          setFormData((prev) => ({
+                                            ...prev,
+                                            hours: {
+                                              ...prev.hours,
+                                              [day]: {
+                                                slots: prev.hours[
+                                                  day
+                                                ].slots.map((s, i) =>
+                                                  i === slotIndex
+                                                    ? {
+                                                        ...s,
+                                                        open: e.target.value
+                                                      }
+                                                    : s
+                                                )
+                                              }
+                                            }
+                                          }));
+                                        }}
+                                        className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                      />
+                                      <span className="text-muted-foreground">
+                                        a
+                                      </span>
+                                      <input
+                                        type="time"
+                                        value={slot.close}
+                                        onChange={(e) => {
+                                          setHoursError(false);
+                                          setFormData((prev) => ({
+                                            ...prev,
+                                            hours: {
+                                              ...prev.hours,
+                                              [day]: {
+                                                slots: prev.hours[
+                                                  day
+                                                ].slots.map((s, i) =>
+                                                  i === slotIndex
+                                                    ? {
+                                                        ...s,
+                                                        close: e.target.value
+                                                      }
+                                                    : s
+                                                )
+                                              }
+                                            }
+                                          }));
+                                        }}
+                                        className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                      />
+                                      {formData.hours[day].slots.length > 1 && (
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="sm"
+                                          onClick={() => {
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              hours: {
+                                                ...prev.hours,
+                                                [day]: {
+                                                  slots: prev.hours[
+                                                    day
+                                                  ].slots.filter(
+                                                    (_, i) => i !== slotIndex
+                                                  )
+                                                }
+                                              }
+                                            }));
+                                          }}
+                                        >
+                                          Eliminar
+                                        </Button>
+                                      )}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                              {index === 0 && (
                                 <Button
                                   type="button"
                                   variant="secondary"
                                   size="sm"
                                   onClick={() => {
                                     const firstDay = daysOfWeek[0];
-                                    const firstDayHours =
-                                      formData.hours[firstDay];
+                                    const firstDaySlots =
+                                      formData.hours[firstDay].slots;
                                     if (
-                                      firstDayHours?.open &&
-                                      firstDayHours?.close
+                                      firstDaySlots.some(
+                                        (slot) => slot.open && slot.close
+                                      )
                                     ) {
                                       const updatedHours = daysOfWeek.reduce(
                                         (acc, currentDay) => ({
                                           ...acc,
                                           [currentDay]: {
-                                            open: firstDayHours.open,
-                                            close: firstDayHours.close
+                                            slots: [...firstDaySlots]
                                           }
                                         }),
                                         {}
@@ -1303,30 +1370,13 @@ export default function CreateRestaurant() {
                                 >
                                   Copiar a Todos
                                 </Button>
-                              ) : (
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      hours: {
-                                        ...prev.hours,
-                                        [day]: { open: '', close: '' }
-                                      }
-                                    }));
-                                  }}
-                                >
-                                  Cerrado
-                                </Button>
                               )}
                             </div>
                           ))}
                           {hoursError && (
                             <p className="text-sm text-destructive">
-                              Establece el horario de apertura y cierre para al
-                              menos un día
+                              Establece al menos un horario de apertura y cierre
+                              para al menos un día
                             </p>
                           )}
                         </div>
