@@ -30,6 +30,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { DeliveryDialog } from '@/components/DeliveryDialog';
+import { useClient } from '@/hooks/useClient';
 
 // Dynamically import the modal component to reduce initial bundle size
 const ImageModal = dynamic(() => import('@/components/ImageModal'), {
@@ -123,6 +124,7 @@ export default function RestaurantPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { isAdmin } = useAdmin();
+  const { isClient, assignedRestaurantId } = useClient();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
   const startTimeRef = useRef(Date.now());
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -305,7 +307,7 @@ export default function RestaurantPage() {
     <main className="min-h-screen bg-gray-50 mb-16" ref={scrollRef}>
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-200">
-        {isAdmin && (
+        {(isAdmin || (isClient && assignedRestaurantId === params.id)) && (
           <div className="absolute top-4 right-4 z-10 flex gap-2">
             <Button
               onClick={() =>
