@@ -98,7 +98,6 @@ export default function CreateRestaurant() {
   const [isUploadingMenu, setIsUploadingMenu] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [featuresError, setFeaturesError] = useState(false);
   const [hoursError, setHoursError] = useState(false);
   const [locationError, setLocationError] = useState<{
     address?: boolean;
@@ -183,7 +182,6 @@ export default function CreateRestaurant() {
       formData.coverImageUrl.trim() !== '' &&
       formData.cuisine.length > 0 &&
       formData.paymentMethods.length > 0 &&
-      Object.values(formData.features).some((value) => value) &&
       Object.values(formData.hours).some((day) => day.open && day.close) &&
       formData.location?.address?.trim() !== '' &&
       formData.location?.mapUrl?.trim() !== '' &&
@@ -1093,8 +1091,7 @@ export default function CreateRestaurant() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          Características{' '}
-                          <span className="text-destructive">*</span>
+                          Características
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -1122,8 +1119,6 @@ export default function CreateRestaurant() {
                                     key as keyof typeof formData.features
                                   ]
                                     ? 'bg-primary/5 border-primary'
-                                    : featuresError
-                                    ? 'border-destructive/50'
                                     : 'border-input'
                                 }`}
                               >
@@ -1135,7 +1130,6 @@ export default function CreateRestaurant() {
                                     ] || false
                                   }
                                   onChange={() => {
-                                    setFeaturesError(false);
                                     handleFeatureChange(key);
                                   }}
                                   className="h-4 w-4 rounded border-input"
@@ -1144,11 +1138,6 @@ export default function CreateRestaurant() {
                               </label>
                             ))}
                           </div>
-                          {featuresError && (
-                            <p className="text-sm text-destructive">
-                              Selecciona al menos una característica
-                            </p>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
