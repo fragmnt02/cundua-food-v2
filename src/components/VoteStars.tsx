@@ -50,7 +50,7 @@ export function VoteStars({
       <span className="text-sm text-gray-600">
         {userRating
           ? '(Tu voto)'
-          : `(${rating.toFixed(1)} - ${voteCount ?? 0} votos)`}
+          : `(${(rating ?? 0).toFixed(1)} - ${voteCount ?? 0} votos)`}
       </span>
     </div>
   );

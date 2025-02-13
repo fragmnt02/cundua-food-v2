@@ -95,6 +95,18 @@ export default function CreateRestaurant() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageScale, setImageScale] = useState(1);
+  const [isUploadingMenu, setIsUploadingMenu] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [featuresError, setFeaturesError] = useState(false);
+  const [hoursError, setHoursError] = useState(false);
+  const [locationError, setLocationError] = useState<{
+    address?: boolean;
+    mapUrl?: boolean;
+    coordinates?: boolean;
+  }>({});
+  const [formError, setFormError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   console.log(formData);
 
@@ -164,8 +176,33 @@ export default function CreateRestaurant() {
     isEditMode
   ]);
 
+  const validateForm = () => {
+    return (
+      formData.name.trim() !== '' &&
+      formData.logoUrl.trim() !== '' &&
+      formData.coverImageUrl.trim() !== '' &&
+      formData.cuisine.length > 0 &&
+      formData.paymentMethods.length > 0 &&
+      Object.values(formData.features).some((value) => value) &&
+      Object.values(formData.hours).some((day) => day.open && day.close) &&
+      formData.location?.address?.trim() !== '' &&
+      formData.location?.mapUrl?.trim() !== '' &&
+      formData.location?.coordinates?.latitude !== 0 &&
+      formData.location?.coordinates?.longitude !== 0
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(false);
+
+    if (!validateForm()) {
+      setFormError(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
       const transformedFormData: Omit<
         Restaurant,
@@ -195,6 +232,8 @@ export default function CreateRestaurant() {
       }
     } catch (error) {
       console.error('Error saving restaurant:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -450,44 +489,57 @@ export default function CreateRestaurant() {
                                   />
                                 </div>
                               )}
-                            <input
-                              type="file"
-                              id="logoUrl"
-                              name="logoUrl"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const formData = new FormData();
-                                    formData.append('file', file);
+                            {isUploadingLogo ? (
+                              <div className="flex items-center gap-2 py-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary"></div>
+                                <span className="text-sm text-muted-foreground">
+                                  Subiendo logo...
+                                </span>
+                              </div>
+                            ) : (
+                              <input
+                                type="file"
+                                id="logoUrl"
+                                name="logoUrl"
+                                accept="image/*"
+                                disabled={isUploadingLogo}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      setIsUploadingLogo(true);
+                                      const formData = new FormData();
+                                      formData.append('file', file);
 
-                                    const response = await fetch(
-                                      '/api/upload',
-                                      {
-                                        method: 'POST',
-                                        body: formData
+                                      const response = await fetch(
+                                        '/api/upload',
+                                        {
+                                          method: 'POST',
+                                          body: formData
+                                        }
+                                      );
+
+                                      if (response.ok) {
+                                        const { url } = await response.json();
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          logoUrl: url
+                                        }));
                                       }
-                                    );
-
-                                    if (response.ok) {
-                                      const { url } = await response.json();
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        logoUrl: url
-                                      }));
+                                    } catch (error) {
+                                      console.error(
+                                        'Error uploading logo:',
+                                        error
+                                      );
+                                    } finally {
+                                      setIsUploadingLogo(false);
                                     }
-                                  } catch (error) {
-                                    console.error(
-                                      'Error uploading logo:',
-                                      error
-                                    );
                                   }
-                                }
-                              }}
-                              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              required={!formData.logoUrl}
-                            />
+                                }}
+                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                required={!formData.logoUrl}
+                              />
+                            )}
                             <p className="text-sm text-muted-foreground">
                               Sube el logo o ícono del restaurante. Recomendado:
                               400x400px
@@ -516,44 +568,57 @@ export default function CreateRestaurant() {
                                   />
                                 </div>
                               )}
-                            <input
-                              type="file"
-                              id="coverImageUrl"
-                              name="coverImageUrl"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const formData = new FormData();
-                                    formData.append('file', file);
+                            {isUploadingCover ? (
+                              <div className="flex items-center gap-2 py-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary"></div>
+                                <span className="text-sm text-muted-foreground">
+                                  Subiendo portada...
+                                </span>
+                              </div>
+                            ) : (
+                              <input
+                                type="file"
+                                id="coverImageUrl"
+                                name="coverImageUrl"
+                                accept="image/*"
+                                disabled={isUploadingCover}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    try {
+                                      setIsUploadingCover(true);
+                                      const formData = new FormData();
+                                      formData.append('file', file);
 
-                                    const response = await fetch(
-                                      '/api/upload',
-                                      {
-                                        method: 'POST',
-                                        body: formData
+                                      const response = await fetch(
+                                        '/api/upload',
+                                        {
+                                          method: 'POST',
+                                          body: formData
+                                        }
+                                      );
+
+                                      if (response.ok) {
+                                        const { url } = await response.json();
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          coverImageUrl: url
+                                        }));
                                       }
-                                    );
-
-                                    if (response.ok) {
-                                      const { url } = await response.json();
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        coverImageUrl: url
-                                      }));
+                                    } catch (error) {
+                                      console.error(
+                                        'Error uploading cover image:',
+                                        error
+                                      );
+                                    } finally {
+                                      setIsUploadingCover(false);
                                     }
-                                  } catch (error) {
-                                    console.error(
-                                      'Error uploading cover image:',
-                                      error
-                                    );
                                   }
-                                }
-                              }}
-                              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                              required={!formData.coverImageUrl}
-                            />
+                                }}
+                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                required={!formData.coverImageUrl}
+                              />
+                            )}
                             <p className="text-sm text-muted-foreground">
                               Sube una imagen de portada atractiva. Recomendado:
                               1920x1080px
@@ -567,26 +632,37 @@ export default function CreateRestaurant() {
                           Tipos de Cocina{' '}
                           <span className="text-destructive">*</span>
                         </label>
-                        <Select
-                          value={formData.cuisine[0]}
-                          onValueChange={(value) => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              cuisine: [value as keyof typeof Cuisine]
-                            }));
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar tipo de cocina" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.keys(Cuisine).map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {Cuisine[type as keyof typeof Cuisine]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                          {Object.entries(Cuisine).map(([key, value]) => (
+                            <Button
+                              key={key}
+                              type="button"
+                              variant={
+                                formData.cuisine.includes(
+                                  key as keyof typeof Cuisine
+                                )
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              size="sm"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  cuisine: prev.cuisine.includes(
+                                    key as keyof typeof Cuisine
+                                  )
+                                    ? prev.cuisine.filter((c) => c !== key)
+                                    : [
+                                        ...prev.cuisine,
+                                        key as keyof typeof Cuisine
+                                      ]
+                                }));
+                              }}
+                            >
+                              {value}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
 
                       <div>
@@ -768,33 +844,44 @@ export default function CreateRestaurant() {
                           {/* Upload Button */}
                           <div className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-all">
                             <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer group">
-                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg
-                                  className="w-8 h-8 mb-3 text-muted-foreground group-hover:text-primary transition-colors"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M12 4v16m8-8H4"
-                                  ></path>
-                                </svg>
-                                <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                                  Agregar imagen
-                                </p>
-                              </div>
+                              {isUploadingMenu ? (
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-3"></div>
+                                  <p className="text-sm text-muted-foreground">
+                                    Subiendo imagen...
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                  <svg
+                                    className="w-8 h-8 mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M12 4v16m8-8H4"
+                                    ></path>
+                                  </svg>
+                                  <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                                    Agregar imagen
+                                  </p>
+                                </div>
+                              )}
                               <input
                                 type="file"
                                 className="hidden"
                                 accept="image/*"
+                                disabled={isUploadingMenu}
                                 onChange={async (e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
                                     try {
+                                      setIsUploadingMenu(true);
                                       const formData = new FormData();
                                       formData.append('file', file);
 
@@ -818,6 +905,8 @@ export default function CreateRestaurant() {
                                         'Error uploading image:',
                                         error
                                       );
+                                    } finally {
+                                      setIsUploadingMenu(false);
                                     }
                                   }
                                 }}
@@ -1004,43 +1093,62 @@ export default function CreateRestaurant() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          Características
+                          Características{' '}
+                          <span className="text-destructive">*</span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          {[
-                            { key: 'reservations', label: 'Reservaciones' },
-                            {
-                              key: 'outdoorSeating',
-                              label: 'Sillas Exteriores'
-                            },
-                            { key: 'wifi', label: 'WiFi' },
-                            { key: 'hasAC', label: 'Aire Acondicionado' },
-                            { key: 'hasParking', label: 'Estacionamiento' },
-                            {
-                              key: 'kidsFriendly',
-                              label: 'Amigable para Niños'
-                            },
-                            { key: 'freeDelivery', label: 'Envío Gratis' }
-                          ].map(({ key, label }) => (
-                            <label
-                              key={key}
-                              className="flex items-center gap-2"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'reservations', label: 'Reservaciones' },
+                              {
+                                key: 'outdoorSeating',
+                                label: 'Sillas Exteriores'
+                              },
+                              { key: 'wifi', label: 'WiFi' },
+                              { key: 'hasAC', label: 'Aire Acondicionado' },
+                              { key: 'hasParking', label: 'Estacionamiento' },
+                              {
+                                key: 'kidsFriendly',
+                                label: 'Amigable para Niños'
+                              },
+                              { key: 'freeDelivery', label: 'Envío Gratis' }
+                            ].map(({ key, label }) => (
+                              <label
+                                key={key}
+                                className={`flex items-center gap-2 rounded-md border p-2 cursor-pointer transition-colors ${
                                   formData.features[
                                     key as keyof typeof formData.features
-                                  ] || false
-                                }
-                                onChange={() => handleFeatureChange(key)}
-                                className="h-4 w-4 rounded border-input"
-                              />
-                              <span className="text-sm">{label}</span>
-                            </label>
-                          ))}
+                                  ]
+                                    ? 'bg-primary/5 border-primary'
+                                    : featuresError
+                                    ? 'border-destructive/50'
+                                    : 'border-input'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    formData.features[
+                                      key as keyof typeof formData.features
+                                    ] || false
+                                  }
+                                  onChange={() => {
+                                    setFeaturesError(false);
+                                    handleFeatureChange(key);
+                                  }}
+                                  className="h-4 w-4 rounded border-input"
+                                />
+                                <span className="text-sm">{label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          {featuresError && (
+                            <p className="text-sm text-destructive">
+                              Selecciona al menos una característica
+                            </p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1061,8 +1169,8 @@ export default function CreateRestaurant() {
                               type="button"
                               variant={
                                 formData.paymentMethods.includes(method)
-                                  ? 'outline'
-                                  : 'default'
+                                  ? 'default'
+                                  : 'outline'
                               }
                               size="sm"
                               onClick={() => {
@@ -1091,7 +1199,8 @@ export default function CreateRestaurant() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          Horarios de Operación
+                          Horarios de Operación{' '}
+                          <span className="text-destructive">*</span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -1099,7 +1208,16 @@ export default function CreateRestaurant() {
                           {daysOfWeek.map((day, index) => (
                             <div
                               key={day}
-                              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-md p-2 ${
+                                hoursError &&
+                                (!formData.hours[day]?.open ||
+                                  !formData.hours[day]?.close)
+                                  ? 'border border-destructive/50'
+                                  : formData.hours[day]?.open &&
+                                    formData.hours[day]?.close
+                                  ? 'bg-primary/5'
+                                  : ''
+                              }`}
                             >
                               <span className="w-24 capitalize font-medium">
                                 {day}
@@ -1112,7 +1230,8 @@ export default function CreateRestaurant() {
                                       day as keyof typeof formData.hours
                                     ]?.open || ''
                                   }
-                                  onChange={(e) =>
+                                  onChange={(e) => {
+                                    setHoursError(false);
                                     setFormData((prev) => ({
                                       ...prev,
                                       hours: {
@@ -1124,9 +1243,13 @@ export default function CreateRestaurant() {
                                           open: e.target.value
                                         }
                                       }
-                                    }))
-                                  }
-                                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    }));
+                                  }}
+                                  className={`flex-1 rounded-md border ${
+                                    hoursError && !formData.hours[day]?.open
+                                      ? 'border-destructive/50'
+                                      : 'border-input'
+                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
                                 />
                                 <span className="text-muted-foreground">a</span>
                                 <input
@@ -1136,7 +1259,8 @@ export default function CreateRestaurant() {
                                       day as keyof typeof formData.hours
                                     ]?.close || ''
                                   }
-                                  onChange={(e) =>
+                                  onChange={(e) => {
+                                    setHoursError(false);
                                     setFormData((prev) => ({
                                       ...prev,
                                       hours: {
@@ -1148,9 +1272,13 @@ export default function CreateRestaurant() {
                                           close: e.target.value
                                         }
                                       }
-                                    }))
-                                  }
-                                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    }));
+                                  }}
+                                  className={`flex-1 rounded-md border ${
+                                    hoursError && !formData.hours[day]?.close
+                                      ? 'border-destructive/50'
+                                      : 'border-input'
+                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
                                 />
                               </div>
                               {index === 0 ? (
@@ -1176,6 +1304,7 @@ export default function CreateRestaurant() {
                                         }),
                                         {}
                                       );
+                                      setHoursError(false);
                                       setFormData((prev) => ({
                                         ...prev,
                                         hours: updatedHours
@@ -1205,6 +1334,12 @@ export default function CreateRestaurant() {
                               )}
                             </div>
                           ))}
+                          {hoursError && (
+                            <p className="text-sm text-destructive">
+                              Establece el horario de apertura y cierre para al
+                              menos un día
+                            </p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1227,25 +1362,39 @@ export default function CreateRestaurant() {
                                   htmlFor="address"
                                   className="text-sm font-medium"
                                 >
-                                  Dirección
+                                  Dirección{' '}
+                                  <span className="text-destructive">*</span>
                                 </label>
                                 <input
                                   type="text"
                                   id="address"
                                   name="address"
                                   value={formData.location?.address || ''}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
+                                    setLocationError((prev) => ({
+                                      ...prev,
+                                      address: false
+                                    }));
                                     setFormData((prev) => ({
                                       ...prev,
                                       location: {
                                         ...prev.location,
                                         address: e.target.value
                                       }
-                                    }))
-                                  }
-                                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    }));
+                                  }}
+                                  className={`w-full rounded-md border ${
+                                    locationError.address
+                                      ? 'border-destructive/50'
+                                      : 'border-input'
+                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
                                   placeholder="Ej: Av. Principal #123, Colonia Centro"
                                 />
+                                {locationError.address && (
+                                  <p className="text-sm text-destructive mt-1">
+                                    La dirección es obligatoria
+                                  </p>
+                                )}
                               </div>
 
                               <div className="space-y-2">
@@ -1253,25 +1402,39 @@ export default function CreateRestaurant() {
                                   htmlFor="mapUrl"
                                   className="text-sm font-medium"
                                 >
-                                  URL de Google Maps
+                                  URL de Google Maps{' '}
+                                  <span className="text-destructive">*</span>
                                 </label>
                                 <input
                                   type="text"
                                   id="mapUrl"
                                   name="mapUrl"
                                   value={formData.location?.mapUrl || ''}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
+                                    setLocationError((prev) => ({
+                                      ...prev,
+                                      mapUrl: false
+                                    }));
                                     setFormData((prev) => ({
                                       ...prev,
                                       location: {
                                         ...prev.location,
                                         mapUrl: e.target.value
                                       }
-                                    }))
-                                  }
-                                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    }));
+                                  }}
+                                  className={`w-full rounded-md border ${
+                                    locationError.mapUrl
+                                      ? 'border-destructive/50'
+                                      : 'border-input'
+                                  } bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
                                   placeholder="https://maps.google.com/..."
                                 />
+                                {locationError.mapUrl && (
+                                  <p className="text-sm text-destructive mt-1">
+                                    La URL de Google Maps es obligatoria
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1279,7 +1442,8 @@ export default function CreateRestaurant() {
                           <div className="space-y-4 border-t pt-4">
                             <div className="flex flex-col items-center">
                               <h4 className="text-sm font-medium mb-2 w-full">
-                                Coordenadas
+                                Coordenadas{' '}
+                                <span className="text-destructive">*</span>
                               </h4>
                               <p className="text-sm text-muted-foreground mb-4 w-full">
                                 Las coordenadas nos ayudan a ubicar el
@@ -1287,10 +1451,28 @@ export default function CreateRestaurant() {
                               </p>
                               <Button
                                 type="button"
-                                variant="secondary"
+                                variant={
+                                  formData.location?.coordinates?.latitude &&
+                                  formData.location?.coordinates?.longitude
+                                    ? 'default'
+                                    : locationError.coordinates
+                                    ? 'destructive'
+                                    : 'secondary'
+                                }
                                 size="sm"
-                                onClick={getCurrentLocation}
-                                className="flex items-center justify-center gap-2 w-fit animate-pulse"
+                                onClick={() => {
+                                  setLocationError((prev) => ({
+                                    ...prev,
+                                    coordinates: false
+                                  }));
+                                  getCurrentLocation();
+                                }}
+                                className={`flex items-center justify-center gap-2 w-fit ${
+                                  !formData.location?.coordinates?.latitude &&
+                                  !formData.location?.coordinates?.longitude
+                                    ? 'animate-pulse'
+                                    : 'bg-green-500/10 text-green-600 hover:bg-green-500/20 hover:text-green-600'
+                                }`}
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1311,8 +1493,24 @@ export default function CreateRestaurant() {
                                     d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
                                   />
                                 </svg>
-                                Usar ubicación actual
+                                {formData.location?.coordinates?.latitude &&
+                                formData.location?.coordinates?.longitude
+                                  ? 'Ubicación obtenida ✓'
+                                  : 'Usar ubicación actual'}
                               </Button>
+                              {formData.location?.coordinates?.latitude &&
+                                formData.location?.coordinates?.longitude && (
+                                  <div className="text-sm text-green-600 mt-2">
+                                    Coordenadas actuales:{' '}
+                                    {formData.location.coordinates.latitude.toFixed(
+                                      6
+                                    )}
+                                    ,{' '}
+                                    {formData.location.coordinates.longitude.toFixed(
+                                      6
+                                    )}
+                                  </div>
+                                )}
                             </div>
 
                             <details className="group">
@@ -1393,10 +1591,26 @@ export default function CreateRestaurant() {
                 </div>
 
                 <div className="flex items-center gap-4 pt-6 mx-6">
-                  <Button type="submit" className="ml-auto">
-                    {isEditMode
-                      ? 'Actualizar Restaurante'
-                      : 'Crear Restaurante'}
+                  {formError && (
+                    <p className="text-sm text-destructive">
+                      Por favor completa todos los campos obligatorios (*)
+                    </p>
+                  )}
+                  <Button
+                    type="submit"
+                    className="ml-auto"
+                    disabled={!validateForm() || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                        {isEditMode ? 'Actualizando...' : 'Creando...'}
+                      </>
+                    ) : isEditMode ? (
+                      'Actualizar Restaurante'
+                    ) : (
+                      'Crear Restaurante'
+                    )}
                   </Button>
                 </div>
               </Tabs>
