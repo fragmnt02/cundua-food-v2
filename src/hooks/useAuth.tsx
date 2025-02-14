@@ -31,6 +31,7 @@ interface AuthContextType {
     dateOfBirth: string,
     telephone: string
   ) => Promise<void>;
+  checkUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,7 +39,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   logout: async () => {},
   login: async () => {},
-  signup: async () => {}
+  signup: async () => {},
+  checkUser: async () => {}
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -172,7 +174,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, login, signup }}>
+    <AuthContext.Provider
+      value={{ user, loading, logout, login, signup, checkUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

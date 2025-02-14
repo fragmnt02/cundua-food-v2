@@ -1,7 +1,7 @@
 'use server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, setDoc, doc } from 'firebase/firestore';
 import { Day, Restaurant } from '@/types/restaurant';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
@@ -44,6 +44,17 @@ export async function POST(
       ...body,
       createdAt: new Date().toISOString()
     });
+
+    if (role === UserRole.CLIENT) {
+      // Add restaurant-user relationship
+      const userRestaurantRef = doc(db, 'userRestaurants', userRecord.uid);
+      await setDoc(userRestaurantRef, {
+        userId: userRecord.uid,
+        restaurantId: docRef.id,
+        role: UserRole.CLIENT,
+        updatedAt: new Date().toISOString()
+      });
+    }
 
     return NextResponse.json({ id: docRef.id }, { status: 201 });
   } catch (error) {

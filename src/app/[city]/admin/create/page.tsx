@@ -26,6 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useClient } from '@/hooks/useClient';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 
 type RestaurantForm = Omit<
   Restaurant,
@@ -53,6 +54,7 @@ export default function CreateRestaurant() {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
   const { isClient, assignedRestaurantId } = useClient();
+  const { checkUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const isEditMode = Boolean(params.id);
   const [formData, setFormData] = useState<RestaurantForm>({
@@ -236,6 +238,9 @@ export default function CreateRestaurant() {
       }
 
       if (ok) {
+        if (isClient) {
+          await checkUser();
+        }
         router.push(`/${city}/restaurant/${id}`);
       }
     } catch (error) {

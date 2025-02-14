@@ -282,7 +282,7 @@ export const Header = memo(() => {
         >
           <div className="flex items-center gap-4 flex-1">
             <Link
-              href={`/${city}`}
+              href={`/${city ? city : 'select-city'}`}
               className="focus-visible:ring-2 focus-visible:ring-[#ffb400] rounded-full"
               aria-label="Ir a la página principal"
             >
