@@ -67,7 +67,7 @@ export default function ImageModal({
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 text-white text-xl bg-black bg-opacity-50 rounded-full w-10 h-10 hover:bg-opacity-70 flex items-center justify-center"
+          className="absolute top-4 right-4 text-white text-xl bg-black bg-opacity-50 rounded-full w-10 h-10 hover:bg-opacity-70 flex items-center justify-center z-50"
           onClick={onClose}
           aria-label="Close modal"
         >
@@ -76,7 +76,7 @@ export default function ImageModal({
 
         {/* Navigation buttons - always visible */}
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-2xl bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-2xl bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed z-50"
           onClick={onPrevious}
           disabled={!onPrevious}
           aria-label="Previous image"
@@ -84,7 +84,7 @@ export default function ImageModal({
           <FaChevronLeft />
         </button>
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-2xl bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-2xl bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed z-50"
           onClick={onNext}
           disabled={!onNext}
           aria-label="Next image"
@@ -93,15 +93,31 @@ export default function ImageModal({
         </button>
 
         {/* Main Image */}
-        <div className="max-h-[calc(100vh-200px)] max-w-full">
-          <Image
-            src={imageUrl}
-            alt="Menu fullscreen"
-            width={1000}
-            height={1000}
-            className="object-contain transition-transform duration-200"
-            style={{ transform: `scale(${scale})` }}
-          />
+        <div
+          className="relative max-h-[calc(100vh-200px)] max-w-[calc(100vw-64px)] overflow-auto"
+          style={{
+            width: '100%',
+            height: '100%'
+          }}
+        >
+          <div
+            className="relative"
+            style={{
+              minWidth: `${100 * scale}%`,
+              minHeight: `${100 * scale}%`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Image
+              src={imageUrl}
+              alt="Menu fullscreen"
+              width={1000}
+              height={1000}
+              className="object-contain w-full h-full transition-transform duration-200"
+            />
+          </div>
         </div>
 
         {/* Zoom controls */}
