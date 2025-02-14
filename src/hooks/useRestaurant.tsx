@@ -64,6 +64,12 @@ export function useRestaurant(): UseRestaurantReturn {
     [getCache]
   );
 
+  const clearCache = useCallback(() => {
+    if (isClient()) {
+      localStorage.removeItem(CACHE_KEY);
+    }
+  }, []);
+
   const isCacheValid = useCallback((timestamp: number): boolean => {
     return Date.now() - timestamp < CACHE_DURATION;
   }, []);
@@ -71,14 +77,8 @@ export function useRestaurant(): UseRestaurantReturn {
   const fetchRestaurants = useCallback(async () => {
     if (!city) return;
 
-    // Check cache first
-    const cache = getCache();
-    const cachedData = cache[city];
-
-    if (cachedData && isCacheValid(cachedData.timestamp)) {
-      setRestaurants(cachedData.data);
-      return;
-    }
+    // Always clear cache before fetching to ensure fresh data
+    clearCache();
 
     setLoading(true);
     setError(null);
@@ -96,7 +96,7 @@ export function useRestaurant(): UseRestaurantReturn {
     } finally {
       setLoading(false);
     }
-  }, [city, getCache, setCache, isCacheValid]);
+  }, [city, clearCache, setCache]);
 
   const getRestaurant = useCallback(
     (id: string) => {

@@ -112,7 +112,7 @@ const formatPhoneNumber = (
 };
 
 export default function RestaurantPage() {
-  const { getRestaurant, deleteRestaurant } = useRestaurant();
+  const { getRestaurant, deleteRestaurant, refreshData } = useRestaurant();
   const params = useParams();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -203,14 +203,19 @@ export default function RestaurantPage() {
   const handleVote = async (rating: number) => {
     const newAverageRating = await submitVote(rating);
     if (newAverageRating) {
+      // Update local state
       setRestaurant((prev) =>
         prev
           ? {
               ...prev,
-              rating: newAverageRating
+              rating: newAverageRating,
+              voteCount: prev.voteCount + 1
             }
           : null
       );
+
+      // Force a refresh of the restaurant list to update ratings everywhere
+      await refreshData();
     }
   };
 
