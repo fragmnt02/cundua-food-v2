@@ -146,18 +146,34 @@ export default function CreateRestaurant() {
         if (response.ok) {
           const restaurant = await response.json();
 
-          const hoursObject = restaurant.hours.reduce(
-            (acc: RestaurantForm['hours'], curr: Restaurant['hours'][0]) => {
-              acc[curr.day] = {
-                slots: curr.slots.map((slot) => ({
-                  open: slot.open,
-                  close: slot.close
-                }))
-              };
-              return acc;
-            },
-            {}
+          // Initialize an empty hours object with all days
+          const initialHours: RestaurantForm['hours'] = Object.values(
+            Day
+          ).reduce(
+            (acc, day) => ({
+              ...acc,
+              [day]: { slots: [{ open: '', close: '' }] }
+            }),
+            {} as RestaurantForm['hours']
           );
+
+          // Merge existing restaurant hours with the initial hours
+          const hoursObject: RestaurantForm['hours'] = Object.values(
+            Day
+          ).reduce((acc, day) => {
+            const existingDay = restaurant.hours.find(
+              (h: { day: Day; slots: { open: string; close: string }[] }) =>
+                h.day === day
+            );
+            return {
+              ...acc,
+              [day]: {
+                slots: existingDay
+                  ? existingDay.slots
+                  : [{ open: '', close: '' }]
+              }
+            };
+          }, initialHours);
 
           setFormData({
             ...restaurant,
@@ -1231,30 +1247,50 @@ export default function CreateRestaurant() {
                                 <span className="w-24 capitalize font-medium">
                                   {day}
                                 </span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      hours: {
-                                        ...prev.hours,
-                                        [day]: {
-                                          slots: [
-                                            ...prev.hours[day].slots,
-                                            { open: '', close: '' }
-                                          ]
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        hours: {
+                                          ...prev.hours,
+                                          [day]: {
+                                            slots: [{ open: '', close: '' }]
+                                          }
                                         }
-                                      }
-                                    }));
-                                  }}
-                                >
-                                  Agregar Horario
-                                </Button>
+                                      }));
+                                    }}
+                                  >
+                                    Cerrado
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        hours: {
+                                          ...prev.hours,
+                                          [day]: {
+                                            slots: [
+                                              ...prev.hours[day].slots,
+                                              { open: '', close: '' }
+                                            ]
+                                          }
+                                        }
+                                      }));
+                                    }}
+                                  >
+                                    Agregar Horario
+                                  </Button>
+                                </div>
                               </div>
                               <div className="space-y-2">
-                                {formData.hours[day].slots.map(
+                                {formData.hours[day]?.slots.map(
                                   (slot, slotIndex) => (
                                     <div
                                       key={slotIndex}
@@ -1315,7 +1351,8 @@ export default function CreateRestaurant() {
                                         }}
                                         className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                       />
-                                      {formData.hours[day].slots.length > 1 && (
+                                      {formData.hours[day]?.slots.length >
+                                        1 && (
                                         <Button
                                           type="button"
                                           variant="destructive"

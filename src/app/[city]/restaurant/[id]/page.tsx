@@ -379,11 +379,15 @@ export default function RestaurantPage() {
               onClick={() => setShowHours(true)}
             >
               <span className="font-medium">
-                {formatTimeSlots(
-                  restaurant.hours.find(
-                    (h) => h.day === getCurrentDayInSpanish()
-                  )?.slots || []
-                )}
+                {restaurant.hours.find(
+                  (h) => h.day === getCurrentDayInSpanish()
+                )?.slots.length
+                  ? formatTimeSlots(
+                      restaurant.hours.find(
+                        (h) => h.day === getCurrentDayInSpanish()
+                      )?.slots || []
+                    )
+                  : 'Cerrado'}
               </span>
               <span className="ml-1 text-sm opacity-80">Ver horarios</span>
             </Button>
@@ -397,11 +401,12 @@ export default function RestaurantPage() {
             <DialogTitle>Horario de {restaurant.name}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 mt-4">
-            {restaurant.hours.map((schedule) => {
-              const isCurrentDay = schedule.day === getCurrentDayInSpanish();
+            {days.map((day) => {
+              const schedule = restaurant.hours.find((h) => h.day === day);
+              const isCurrentDay = day === getCurrentDayInSpanish();
               return (
                 <div
-                  key={schedule.day}
+                  key={day}
                   className={`flex flex-col p-3 rounded-lg ${
                     isCurrentDay
                       ? 'bg-primary/10 border border-primary'
@@ -414,21 +419,27 @@ export default function RestaurantPage() {
                         isCurrentDay ? 'text-primary' : ''
                       }`}
                     >
-                      {schedule.day}
+                      {day}
                       {isCurrentDay && ' (Hoy)'}
                     </span>
                   </div>
                   <div className="space-y-1">
-                    {schedule.slots.map((slot, index) => (
-                      <div
-                        key={index}
-                        className={`text-sm ${
-                          isCurrentDay ? 'text-primary' : ''
-                        }`}
-                      >
-                        {slot.open} - {slot.close}
+                    {schedule?.slots.length ? (
+                      schedule.slots.map((slot, index) => (
+                        <div
+                          key={index}
+                          className={`text-sm ${
+                            isCurrentDay ? 'text-primary' : ''
+                          }`}
+                        >
+                          {slot.open} - {slot.close}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        Cerrado
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               );
