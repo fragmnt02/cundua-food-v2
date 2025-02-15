@@ -238,8 +238,14 @@ export const RestaurantList = ({
   }, [restaurants, nearbyRestaurants, filters]);
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Restaurantes</h1>
+    <main
+      className="container mx-auto px-4 py-8"
+      role="main"
+      aria-label="Lista de restaurantes"
+    >
+      <h1 className="text-3xl font-bold mb-8" id="restaurant-list-title">
+        Restaurantes
+      </h1>
 
       {loading ? (
         <RestaurantListSkeleton />
@@ -250,32 +256,49 @@ export const RestaurantList = ({
             onFilterChange={updateFilters}
             features={FEATURES}
             featureLabels={FEATURE_LABELS}
+            aria-labelledby="restaurant-list-title"
           />
 
           {isLoadingLocation && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Obteniendo ubicación...
+            <div
+              className="flex items-center gap-2 text-sm text-muted-foreground"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <span>Obteniendo ubicación...</span>
             </div>
           )}
 
           {locationError && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" role="alert">
               <AlertDescription>
                 {locationError ===
                 'Geolocation is not supported by your browser'
                   ? 'Tu navegador no soporta geolocalización'
                   : 'No se pudo obtener tu ubicación'}
-                <button onClick={refreshLocation} className="ml-2 underline">
+                <button
+                  onClick={refreshLocation}
+                  className="ml-2 underline"
+                  aria-label="Intentar obtener ubicación nuevamente"
+                >
                   Intentar de nuevo
                 </button>
               </AlertDescription>
             </Alert>
           )}
 
-          <ScrollArea className="h-[calc(100vh-300px)]">
+          <ScrollArea
+            className="h-[calc(100vh-300px)]"
+            role="region"
+            aria-label="Lista desplazable de restaurantes"
+          >
             {filteredAndSortedRestaurants.length === 0 ? (
-              <div className="text-center py-12">
+              <div
+                className="text-center py-12"
+                role="status"
+                aria-live="polite"
+              >
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   No se encontraron restaurantes
                 </h2>
@@ -284,7 +307,11 @@ export const RestaurantList = ({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
+              <div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1"
+                role="list"
+                aria-label="Restaurantes encontrados"
+              >
                 {filteredAndSortedRestaurants.map((restaurant) => (
                   <RestaurantCard
                     key={restaurant.id}

@@ -14,11 +14,24 @@ export async function generateMetadata({
     title: `Restaurantes en ${cityName} | Tabascomiendo`,
     description: `Descubre los mejores restaurantes en ${cityName}. Filtra por tipo de cocina, precio, y características especiales. Encuentra restaurantes abiertos cerca de ti.`,
     keywords: `restaurantes, ${cityName}, Tabasco, comida, gastronomía, México, restaurantes abiertos, delivery`,
+    metadataBase: new URL('https://tabascomiendo.com'),
+    applicationName: 'Tabascomiendo',
+    authors: [{ name: 'Tabascomiendo' }],
+    creator: 'Tabascomiendo',
+    publisher: 'Tabascomiendo',
+    formatDetection: {
+      telephone: true,
+      date: true,
+      address: true,
+      email: true,
+      url: true
+    },
     openGraph: {
       title: `Restaurantes en ${cityName} | Tabascomiendo`,
       description: `Descubre los mejores restaurantes en ${cityName}. Filtra por tipo de cocina, precio, y características especiales. Encuentra restaurantes abiertos cerca de ti.`,
       type: 'website',
       locale: 'es_MX',
+      siteName: 'Tabascomiendo',
       images: [
         {
           url: '/og-image.jpg',
@@ -32,10 +45,31 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: `Restaurantes en ${cityName} | Tabascomiendo`,
       description: `Descubre los mejores restaurantes en ${cityName}. Filtra por tipo de cocina, precio, y características especiales.`,
-      images: ['/og-image.jpg']
+      images: ['/og-image.jpg'],
+      creator: '@tabascomiendo',
+      site: '@tabascomiendo'
     },
     alternates: {
-      canonical: `https://tabascomiendo.com/${city}`
+      canonical: `https://tabascomiendo.com/${city}`,
+      languages: {
+        'es-MX': `https://tabascomiendo.com/${city}`
+      }
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1
+      }
+    },
+    verification: {
+      google: 'your-google-site-verification',
+      yandex: 'your-yandex-verification',
+      yahoo: 'your-yahoo-verification'
     }
   };
 }

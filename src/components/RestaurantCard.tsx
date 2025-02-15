@@ -33,7 +33,7 @@ export const RestaurantCard = ({
   return (
     <Card
       className="overflow-hidden group transition-shadow duration-200 hover:shadow-lg"
-      role="article"
+      role="listitem"
       aria-label={`Restaurante ${restaurant.name}`}
     >
       <Link
@@ -111,7 +111,11 @@ export const RestaurantCard = ({
               {distance !== undefined && (
                 <p
                   className="text-sm text-muted-foreground"
-                  aria-label="Distancia"
+                  aria-label={`${
+                    distance < 1
+                      ? `${Math.round(distance * 1000)} metros`
+                      : `${distance.toFixed(1)} kilómetros`
+                  } de distancia`}
                 >
                   {distance < 1
                     ? `${Math.round(distance * 1000)}m de distancia`
@@ -122,13 +126,20 @@ export const RestaurantCard = ({
             <Badge
               variant={restaurant.isOpen ? 'default' : 'secondary'}
               className="transition-colors duration-200"
+              aria-label={
+                restaurant.isOpen
+                  ? 'Restaurante abierto'
+                  : 'Restaurante cerrado'
+              }
             >
               {restaurant.isOpen ? 'Abierto' : 'Cerrado'}
             </Badge>
           </div>
           <p
             className="text-sm text-muted-foreground line-clamp-1"
-            aria-label="Tipos de cocina"
+            aria-label={`Tipos de cocina: ${restaurant.cuisine
+              .map((c) => Cuisine[c])
+              .join(', ')}`}
           >
             {restaurant.cuisine.map((c) => Cuisine[c]).join(', ')}
           </p>

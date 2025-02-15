@@ -16,7 +16,7 @@ export default function CityPage() {
   const { restaurants, loading } = useRestaurant();
 
   return (
-    <>
+    <main>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -33,15 +33,46 @@ export default function CityPage() {
                 urlTemplate: `https://tabascomiendo.com/${city}/search?q={search_term_string}`
               },
               'query-input': 'required name=search_term_string'
-            }
+            },
+            '@graph': [
+              {
+                '@type': 'Organization',
+                name: 'Tabascomiendo',
+                url: 'https://tabascomiendo.com',
+                logo: '/logo.png'
+              },
+              {
+                '@type': 'LocalBusiness',
+                name: `Tabascomiendo ${cityName}`,
+                description: `Directorio de restaurantes en ${cityName}`,
+                areaServed: {
+                  '@type': 'City',
+                  name: cityName
+                }
+              }
+            ]
           })
         }}
       />
-      <Suspense>
+      <header className="mb-8">
+        <h1 className="sr-only">Restaurantes en {cityName}</h1>
+      </header>
+      <Suspense
+        fallback={
+          <div
+            role="status"
+            aria-label="Cargando restaurantes"
+            className="animate-pulse"
+          >
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        }
+      >
         {restaurants && (
           <RestaurantList restaurants={restaurants} loading={loading} />
         )}
       </Suspense>
-    </>
+    </main>
   );
 }
