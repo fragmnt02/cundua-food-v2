@@ -362,11 +362,14 @@ export default function RestaurantPage() {
             blurDataURL="/restaurant.svg"
           />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-8">
-          <h1 className="text-4xl font-bold text-white ml-32" tabIndex={0}>
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-8">
+          <h1
+            className="text-4xl font-bold text-white mt-0 sm:ml-32"
+            tabIndex={0}
+          >
             {restaurant.name}
           </h1>
-          <div className="flex flex-col gap-2 mt-2 pb-2 ml-32 max-w-[calc(100%-8rem)]">
+          <div className="flex flex-col gap-2 mt-2 pb-2 sm:ml-32 max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-8rem)]">
             <div className="flex flex-wrap items-center gap-2">
               {restaurant.cuisine.map((cuisine) => (
                 <Badge
@@ -380,7 +383,7 @@ export default function RestaurantPage() {
             </div>
             <Button
               variant="ghost"
-              className="text-white hover:text-white hover:bg-white/20 whitespace-nowrap w-fit flex flex-col sm:flex-row mt-2"
+              className="text-white hover:text-white hover:bg-white/20 whitespace-nowrap w-fit flex flex-row mt-2 mb-4"
               onClick={() => setShowHours(true)}
             >
               <span className="font-medium">
