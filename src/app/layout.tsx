@@ -80,7 +80,7 @@ export default function RootLayout({
           <CityProvider>
             <FavoritesProvider>
               <Header />
-              <main className="min-h-[calc(100vh-64px)]">{children}</main>
+              <main className="min-h-[calc(100vh-64px)] pb-20">{children}</main>
               <Footer />
               <Toaster />
               <CookieConsent />
