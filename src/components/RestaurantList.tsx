@@ -208,6 +208,11 @@ export const RestaurantList = ({
           distance: distanceMap.get(r.id)
         }))
         .sort((a, b) => {
+          // First sort by open status
+          if (a.isOpen !== b.isOpen) {
+            return b.isOpen ? 1 : -1;
+          }
+          // Then sort by distance
           if (a.distance === undefined && b.distance === undefined) return 0;
           if (a.distance === undefined) return 1;
           if (b.distance === undefined) return -1;
@@ -216,6 +221,11 @@ export const RestaurantList = ({
     }
 
     return result.sort((a, b) => {
+      // First sort by open status
+      if (a.isOpen !== b.isOpen) {
+        return b.isOpen ? 1 : -1;
+      }
+      // Then apply the selected sort criteria
       switch (filters.sort) {
         case 'rating':
           return b.rating - a.rating;
