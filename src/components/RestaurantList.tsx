@@ -23,14 +23,16 @@ const FEATURE_LABELS: Record<Feature, string> = {
 
 interface Filters {
   searchQuery: string;
-  cuisine: string;
-  priceRange: string;
+  cuisine: string[];
+  priceRange: string[];
   features: Feature[];
   paymentMethods: PaymentMethod[];
-  type: string;
+  type: string[];
   showOnlyOpen: boolean;
   sort: 'name' | 'rating' | 'distance';
 }
+
+type FilterValue<K extends keyof Filters> = Filters[K];
 
 const RestaurantListSkeleton = () => (
   <div className="space-y-4 mb-6">
@@ -73,21 +75,19 @@ export const RestaurantList = ({
   } = useNearbyRestaurants(restaurants);
 
   // Initialize filters from URL query parameters
-  const [filters, setFilters] = useState<Filters>(() => {
-    return {
-      searchQuery: searchParams.get('q') || '',
-      cuisine: searchParams.get('cuisine') || 'all',
-      priceRange: searchParams.get('price') || 'all',
-      features: (searchParams.get('features')?.split(',') || []) as Feature[],
-      paymentMethods: (searchParams.get('payment')?.split(',') ||
-        []) as PaymentMethod[],
-      type: searchParams.get('type') || 'all',
-      showOnlyOpen: searchParams.get('open') === 'true',
-      sort:
-        (searchParams.get('sort') as 'name' | 'rating' | 'distance') ||
-        'distance'
-    };
-  });
+  const [filters, setFilters] = useState<Filters>(() => ({
+    searchQuery: searchParams.get('q') || '',
+    cuisine: searchParams.get('cuisine')?.split(',').filter(Boolean) || [],
+    priceRange: searchParams.get('price')?.split(',').filter(Boolean) || [],
+    features: (searchParams.get('features')?.split(',').filter(Boolean) ||
+      []) as Feature[],
+    paymentMethods: (searchParams.get('payment')?.split(',').filter(Boolean) ||
+      []) as PaymentMethod[],
+    type: searchParams.get('type')?.split(',').filter(Boolean) || [],
+    showOnlyOpen: searchParams.get('open') === 'true',
+    sort:
+      (searchParams.get('sort') as 'name' | 'rating' | 'distance') || 'distance'
+  }));
 
   // Track search analytics
   useEffect(() => {
@@ -96,29 +96,29 @@ export const RestaurantList = ({
     }
   }, [filters.searchQuery]);
 
-  // Update URL when filters change
+  // Update filters function with explicit typing
   const updateFilters = useCallback(
-    (key: keyof Filters, value: string | string[] | boolean) => {
-      let newFilters: Filters;
+    <K extends keyof Filters>(key: K, value: FilterValue<K>) => {
+      const newFilters = { ...filters };
 
       // Special case for clearing all filters
       if (key === 'searchQuery' && value === '') {
-        newFilters = {
+        setFilters({
           searchQuery: '',
-          cuisine: 'all',
-          priceRange: 'all',
+          cuisine: [],
+          priceRange: [],
           features: [],
           paymentMethods: [],
-          type: 'all',
+          type: [],
           showOnlyOpen: false,
           sort: 'distance'
-        };
-        setFilters(newFilters);
+        });
         router.push(window.location.pathname, { scroll: false });
         return;
       }
 
-      newFilters = { ...filters, [key]: value };
+      // Type-safe assignment
+      newFilters[key] = value;
       setFilters(newFilters);
 
       // Create new URLSearchParams object
@@ -126,15 +126,16 @@ export const RestaurantList = ({
 
       // Only add non-default values to URL
       if (newFilters.searchQuery) newParams.set('q', newFilters.searchQuery);
-      if (newFilters.cuisine !== 'all')
-        newParams.set('cuisine', newFilters.cuisine);
-      if (newFilters.priceRange !== 'all')
-        newParams.set('price', newFilters.priceRange);
+      if (newFilters.cuisine.length > 0)
+        newParams.set('cuisine', newFilters.cuisine.join(','));
+      if (newFilters.priceRange.length > 0)
+        newParams.set('price', newFilters.priceRange.join(','));
       if (newFilters.features.length > 0)
         newParams.set('features', newFilters.features.join(','));
       if (newFilters.paymentMethods.length > 0)
         newParams.set('payment', newFilters.paymentMethods.join(','));
-      if (newFilters.type !== 'all') newParams.set('type', newFilters.type);
+      if (newFilters.type.length > 0)
+        newParams.set('type', newFilters.type.join(','));
       if (newFilters.showOnlyOpen) newParams.set('open', 'true');
       if (newFilters.sort !== 'distance')
         newParams.set('sort', newFilters.sort);
@@ -165,13 +166,15 @@ export const RestaurantList = ({
         .toLowerCase()
         .includes(filters.searchQuery.toLowerCase());
       const matchesCuisine =
-        filters.cuisine === 'all' ||
-        restaurant.cuisine?.includes(filters.cuisine as keyof typeof Cuisine);
+        filters.cuisine.length === 0 ||
+        filters.cuisine.some((cuisine) =>
+          restaurant.cuisine?.includes(cuisine as keyof typeof Cuisine)
+        );
       const matchesType =
-        filters.type === 'all' || restaurant.type === filters.type;
+        filters.type.length === 0 || filters.type.includes(restaurant.type);
       const matchesPriceRange =
-        filters.priceRange === 'all' ||
-        restaurant.priceRange === filters.priceRange;
+        filters.priceRange.length === 0 ||
+        filters.priceRange.includes(restaurant.priceRange);
       const matchesFeatures =
         filters.features.length === 0 ||
         filters.features.every(
@@ -224,7 +227,7 @@ export const RestaurantList = ({
       if (a.isOpen !== b.isOpen) {
         return b.isOpen ? 1 : -1;
       }
-      // Then apply the selected sort criteria
+      // Then apply the selected sort criteria within each group (open and closed)
       switch (filters.sort) {
         case 'rating':
           return b.rating - a.rating;
