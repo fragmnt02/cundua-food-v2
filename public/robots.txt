@@ -1,0 +1,12 @@
+# Allow all crawlers
+User-agent: *
+
+# Allow crawling of all content
+Allow: /
+
+# Disallow admin and auth routes
+Disallow: /*/admin/
+Disallow: /auth/
+
+# Sitemap location 
+Sitemap: https://tabascomiendo.com/sitemap.xml 
