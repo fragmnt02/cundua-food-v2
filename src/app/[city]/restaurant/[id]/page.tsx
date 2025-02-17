@@ -505,54 +505,56 @@ export default function RestaurantPage() {
       </div>
 
       <Dialog open={showHours} onOpenChange={setShowHours}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="h-[95vh] max-h-[95vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Horario de {restaurant.name}</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 gap-4 mt-4">
-            {days.map((day) => {
-              const schedule = restaurant.hours.find((h) => h.day === day);
-              const isCurrentDay = day === getCurrentDayInSpanish();
-              return (
-                <div
-                  key={day}
-                  className={`flex flex-col p-3 rounded-lg ${
-                    isCurrentDay
-                      ? 'bg-primary/10 border border-primary'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span
-                      className={`font-medium ${
-                        isCurrentDay ? 'text-primary' : ''
-                      }`}
-                    >
-                      {day}
-                      {isCurrentDay && ' (Hoy)'}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    {schedule?.slots.length ? (
-                      schedule.slots.map((slot, index) => (
-                        <div
-                          key={index}
-                          className={`text-sm ${
-                            isCurrentDay ? 'text-primary' : ''
-                          }`}
-                        >
-                          {slot.open} - {slot.close}
+          <div className="flex-1 overflow-y-auto p-6 pt-2">
+            <div className="grid grid-cols-1 gap-4">
+              {days.map((day) => {
+                const schedule = restaurant.hours.find((h) => h.day === day);
+                const isCurrentDay = day === getCurrentDayInSpanish();
+                return (
+                  <div
+                    key={day}
+                    className={`flex flex-col p-3 rounded-lg ${
+                      isCurrentDay
+                        ? 'bg-primary/10 border border-primary'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span
+                        className={`font-medium ${
+                          isCurrentDay ? 'text-primary' : ''
+                        }`}
+                      >
+                        {day}
+                        {isCurrentDay && ' (Hoy)'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      {schedule?.slots.length ? (
+                        schedule.slots.map((slot, index) => (
+                          <div
+                            key={index}
+                            className={`text-sm ${
+                              isCurrentDay ? 'text-primary' : ''
+                            }`}
+                          >
+                            {slot.open} - {slot.close}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          Cerrado
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-sm text-muted-foreground">
-                        Cerrado
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
