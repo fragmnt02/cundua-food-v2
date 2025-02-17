@@ -14,6 +14,7 @@ import { analytics } from '@/utils/analytics';
 import { CookieConsent } from '@/components/CookieConsent';
 import { FavoritesProvider } from '@/providers/FavoritesProvider';
 import { CityProvider } from '@/providers/CityProvider';
+import { Metadata } from 'next';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -91,3 +92,59 @@ export default function RootLayout({
     </html>
   );
 }
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | TabasComiendo',
+    default: 'TabasComiendo'
+  },
+  description: 'Descubre los mejores restaurantes en Tabasco',
+  icons: {
+    icon: [
+      {
+        url: '/favicon.ico',
+        sizes: 'any'
+      },
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml'
+      }
+    ],
+    apple: [
+      {
+        url: '/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png'
+      }
+    ],
+    shortcut: [
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml'
+      }
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/safari-pinned-tab.svg',
+        color: '#fb923c'
+      }
+    ]
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'TabasComiendo'
+  },
+  applicationName: 'TabasComiendo',
+  formatDetection: {
+    telephone: false
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1
+  },
+  themeColor: '#fb923c'
+};
