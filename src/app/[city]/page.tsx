@@ -16,7 +16,11 @@ export default function CityPage() {
   const { restaurants, loading } = useRestaurant();
 
   return (
-    <main>
+    <main
+      className="container mx-auto px-4 py-8"
+      role="main"
+      aria-label={`Restaurantes en ${cityName}`}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -54,9 +58,6 @@ export default function CityPage() {
           })
         }}
       />
-      <header className="mb-8">
-        <h1 className="sr-only">Restaurantes en {cityName}</h1>
-      </header>
       <Suspense
         fallback={
           <div

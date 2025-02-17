@@ -5,7 +5,6 @@ import { Restaurant } from '@/types/restaurant';
 import { useAuth } from '@/hooks/useAuth';
 import { useCity } from '@/hooks/useCity';
 import { RestaurantCard } from '@/components/RestaurantCard';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FavoritesPage() {
@@ -67,13 +66,11 @@ export default function FavoritesPage() {
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
-            {favorites.map((restaurant) => (
-              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
+          {favorites.map((restaurant) => (
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          ))}
+        </div>
       )}
     </main>
   );

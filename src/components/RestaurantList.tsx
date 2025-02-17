@@ -5,7 +5,6 @@ import { Restaurant, Cuisine, PaymentMethod } from '@/types/restaurant';
 import { RestaurantCard } from './RestaurantCard';
 import { useNearbyRestaurants } from '@/hooks/useNearbyRestaurants';
 import FilterSection from './FilterSection';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/utils/analytics';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -239,7 +238,7 @@ export const RestaurantList = ({
 
   return (
     <main
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto px-4 py-8 pt-0"
       role="main"
       aria-label="Lista de restaurantes"
     >
@@ -288,45 +287,35 @@ export const RestaurantList = ({
             </Alert>
           )}
 
-          <ScrollArea
-            className="h-[calc(100vh-300px)]"
-            role="region"
-            aria-label="Lista desplazable de restaurantes"
-          >
-            {filteredAndSortedRestaurants.length === 0 ? (
-              <div
-                className="text-center py-12"
-                role="status"
-                aria-live="polite"
-              >
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  No se encontraron restaurantes
-                </h2>
-                <p className="text-gray-600">
-                  Intenta ajustar los filtros para ver más resultados
-                </p>
-              </div>
-            ) : (
-              <div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1"
-                role="list"
-                aria-label="Restaurantes encontrados"
-              >
-                {filteredAndSortedRestaurants.map((restaurant) => (
-                  <RestaurantCard
-                    key={restaurant.id}
-                    restaurant={restaurant}
-                    distance={
-                      'distance' in restaurant &&
-                      typeof restaurant.distance === 'number'
-                        ? restaurant.distance
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </ScrollArea>
+          {filteredAndSortedRestaurants.length === 0 ? (
+            <div className="text-center py-12" role="status" aria-live="polite">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                No se encontraron restaurantes
+              </h2>
+              <p className="text-gray-600">
+                Intenta ajustar los filtros para ver más resultados
+              </p>
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1"
+              role="list"
+              aria-label="Restaurantes encontrados"
+            >
+              {filteredAndSortedRestaurants.map((restaurant) => (
+                <RestaurantCard
+                  key={restaurant.id}
+                  restaurant={restaurant}
+                  distance={
+                    'distance' in restaurant &&
+                    typeof restaurant.distance === 'number'
+                      ? restaurant.distance
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
     </main>

@@ -14,7 +14,6 @@ import { analytics } from '@/utils/analytics';
 import { CookieConsent } from '@/components/CookieConsent';
 import { FavoritesProvider } from '@/providers/FavoritesProvider';
 import { CityProvider } from '@/providers/CityProvider';
-import { Metadata } from 'next';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -28,8 +27,6 @@ const geistMono = localFont({
 });
 
 function Analytics() {
-  'use client';
-
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -49,102 +46,39 @@ export default function RootLayout({
   return (
     <html lang="es-MX">
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <Script
-          strategy="afterInteractive"
-          src="https://www.googletagmanager.com/gtag/js?id=G-G61FZTS9F4"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-G61FZTS9F4', {
-              'consent_mode_enabled': true
-            });
-            gtag('consent', 'default', {
-              'analytics_storage': 'denied'
-            });
-          `}
-        </Script>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
-        <Suspense fallback={null}>
-          <Analytics />
-        </Suspense>
         <AuthProvider>
           <CityProvider>
             <FavoritesProvider>
               <Header />
-              <main className="min-h-[calc(100vh-64px)] pb-20">{children}</main>
+              <Suspense>
+                <Analytics />
+              </Suspense>
+              <main className="flex-1 mb-4">{children}</main>
               <Footer />
               <Toaster />
               <CookieConsent />
             </FavoritesProvider>
           </CityProvider>
         </AuthProvider>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXXXXXXXXX');
+          `}
+        </Script>
       </body>
     </html>
   );
 }
-
-export const metadata: Metadata = {
-  title: {
-    template: '%s | TabasComiendo',
-    default: 'TabasComiendo'
-  },
-  description: 'Descubre los mejores restaurantes en Tabasco',
-  icons: {
-    icon: [
-      {
-        url: '/favicon.ico',
-        sizes: 'any'
-      },
-      {
-        url: '/favicon.svg',
-        type: 'image/svg+xml'
-      }
-    ],
-    apple: [
-      {
-        url: '/apple-touch-icon.png',
-        sizes: '180x180',
-        type: 'image/png'
-      }
-    ],
-    shortcut: [
-      {
-        url: '/favicon.svg',
-        type: 'image/svg+xml'
-      }
-    ],
-    other: [
-      {
-        rel: 'mask-icon',
-        url: '/safari-pinned-tab.svg',
-        color: '#fb923c'
-      }
-    ]
-  },
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'TabasComiendo'
-  },
-  applicationName: 'TabasComiendo',
-  formatDetection: {
-    telephone: false
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1
-  },
-  themeColor: '#fb923c'
-};
