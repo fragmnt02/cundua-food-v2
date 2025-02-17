@@ -180,7 +180,7 @@ export const RestaurantList = ({
         );
       const matchesPaymentMethods =
         filters.paymentMethods.length === 0 ||
-        filters.paymentMethods.every((method) =>
+        filters.paymentMethods.some((method) =>
           restaurant.paymentMethods?.includes(method)
         );
       const matchesOpenStatus = !filters.showOnlyOpen || restaurant.isOpen;
