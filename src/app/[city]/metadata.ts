@@ -67,9 +67,9 @@ export async function generateMetadata({
       }
     },
     verification: {
-      google: 'your-google-site-verification',
-      yandex: 'your-yandex-verification',
-      yahoo: 'your-yahoo-verification'
+      google: 'verificación-google',
+      yandex: 'verificación-yandex',
+      yahoo: 'verificación-yahoo'
     }
   };
 }

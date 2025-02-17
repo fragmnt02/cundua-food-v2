@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Restaurant Details | Cundua Food',
-  description: 'Discover amazing restaurants in your city',
+  title: 'Detalles del restaurante | Tabascomiendo',
+  description: 'Descubre los mejores restaurantes en tu ciudad',
   openGraph: {
     type: 'website',
     locale: 'es_MX',
     url: 'https://catalogo.tabacomiendo.com',
-    siteName: 'Cundua Food'
+    siteName: 'Tabascomiendo'
   }
 };
 

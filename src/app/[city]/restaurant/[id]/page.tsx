@@ -196,7 +196,7 @@ export default function RestaurantPage() {
     // Update title and description dynamically
     if (restaurant) {
       // Update only the title tag
-      document.title = `${restaurant.name} | Cundua Food`;
+      document.title = `${restaurant.name} | Tabascomiendo`;
     }
   }, [restaurant]);
 
@@ -308,18 +308,112 @@ export default function RestaurantPage() {
     );
   }
 
+  // Generar datos estructurados para el restaurante
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    '@id': `https://catalogo.tabacomiendo.com/${params.city}/restaurant/${params.id}`,
+    name: restaurant.name,
+    image: [
+      restaurant.coverImageUrl,
+      restaurant.logoUrl,
+      ...(restaurant.menu?.map((item) => item.imageUrl) || [])
+    ].filter(Boolean),
+    description: restaurant.information,
+    url: `https://catalogo.tabacomiendo.com/${params.city}/restaurant/${params.id}`,
+    telephone: restaurant.delivery?.phone,
+    servesCuisine: restaurant.cuisine,
+    priceRange: restaurant.priceRange,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: restaurant.rating,
+      reviewCount: restaurant.voteCount,
+      bestRating: '5',
+      worstRating: '1'
+    },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: restaurant.location?.address,
+      addressLocality: params.city,
+      addressCountry: 'MX'
+    },
+    geo: restaurant.location?.coordinates
+      ? {
+          '@type': 'GeoCoordinates',
+          latitude: restaurant.location.coordinates.latitude,
+          longitude: restaurant.location.coordinates.longitude
+        }
+      : undefined,
+    amenityFeature: [
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'WiFi',
+        value: restaurant.features.wifi
+      },
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'Estacionamiento',
+        value: restaurant.features.hasParking
+      },
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'Aire Acondicionado',
+        value: restaurant.features.hasAC
+      },
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'Reservaciones',
+        value: restaurant.features.reservations
+      },
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'Asientos al aire libre',
+        value: restaurant.features.outdoorSeating
+      },
+      {
+        '@type': 'LocationFeatureSpecification',
+        name: 'Amigable para niños',
+        value: restaurant.features.kidsFriendly
+      }
+    ].filter((feature) => feature.value),
+    paymentAccepted: restaurant.paymentMethods.join(', '),
+    openingHoursSpecification: restaurant.hours.map((day) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: day.day,
+      opens: day.slots[0]?.open,
+      closes: day.slots[0]?.close
+    }))
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 mb-16" ref={scrollRef}>
+      {/* Agregar datos estructurados */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd)
+        }}
+      />
+
       {/* Hero Section */}
-      <div className="relative h-96 bg-gray-200">
+      <div
+        className="relative h-96 bg-gray-200"
+        role="banner"
+        aria-label="Sección principal del restaurante"
+      >
         {(isAdmin || (isClient && assignedRestaurantId === params.id)) && (
-          <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <div
+            className="absolute top-4 right-4 z-10 flex gap-2"
+            role="toolbar"
+            aria-label="Acciones de administración del restaurante"
+          >
             <Button
               onClick={() =>
                 router.push(`/${params.city}/admin/update/${params.id}`)
               }
               className="bg-primary"
               variant="default"
+              aria-label="Editar detalles del restaurante"
             >
               Editar Restaurante
             </Button>
@@ -327,6 +421,7 @@ export default function RestaurantPage() {
               onClick={() => setShowDeleteConfirm(true)}
               variant="destructive"
               disabled={isDeleting}
+              aria-label="Eliminar restaurante"
             >
               {isDeleting ? 'Borrando...' : 'Borrar Restaurante'}
             </Button>
@@ -339,7 +434,7 @@ export default function RestaurantPage() {
             restaurant.imageUrl?.trim() ||
             '/restaurant.svg'
           }
-          alt={`${restaurant.name} cover`}
+          alt={`${restaurant.name} - Vista principal del restaurante`}
           fill
           priority
           sizes="100vw"
@@ -355,7 +450,7 @@ export default function RestaurantPage() {
               restaurant.imageUrl?.trim() ||
               '/restaurant.svg'
             }
-            alt={`${restaurant.name} logo`}
+            alt={`${restaurant.name} - Logo del restaurante`}
             fill
             className="object-cover"
             placeholder="blur"
@@ -370,12 +465,17 @@ export default function RestaurantPage() {
             {restaurant.name}
           </h1>
           <div className="flex flex-col gap-2 mt-2 pb-2 sm:ml-32 max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-8rem)]">
-            <div className="flex flex-wrap items-center gap-2">
+            <div
+              className="flex flex-wrap items-center gap-2"
+              role="list"
+              aria-label="Tipos de cocina"
+            >
               {restaurant.cuisine.map((cuisine) => (
                 <Badge
                   key={cuisine}
                   variant="secondary"
                   className="whitespace-nowrap"
+                  role="listitem"
                 >
                   {Cuisine[cuisine]}
                 </Badge>
@@ -385,6 +485,7 @@ export default function RestaurantPage() {
               variant="ghost"
               className="text-white hover:text-white hover:bg-white/20 whitespace-nowrap w-fit flex flex-row mt-2 mb-4"
               onClick={() => setShowHours(true)}
+              aria-label="Ver horarios del restaurante"
             >
               <span className="font-medium">
                 {restaurant.hours.find(
@@ -560,7 +661,11 @@ export default function RestaurantPage() {
                         <h4 className="text-base font-medium mb-3">
                           Redes Sociales
                         </h4>
-                        <div className="flex gap-4">
+                        <div
+                          className="flex gap-4"
+                          role="list"
+                          aria-label="Enlaces a redes sociales"
+                        >
                           {restaurant.socialMedia?.instagram && (
                             <a
                               href={restaurant.socialMedia.instagram}
@@ -573,9 +678,14 @@ export default function RestaurantPage() {
                                   'instagram'
                                 )
                               }
+                              role="listitem"
+                              aria-label="Visitar Instagram"
                             >
-                              <FaInstagram className="text-xl" />
-                              Instagram
+                              <FaInstagram
+                                className="text-xl"
+                                aria-hidden="true"
+                              />
+                              <span>Instagram</span>
                             </a>
                           )}
                           {restaurant.socialMedia?.facebook && (
@@ -590,9 +700,14 @@ export default function RestaurantPage() {
                                   'facebook'
                                 )
                               }
+                              role="listitem"
+                              aria-label="Visitar Facebook"
                             >
-                              <FaFacebook className="text-xl" />
-                              Facebook
+                              <FaFacebook
+                                className="text-xl"
+                                aria-hidden="true"
+                              />
+                              <span>Facebook</span>
                             </a>
                           )}
                         </div>
@@ -602,7 +717,11 @@ export default function RestaurantPage() {
                         <h4 className="text-base font-medium mb-3 text-center">
                           A Domicilio
                         </h4>
-                        <div className="flex flex-wrap gap-4 justify-center">
+                        <div
+                          className="flex flex-wrap gap-4 justify-center"
+                          role="list"
+                          aria-label="Opciones de entrega a domicilio"
+                        >
                           {restaurant.delivery?.whatsapp && (
                             <a
                               href={`https://wa.me/+521${
@@ -618,9 +737,14 @@ export default function RestaurantPage() {
                                   'whatsapp'
                                 )
                               }
+                              role="listitem"
+                              aria-label="Pedir por WhatsApp"
                             >
-                              <FaWhatsapp className="text-xl" />
-                              WhatsApp
+                              <FaWhatsapp
+                                className="text-xl"
+                                aria-hidden="true"
+                              />
+                              <span>WhatsApp</span>
                             </a>
                           )}
                           {restaurant.delivery?.phone && (
@@ -636,12 +760,19 @@ export default function RestaurantPage() {
                                   'phone'
                                 )
                               }
-                            >
-                              <FaPhone className="text-xl" />
-                              {
+                              role="listitem"
+                              aria-label={`Llamar al ${
                                 formatPhoneNumber(restaurant.delivery.phone)
                                   .formatted
-                              }
+                              }`}
+                            >
+                              <FaPhone className="text-xl" aria-hidden="true" />
+                              <span>
+                                {
+                                  formatPhoneNumber(restaurant.delivery.phone)
+                                    .formatted
+                                }
+                              </span>
                             </a>
                           )}
                           <Button
@@ -649,9 +780,13 @@ export default function RestaurantPage() {
                             size="lg"
                             className="text-white"
                             onClick={() => setShowDelivery(true)}
+                            aria-label="Ver opciones de motomandados"
                           >
-                            <FaMotorcycle className="text-xl" />
-                            Motomandados
+                            <FaMotorcycle
+                              className="text-xl"
+                              aria-hidden="true"
+                            />
+                            <span>Motomandados</span>
                           </Button>
                         </div>
                       </div>
@@ -728,7 +863,11 @@ export default function RestaurantPage() {
               </CardHeader>
               <CardContent>
                 {restaurant.menu?.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    role="grid"
+                    aria-label="Menú del restaurante"
+                  >
                     {restaurant.menu.map((menuItem, index) => (
                       <Card
                         key={index}
@@ -736,11 +875,21 @@ export default function RestaurantPage() {
                         onClick={() =>
                           handleImageClick(menuItem.imageUrl, index)
                         }
+                        role="gridcell"
+                        aria-label={`Ver imagen ${index + 1} del menú`}
+                        tabIndex={0}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            handleImageClick(menuItem.imageUrl, index);
+                          }
+                        }}
                       >
                         <div className="relative h-48">
                           <Image
                             src={menuItem.imageUrl}
-                            alt={`Menu item ${index + 1}`}
+                            alt={`Imagen ${index + 1} del menú de ${
+                              restaurant.name
+                            }`}
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className="object-cover rounded-t-lg"

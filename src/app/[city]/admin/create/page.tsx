@@ -651,8 +651,8 @@ export default function CreateRestaurant() {
                               />
                             )}
                             <p className="text-sm text-muted-foreground">
-                              Sube una imagen de portada atractiva. Recomendado:
-                              1920x1080px
+                              Sube la imagen de portada del restaurante.
+                              Recomendado: 1200x630px
                             </p>
                           </div>
                         </div>

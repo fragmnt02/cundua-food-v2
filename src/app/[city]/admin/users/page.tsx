@@ -138,8 +138,8 @@ export default function UsersPage() {
           )
         );
         toast({
-          title: 'Success',
-          description: 'User role updated successfully'
+          title: 'Éxito',
+          description: 'Rol de usuario actualizado correctamente'
         });
       } else {
         const errorData = await response.json();
@@ -150,7 +150,8 @@ export default function UsersPage() {
         );
         toast({
           title: 'Error',
-          description: errorData.error || 'Failed to update user role',
+          description:
+            errorData.error || 'Error al actualizar el rol del usuario',
           variant: 'destructive'
         });
       }
@@ -163,7 +164,7 @@ export default function UsersPage() {
       );
       toast({
         title: 'Error',
-        description: 'Failed to update user role',
+        description: 'Error al actualizar el rol del usuario',
         variant: 'destructive'
       });
     }
@@ -209,8 +210,8 @@ export default function UsersPage() {
           )
         );
         toast({
-          title: 'Success',
-          description: 'User role and restaurant updated successfully'
+          title: 'Éxito',
+          description: 'Rol de usuario y restaurante actualizado correctamente'
         });
       } else {
         const errorData = await response.json();
@@ -223,7 +224,7 @@ export default function UsersPage() {
         );
         toast({
           title: 'Error',
-          description: errorData.error || 'Failed to update user',
+          description: errorData.error || 'Error al actualizar el usuario',
           variant: 'destructive'
         });
       }
@@ -238,7 +239,7 @@ export default function UsersPage() {
       );
       toast({
         title: 'Error',
-        description: 'Failed to update user',
+        description: 'Error al actualizar el usuario',
         variant: 'destructive'
       });
     }
@@ -284,8 +285,8 @@ export default function UsersPage() {
           )
         );
         toast({
-          title: 'Success',
-          description: 'Restaurant assigned successfully'
+          title: 'Éxito',
+          description: 'Restaurante asignado correctamente'
         });
       } else {
         const errorData = await response.json();
@@ -296,7 +297,7 @@ export default function UsersPage() {
         );
         toast({
           title: 'Error',
-          description: errorData.error || 'Failed to assign restaurant',
+          description: errorData.error || 'Error al asignar el restaurante',
           variant: 'destructive'
         });
       }
@@ -309,7 +310,7 @@ export default function UsersPage() {
       );
       toast({
         title: 'Error',
-        description: 'Failed to assign restaurant',
+        description: 'Error al asignar el restaurante',
         variant: 'destructive'
       });
     }
@@ -389,10 +390,10 @@ export default function UsersPage() {
                                   {user.isLoading ? (
                                     <div className="flex items-center">
                                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                      <span>Loading...</span>
+                                      <span>Cargando...</span>
                                     </div>
                                   ) : (
-                                    <SelectValue placeholder="Select restaurant (optional)" />
+                                    <SelectValue placeholder="Seleccionar restaurante (opcional)" />
                                   )}
                                 </SelectTrigger>
                                 <SelectContent>
@@ -422,7 +423,7 @@ export default function UsersPage() {
                                   {user.isLoading ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                   ) : (
-                                    'Confirm'
+                                    'Confirmar'
                                   )}
                                 </Button>
                               )}
@@ -439,10 +440,10 @@ export default function UsersPage() {
                               {user.isLoading ? (
                                 <div className="flex items-center">
                                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                  <span>Loading...</span>
+                                  <span>Cargando...</span>
                                 </div>
                               ) : (
-                                <SelectValue placeholder="Select role" />
+                                <SelectValue placeholder="Seleccionar rol" />
                               )}
                             </SelectTrigger>
                             <SelectContent>

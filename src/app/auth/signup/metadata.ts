@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Crear Cuenta | Cundua Food',
+  title: 'Crear Cuenta | Tabascomiendo',
   description:
-    'Crea una cuenta en Cundua Food para acceder a los mejores restaurantes.',
+    'Crea una cuenta en Tabascomiendo para acceder a los mejores restaurantes.',
   openGraph: {
-    title: 'Crear Cuenta | Cundua Food',
+    title: 'Crear Cuenta | Tabascomiendo',
     description:
-      'Crea una cuenta en Cundua Food para acceder a los mejores restaurantes.',
+      'Crea una cuenta en Tabascomiendo para acceder a los mejores restaurantes.',
     type: 'website'
   },
   robots: {
