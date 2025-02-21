@@ -2,7 +2,7 @@ export const CITY_USER_FRIENDLY_NAME = {
   // balancan: 'Balancán',
   // cardenas: 'Cárdenas',
   // centla: 'Centla',
-  centro: 'Centro',
+  villahermosa: 'Villahermosa',
   // comalcalco: 'Comalcalco',
   cunduacan: 'Cunduacán'
   // emiliano_zapata: 'Emiliano Zapata',
@@ -15,7 +15,7 @@ export const CITY_USER_FRIENDLY_NAME = {
   // paraiso: 'Paraíso',
   // tacotalpa: 'Tacotalpa',
   // teapa: 'Teapa',
-  // tenosique: 'Tenosique'
+  // tenosique: 'Tenosique',
 };
 
 export const CITIES = Object.keys(CITY_USER_FRIENDLY_NAME);
@@ -46,5 +46,5 @@ export const DELIVERY_COMPANIES: CityDeliveryCompanies = {
       close: '23:00'
     }
   ],
-  centro: []
+  villahermosa: []
 } as const;
