@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       type: type || 'INFO',
       priority: priority || 'MEDIUM',
       targetRoles,
-      userId: userRecord.email,
+      userId: decodedClaims.uid,
       isRead: false,
       createdAt: serverTimestamp(),
       city,
