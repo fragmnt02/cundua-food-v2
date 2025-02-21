@@ -10,7 +10,9 @@ export async function GET() {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    console.log('sessionCookie', sessionCookie);
+
+    if (!sessionCookie?.value) {
       return NextResponse.json({ user: null });
     }
 

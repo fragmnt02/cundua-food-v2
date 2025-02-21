@@ -13,7 +13,7 @@ export async function DELETE(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

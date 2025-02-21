@@ -15,7 +15,7 @@ export async function PUT(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return NextResponse.json(
         { error: 'Unauthorized - No session found' },
         { status: 401 }
@@ -104,7 +104,7 @@ export async function DELETE(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return NextResponse.json(
         { error: 'Unauthorized - No session found' },
         { status: 401 }

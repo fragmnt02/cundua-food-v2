@@ -10,7 +10,7 @@ export async function PUT(request: Request) {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return NextResponse.json(
         { error: 'No session token provided' },
         { status: 401 }

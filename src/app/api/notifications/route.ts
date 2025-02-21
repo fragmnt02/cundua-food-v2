@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const city = url.searchParams.get('city');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

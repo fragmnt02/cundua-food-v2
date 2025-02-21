@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Notification } from '@/types/notification';
 import { useCity } from '@/hooks/useCity';
 import { UserRole } from '@/lib/roles';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -25,25 +26,36 @@ export const NotificationProvider = ({
   children: React.ReactNode;
 }) => {
   const { city } = useCity();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      // Only fetch notifications if user is logged in
+      if (!user) {
+        setNotifications([]);
+        return;
+      }
+
       try {
         const response = await fetch(
           `/api/notifications?city=${city ?? 'ALL'}`
         );
+        if (!response.ok) {
+          throw new Error('Failed to fetch notifications');
+        }
         const data = await response.json();
         setNotifications(data);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
+        setNotifications([]);
       }
     };
     // Initial fetch of notifications
     fetchNotifications();
-  }, [city]);
+  }, [city, user]);
 
   const addNotification = async (
     notification: Omit<Notification, 'id' | 'createdAt'>
