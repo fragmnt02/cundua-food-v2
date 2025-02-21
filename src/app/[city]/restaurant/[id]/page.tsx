@@ -505,7 +505,7 @@ export default function RestaurantPage() {
       </div>
 
       <Dialog open={showHours} onOpenChange={setShowHours}>
-        <DialogContent className="h-[95vh] sm:h-auto max-h-[95vh] sm:max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogContent className="h-3/4 md:h-fit md:max-h-[90vh] flex flex-col p-0 gap-0">
           <DialogHeader className="p-6 pb-2">
             <DialogTitle>Horario de {restaurant.name}</DialogTitle>
           </DialogHeader>

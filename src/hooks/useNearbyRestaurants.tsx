@@ -21,6 +21,7 @@ export const useNearbyRestaurants = (restaurants: Restaurant[]) => {
     }
 
     setIsLoading(true);
+    setError(null);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setUserLocation({
