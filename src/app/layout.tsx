@@ -14,6 +14,7 @@ import { analytics } from '@/utils/analytics';
 import { CookieConsent } from '@/components/CookieConsent';
 import { FavoritesProvider } from '@/providers/FavoritesProvider';
 import { CityProvider } from '@/providers/CityProvider';
+import { NotificationProvider } from '@/providers/NotificationProvider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -54,16 +55,18 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CityProvider>
-            <FavoritesProvider>
-              <Header />
-              <Suspense>
-                <Analytics />
-              </Suspense>
-              <main className="flex-1 mb-4">{children}</main>
-              <Footer />
-              <Toaster />
-              <CookieConsent />
-            </FavoritesProvider>
+            <NotificationProvider>
+              <FavoritesProvider>
+                <Header />
+                <Suspense>
+                  <Analytics />
+                </Suspense>
+                <main className="flex-1 mb-4">{children}</main>
+                <Footer />
+                <Toaster />
+                <CookieConsent />
+              </FavoritesProvider>
+            </NotificationProvider>
           </CityProvider>
         </AuthProvider>
         <Script

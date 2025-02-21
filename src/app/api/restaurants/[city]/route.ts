@@ -6,6 +6,7 @@ import { Day, Restaurant } from '@/types/restaurant';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
 import { UserRole } from '@/lib/roles';
+import { notifyNewRestaurant } from '@/lib/notifications';
 
 export async function POST(
   request: Request,
@@ -55,6 +56,8 @@ export async function POST(
         updatedAt: new Date().toISOString()
       });
     }
+
+    await notifyNewRestaurant(docRef.id, body.name, city);
 
     return NextResponse.json({ id: docRef.id }, { status: 201 });
   } catch (error) {

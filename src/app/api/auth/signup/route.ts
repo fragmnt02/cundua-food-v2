@@ -4,6 +4,7 @@ import { UserRole } from '@/lib/roles';
 import { getAuth, sendEmailVerification } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { notifyNewUser } from '@/lib/notifications';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -86,6 +87,8 @@ export async function POST(request: Request) {
 
     // Send verification email
     await sendEmailVerification(userCredential.user);
+
+    await notifyNewUser(email, `${firstName} ${lastName}`);
 
     return NextResponse.json({
       message:

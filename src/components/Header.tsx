@@ -13,7 +13,8 @@ import {
   FaBars,
   FaHeart,
   FaPencilAlt,
-  FaQuestionCircle
+  FaQuestionCircle,
+  FaBell
 } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { CITY_USER_FRIENDLY_NAME } from '@/lib/constants';
@@ -32,6 +33,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { NotificationBell } from '@/components/NotificationBell';
 
 interface MenuItemsProps {
   user: { email: string } | null;
@@ -93,6 +95,14 @@ const MenuItems = memo(
             >
               <FaUser className="text-xl text-[#363430]" />
               <span>Usuarios</span>
+            </Button>
+            <Button
+              onClick={() => handleNavigation(`/${city}/admin/notifications`)}
+              variant="ghost"
+              className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              <FaBell className="text-xl text-[#363430]" />
+              <span>Gestionar Notificaciones</span>
             </Button>
             <Button
               onClick={() => handleNavigation(`/contact`)}
@@ -178,34 +188,37 @@ const MobileMenu = memo(
     const [open, setOpen] = useState(false);
 
     return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            className="sm:hidden hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-            aria-label="Abrir menú"
-          >
-            <FaBars className="text-xl text-[#363430]" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Menú</SheetTitle>
-          </SheetHeader>
-          <nav className="flex flex-col gap-4 mt-4">
-            <MenuItems
-              user={user}
-              isAdmin={isAdmin}
-              isClient={isClient}
-              assignedRestaurantId={assignedRestaurantId}
-              city={city}
-              onLogout={onLogout}
-              router={router}
-              onClose={() => setOpen(false)}
-            />
-          </nav>
-        </SheetContent>
-      </Sheet>
+      <div className="sm:hidden flex items-center gap-2">
+        {user && <NotificationBell />}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              className="hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+              aria-label="Abrir menú"
+            >
+              <FaBars className="text-xl text-[#363430]" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Menú</SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col gap-4 mt-4">
+              <MenuItems
+                user={user}
+                isAdmin={isAdmin}
+                isClient={isClient}
+                assignedRestaurantId={assignedRestaurantId}
+                city={city}
+                onLogout={onLogout}
+                router={router}
+                onClose={() => setOpen(false)}
+              />
+            </nav>
+          </SheetContent>
+        </Sheet>
+      </div>
     );
   }
 );
@@ -224,6 +237,7 @@ const DesktopMenu = memo(
   }: Omit<MenuItemsProps, 'onClose'>) => {
     return (
       <div className="hidden sm:flex items-center gap-4">
+        {user && <NotificationBell />}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

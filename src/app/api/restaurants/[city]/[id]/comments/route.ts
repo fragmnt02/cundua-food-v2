@@ -7,11 +7,13 @@ import {
   getDocs,
   query,
   where,
-  orderBy
+  orderBy,
+  getDoc
 } from 'firebase/firestore';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
 import { Comment } from '@/types/restaurant';
+import { notifyNewComment } from '@/lib/notifications';
 
 export async function GET(
   request: Request,
@@ -49,7 +51,7 @@ export async function POST(
   { params }: { params: Promise<{ city: string; id: string }> }
 ) {
   try {
-    const { id: restaurantId } = await params;
+    const { id: restaurantId, city } = await params;
 
     // Validate user session
     const cookieStore = await cookies();
@@ -100,6 +102,27 @@ export async function POST(
     };
 
     await setDoc(commentRef, comment);
+
+    const restaurantDoc = await getDoc(
+      doc(db, 'cities', city, 'restaurants', restaurantId)
+    );
+    const restaurantName = restaurantDoc.data()?.name || '';
+
+    const userRestaurantsRef = collection(db, 'userRestaurants');
+    const userRestaurantsSnapshot = await getDocs(
+      query(userRestaurantsRef, where('restaurantId', '==', restaurantId))
+    );
+
+    const userRestaurantId = userRestaurantsSnapshot.docs[0].data().userId;
+
+    await notifyNewComment(
+      restaurantId,
+      restaurantName,
+      content.trim(),
+      `${firstName} ${lastName}`,
+      city,
+      userRestaurantId
+    );
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
