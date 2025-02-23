@@ -124,7 +124,7 @@ export default function RestaurantPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { isAdmin } = useAdmin();
-  const { isClient, assignedRestaurantId } = useClient();
+  const { isClient, assignedRestaurantIds } = useClient();
   const { userRating, submitVote, isLoading } = useVote(params.id as string);
   const startTimeRef = useRef(Date.now());
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -401,7 +401,9 @@ export default function RestaurantPage() {
         role="banner"
         aria-label="Sección principal del restaurante"
       >
-        {(isAdmin || (isClient && assignedRestaurantId === params.id)) && (
+        {(isAdmin ||
+          (isClient &&
+            assignedRestaurantIds?.includes(params.id as string))) && (
           <div
             className="absolute top-4 right-4 z-10 flex gap-2"
             role="toolbar"

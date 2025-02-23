@@ -39,7 +39,7 @@ export async function GET() {
 
     userRestaurantsSnapshot.forEach((doc) => {
       const data = doc.data();
-      userRestaurants.set(data.userId, data.restaurantId);
+      userRestaurants.set(data.userId, data.restaurantIds || []);
     });
 
     const formattedUsers = users.map((user) => ({
@@ -48,7 +48,7 @@ export async function GET() {
       emailVerified: user.emailVerified,
       role: (user.customClaims?.role as UserRole) || UserRole.USER,
       createdAt: user.metadata.creationTime,
-      restaurantId: userRestaurants.get(user.uid)
+      restaurantIds: userRestaurants.get(user.uid) || []
     }));
 
     return NextResponse.json(formattedUsers);

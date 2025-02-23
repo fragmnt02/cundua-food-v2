@@ -53,7 +53,7 @@ export default function CreateRestaurant() {
   const params = useParams();
   const { city } = useCity();
   const { isAdmin } = useAdmin();
-  const { isClient, assignedRestaurantId } = useClient();
+  const { isClient, assignedRestaurantIds } = useClient();
   const { checkUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const isEditMode = Boolean(params.id);
@@ -122,15 +122,9 @@ export default function CreateRestaurant() {
     if (isEditMode && isClient) {
       if (
         params.id &&
-        assignedRestaurantId &&
-        params.id !== assignedRestaurantId
+        assignedRestaurantIds &&
+        !assignedRestaurantIds.includes(params.id as string)
       ) {
-        router.push(`/${city}`);
-        return;
-      }
-    } else if (isClient) {
-      // is creating
-      if (assignedRestaurantId) {
         router.push(`/${city}`);
         return;
       }
@@ -192,7 +186,7 @@ export default function CreateRestaurant() {
     city,
     isAdmin,
     router,
-    assignedRestaurantId,
+    assignedRestaurantIds,
     isClient,
     isEditMode
   ]);

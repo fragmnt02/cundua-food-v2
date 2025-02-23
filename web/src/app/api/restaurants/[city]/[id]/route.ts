@@ -11,7 +11,6 @@ export async function PUT(
   { params }: { params: Promise<{ city: string; id: string }> }
 ) {
   try {
-    // Validate admin role
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
@@ -31,12 +30,12 @@ export async function PUT(
 
     const assignedRestaurantRef = doc(db, 'userRestaurants', userRecord.uid);
     const assignedRestaurantDoc = await getDoc(assignedRestaurantRef);
-    const assignedRestaurantId =
-      assignedRestaurantDoc.data()?.restaurantId ?? null;
+    const assignedRestaurantIds =
+      assignedRestaurantDoc.data()?.restaurantIds ?? [];
 
     const shouldUpdate =
       role === UserRole.ADMIN ||
-      (role === UserRole.CLIENT && assignedRestaurantId === id);
+      (role === UserRole.CLIENT && assignedRestaurantIds.includes(id));
 
     if (!shouldUpdate) {
       return NextResponse.json(
@@ -100,7 +99,6 @@ export async function DELETE(
   { params }: { params: Promise<{ city: string; id: string }> }
 ) {
   try {
-    // Validate admin role
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
@@ -120,12 +118,12 @@ export async function DELETE(
 
     const assignedRestaurantRef = doc(db, 'userRestaurants', userRecord.uid);
     const assignedRestaurantDoc = await getDoc(assignedRestaurantRef);
-    const assignedRestaurantId =
-      assignedRestaurantDoc.data()?.restaurantId ?? null;
+    const assignedRestaurantIds =
+      assignedRestaurantDoc.data()?.restaurantIds ?? [];
 
     const shouldDelete =
       role === UserRole.ADMIN ||
-      (role === UserRole.CLIENT && assignedRestaurantId === id);
+      (role === UserRole.CLIENT && assignedRestaurantIds.includes(id));
 
     if (!shouldDelete) {
       return NextResponse.json(

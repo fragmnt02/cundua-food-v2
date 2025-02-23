@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/hooks/useAdmin';
 import { UserRole } from '@/lib/roles';
@@ -21,10 +21,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, ChevronDown, Check } from 'lucide-react';
 import { useCity } from '@/hooks/useCity';
 import { Restaurant } from '@/types/restaurant';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface User {
   uid: string;
@@ -32,7 +33,7 @@ interface User {
   emailVerified: boolean;
   role: UserRole;
   createdAt: string;
-  restaurantId?: string;
+  restaurantIds: string[];
   pendingRole?: UserRole;
   isLoading?: boolean;
 }
@@ -45,6 +46,10 @@ export default function UsersPage() {
   const { isAdmin } = useAdmin();
   const { city } = useCity();
   const router = useRouter();
+  const [openRestaurantSelectors, setOpenRestaurantSelectors] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const restaurantRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -94,6 +99,26 @@ export default function UsersPage() {
     }
   }, [isAdmin, router, city]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      Object.entries(restaurantRefs.current).forEach(([userId, ref]) => {
+        if (
+          openRestaurantSelectors[userId] &&
+          ref &&
+          !ref.contains(event.target as Node)
+        ) {
+          setOpenRestaurantSelectors((prev) => ({
+            ...prev,
+            [userId]: false
+          }));
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openRestaurantSelectors]);
+
   const handleRoleChange = async (userId: string, newRole: string) => {
     // If changing to client role, set as pending
     if (newRole === UserRole.CLIENT) {
@@ -130,7 +155,7 @@ export default function UsersPage() {
               ? {
                   ...user,
                   role: newRole as UserRole,
-                  restaurantId: undefined,
+                  restaurantIds: [],
                   pendingRole: undefined,
                   isLoading: false
                 }
@@ -172,7 +197,7 @@ export default function UsersPage() {
 
   const handleConfirmClientRole = async (
     userId: string,
-    restaurantId?: string
+    restaurantIds: string[]
   ) => {
     const user = users.find((u) => u.uid === userId);
     if (!user?.pendingRole) return;
@@ -191,7 +216,7 @@ export default function UsersPage() {
         body: JSON.stringify({
           userId,
           newRole: user.pendingRole,
-          restaurantId
+          restaurantIds
         })
       });
 
@@ -202,7 +227,7 @@ export default function UsersPage() {
               ? {
                   ...u,
                   role: user.pendingRole!,
-                  restaurantId,
+                  restaurantIds,
                   pendingRole: undefined,
                   isLoading: false
                 }
@@ -211,7 +236,8 @@ export default function UsersPage() {
         );
         toast({
           title: 'Éxito',
-          description: 'Rol de usuario y restaurante actualizado correctamente'
+          description:
+            'Rol de usuario y restaurantes actualizados correctamente'
         });
       } else {
         const errorData = await response.json();
@@ -247,14 +273,14 @@ export default function UsersPage() {
 
   const handleRestaurantChange = async (
     userId: string,
-    restaurantId: string
+    restaurantIds: string[]
   ) => {
     const user = users.find((u) => u.uid === userId);
     if (!user) return;
 
     // If there's a pending role change to client, handle it differently
     if (user.pendingRole === UserRole.CLIENT) {
-      handleConfirmClientRole(userId, restaurantId);
+      handleConfirmClientRole(userId, restaurantIds);
       return;
     }
 
@@ -271,7 +297,7 @@ export default function UsersPage() {
         },
         body: JSON.stringify({
           userId,
-          restaurantId,
+          restaurantIds,
           newRole: user.role
         })
       });
@@ -280,13 +306,13 @@ export default function UsersPage() {
         setUsers(
           users.map((user) =>
             user.uid === userId
-              ? { ...user, restaurantId, isLoading: false }
+              ? { ...user, restaurantIds, isLoading: false }
               : user
           )
         );
         toast({
           title: 'Éxito',
-          description: 'Restaurante asignado correctamente'
+          description: 'Restaurantes asignados correctamente'
         });
       } else {
         const errorData = await response.json();
@@ -297,12 +323,12 @@ export default function UsersPage() {
         );
         toast({
           title: 'Error',
-          description: errorData.error || 'Error al asignar el restaurante',
+          description: errorData.error || 'Error al asignar los restaurantes',
           variant: 'destructive'
         });
       }
     } catch (err) {
-      console.error('Error assigning restaurant:', err);
+      console.error('Error assigning restaurants:', err);
       setUsers(
         users.map((user) =>
           user.uid === userId ? { ...user, isLoading: false } : user
@@ -310,7 +336,7 @@ export default function UsersPage() {
       );
       toast({
         title: 'Error',
-        description: 'Error al asignar el restaurante',
+        description: 'Error al asignar los restaurantes',
         variant: 'destructive'
       });
     }
@@ -379,44 +405,129 @@ export default function UsersPage() {
                           {(user.role === UserRole.CLIENT ||
                             user.pendingRole === UserRole.CLIENT) && (
                             <div className="flex gap-2 items-center">
-                              <Select
-                                value={user.restaurantId}
-                                onValueChange={(value) =>
-                                  handleRestaurantChange(user.uid, value)
-                                }
-                                disabled={user.isLoading}
+                              <div
+                                className="relative"
+                                ref={(el) => {
+                                  if (el) {
+                                    restaurantRefs.current[user.uid] = el;
+                                  }
+                                }}
                               >
-                                <SelectTrigger className="w-[200px]">
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={
+                                    openRestaurantSelectors[user.uid] || false
+                                  }
+                                  aria-haspopup="listbox"
+                                  className="w-[200px] justify-between"
+                                  onClick={() =>
+                                    setOpenRestaurantSelectors((prev) => ({
+                                      ...prev,
+                                      [user.uid]: !prev[user.uid]
+                                    }))
+                                  }
+                                  disabled={user.isLoading}
+                                >
                                   {user.isLoading ? (
                                     <div className="flex items-center">
                                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                       <span>Cargando...</span>
                                     </div>
                                   ) : (
-                                    <SelectValue placeholder="Seleccionar restaurante (opcional)" />
+                                    <span className="truncate">
+                                      {user.restaurantIds.length === 0
+                                        ? 'Seleccionar restaurantes'
+                                        : `${
+                                            user.restaurantIds.length
+                                          } restaurante${
+                                            user.restaurantIds.length > 1
+                                              ? 's'
+                                              : ''
+                                          }`}
+                                    </span>
                                   )}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {restaurants
-                                    .sort((a, b) =>
-                                      a.name.localeCompare(b.name)
-                                    )
-                                    .map((restaurant) => (
-                                      <SelectItem
-                                        key={restaurant.id}
-                                        value={restaurant.id}
-                                      >
-                                        {restaurant.name}
-                                      </SelectItem>
-                                    ))}
-                                </SelectContent>
-                              </Select>
+                                  <ChevronDown className="h-4 w-4 opacity-50" />
+                                </Button>
+                                {openRestaurantSelectors[user.uid] && (
+                                  <div
+                                    className="absolute z-50 w-full mt-2 rounded-md border bg-popover p-2 shadow-md max-h-[300px] overflow-y-auto"
+                                    role="listbox"
+                                    aria-multiselectable="true"
+                                  >
+                                    <div className="flex flex-wrap gap-2">
+                                      {restaurants
+                                        .sort((a, b) =>
+                                          a.name.localeCompare(b.name)
+                                        )
+                                        .map((restaurant) => (
+                                          <Button
+                                            key={restaurant.id}
+                                            variant={
+                                              user.restaurantIds.includes(
+                                                restaurant.id
+                                              )
+                                                ? 'default'
+                                                : 'outline'
+                                            }
+                                            size="sm"
+                                            onClick={() => {
+                                              const newRestaurantIds =
+                                                user.restaurantIds.includes(
+                                                  restaurant.id
+                                                )
+                                                  ? user.restaurantIds.filter(
+                                                      (id) =>
+                                                        id !== restaurant.id
+                                                    )
+                                                  : [
+                                                      ...user.restaurantIds,
+                                                      restaurant.id
+                                                    ];
+                                              handleRestaurantChange(
+                                                user.uid,
+                                                newRestaurantIds
+                                              );
+                                            }}
+                                            role="option"
+                                            aria-selected={user.restaurantIds.includes(
+                                              restaurant.id
+                                            )}
+                                            className={cn(
+                                              'transition-colors flex-1 min-w-[120px] focus:ring-2 focus:ring-ring focus:outline-none',
+                                              user.restaurantIds.includes(
+                                                restaurant.id
+                                              ) && 'text-primary-foreground'
+                                            )}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                'mr-2 h-4 w-4',
+                                                user.restaurantIds.includes(
+                                                  restaurant.id
+                                                )
+                                                  ? 'opacity-100'
+                                                  : 'opacity-0'
+                                              )}
+                                            />
+                                            <span className="truncate">
+                                              {restaurant.name}
+                                            </span>
+                                          </Button>
+                                        ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                               {user.pendingRole === UserRole.CLIENT && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
-                                    handleConfirmClientRole(user.uid)
+                                    handleConfirmClientRole(
+                                      user.uid,
+                                      user.restaurantIds
+                                    )
                                   }
                                   disabled={user.isLoading}
                                 >

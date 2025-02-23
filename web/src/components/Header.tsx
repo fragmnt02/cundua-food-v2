@@ -12,7 +12,6 @@ import {
   FaMapMarkerAlt,
   FaBars,
   FaHeart,
-  FaPencilAlt,
   FaQuestionCircle,
   FaBell
 } from 'react-icons/fa';
@@ -39,7 +38,6 @@ interface MenuItemsProps {
   user: { email: string } | null;
   isAdmin: boolean;
   isClient: boolean;
-  assignedRestaurantId?: string;
   city: string;
   onClose?: () => void;
   onLogout: () => void;
@@ -51,7 +49,6 @@ const MenuItems = memo(
     user,
     isAdmin,
     isClient,
-    assignedRestaurantId,
     city,
     onClose,
     onLogout,
@@ -117,29 +114,14 @@ const MenuItems = memo(
 
         {isClient && (
           <>
-            {assignedRestaurantId ? (
-              <Button
-                onClick={() =>
-                  handleNavigation(
-                    `/${city}/admin/update/${assignedRestaurantId}`
-                  )
-                }
-                variant="ghost"
-                className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-              >
-                <FaPencilAlt className="text-xl text-[#363430]" />
-                <span>Editar Mi Restaurante</span>
-              </Button>
-            ) : (
-              <Button
-                onClick={() => handleNavigation(`/${city}/admin/create`)}
-                variant="ghost"
-                className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
-              >
-                <FaPlus className="text-xl text-[#363430]" />
-                <span>Agregar Restaurante</span>
-              </Button>
-            )}
+            <Button
+              onClick={() => handleNavigation(`/${city}/admin/create`)}
+              variant="ghost"
+              className="w-full justify-start gap-2 hover:bg-[#ffb400] focus-visible:ring-2 focus-visible:ring-[#ffb400]"
+            >
+              <FaPlus className="text-xl text-[#363430]" />
+              <span>Agregar Restaurante</span>
+            </Button>
           </>
         )}
 
@@ -180,7 +162,6 @@ const MobileMenu = memo(
     user,
     isAdmin,
     isClient,
-    assignedRestaurantId,
     city,
     onLogout,
     router
@@ -209,7 +190,6 @@ const MobileMenu = memo(
                 user={user}
                 isAdmin={isAdmin}
                 isClient={isClient}
-                assignedRestaurantId={assignedRestaurantId}
                 city={city}
                 onLogout={onLogout}
                 router={router}
@@ -230,7 +210,6 @@ const DesktopMenu = memo(
     user,
     isAdmin,
     isClient,
-    assignedRestaurantId,
     city,
     onLogout,
     router
@@ -262,7 +241,6 @@ const DesktopMenu = memo(
               user={user}
               isAdmin={!!isAdmin}
               isClient={!!isClient}
-              assignedRestaurantId={assignedRestaurantId || undefined}
               city={city}
               onLogout={onLogout}
               router={router}
@@ -279,7 +257,7 @@ DesktopMenu.displayName = 'DesktopMenu';
 export const Header = memo(() => {
   const { city } = useCity();
   const { isAdmin } = useAdmin();
-  const { isClient, assignedRestaurantId } = useClient();
+  const { isClient } = useClient();
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -339,7 +317,6 @@ export const Header = memo(() => {
             user={user}
             isAdmin={!!isAdmin}
             isClient={!!isClient}
-            assignedRestaurantId={assignedRestaurantId || undefined}
             city={city}
             onLogout={handleLogout}
             router={router}
@@ -349,7 +326,6 @@ export const Header = memo(() => {
             user={user}
             isAdmin={!!isAdmin}
             isClient={!!isClient}
-            assignedRestaurantId={assignedRestaurantId || undefined}
             city={city}
             onLogout={handleLogout}
             router={router}

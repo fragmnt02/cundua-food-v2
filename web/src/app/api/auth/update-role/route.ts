@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
     }
 
     // Get request body
-    const { userId, newRole, restaurantId } = await request.json();
+    const { userId, newRole, restaurantIds } = await request.json();
 
     if (!userId || !newRole) {
       return NextResponse.json(
@@ -51,13 +51,13 @@ export async function PUT(request: Request) {
       role: newRole
     });
 
-    // Handle restaurant assignment
-    if (newRole === UserRole.CLIENT && restaurantId) {
+    // Handle restaurant assignments
+    if (newRole === UserRole.CLIENT) {
       // Add restaurant-user relationship
       const userRestaurantRef = doc(db, 'userRestaurants', userId);
       await setDoc(userRestaurantRef, {
         userId,
-        restaurantId,
+        restaurantIds: restaurantIds || [],
         role: newRole,
         updatedAt: new Date().toISOString()
       });
@@ -67,16 +67,12 @@ export async function PUT(request: Request) {
       await deleteDoc(userRestaurantRef);
     }
 
-    // If just updating restaurant for existing client
-    if (
-      currentRole === UserRole.CLIENT &&
-      newRole === UserRole.CLIENT &&
-      restaurantId
-    ) {
+    // If just updating restaurants for existing client
+    if (currentRole === UserRole.CLIENT && newRole === UserRole.CLIENT) {
       const userRestaurantRef = doc(db, 'userRestaurants', userId);
       await setDoc(userRestaurantRef, {
         userId,
-        restaurantId,
+        restaurantIds: restaurantIds || [],
         role: newRole,
         updatedAt: new Date().toISOString()
       });

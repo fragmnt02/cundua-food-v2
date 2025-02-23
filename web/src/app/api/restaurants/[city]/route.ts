@@ -1,7 +1,14 @@
 'use server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, setDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  setDoc,
+  doc,
+  getDoc
+} from 'firebase/firestore';
 import { Day, Restaurant } from '@/types/restaurant';
 import { cookies } from 'next/headers';
 import { initAdmin } from '@/lib/firebase-admin';
@@ -49,12 +56,20 @@ export async function POST(
     if (role === UserRole.CLIENT) {
       // Add restaurant-user relationship
       const userRestaurantRef = doc(db, 'userRestaurants', userRecord.uid);
-      await setDoc(userRestaurantRef, {
+
+      // Get existing document or create new one
+      const userRestaurantDoc = await getDoc(userRestaurantRef);
+
+      const updatedData = {
         userId: userRecord.uid,
-        restaurantId: docRef.id,
+        restaurantIds: userRestaurantDoc.exists()
+          ? [...userRestaurantDoc.data().restaurantIds, docRef.id]
+          : [docRef.id],
         role: UserRole.CLIENT,
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      await setDoc(userRestaurantRef, updatedData);
     }
 
     await notifyNewRestaurant(docRef.id, body.name, city);

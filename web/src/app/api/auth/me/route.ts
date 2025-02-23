@@ -10,8 +10,6 @@ export async function GET() {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
-    console.log('sessionCookie', sessionCookie);
-
     if (!sessionCookie?.value) {
       return NextResponse.json({ user: null });
     }
@@ -21,12 +19,12 @@ export async function GET() {
     const userRecord = await auth.getUser(decodedClaims.uid);
     const role = (userRecord.customClaims?.role as UserRole) || UserRole.USER;
 
-    let restaurantId = null;
+    let restaurantIds: string[] = [];
     if (role === UserRole.CLIENT) {
       const restaurantRef = doc(db, 'userRestaurants', userRecord.uid);
       const restaurantDoc = await getDoc(restaurantRef);
       if (restaurantDoc.exists()) {
-        restaurantId = restaurantDoc.data().restaurantId;
+        restaurantIds = restaurantDoc.data().restaurantIds || [];
       }
     }
 
@@ -38,7 +36,7 @@ export async function GET() {
         lastName: userRecord.customClaims?.lastName,
         dateOfBirth: userRecord.customClaims?.dateOfBirth,
         telephone: userRecord.customClaims?.telephone,
-        restaurantId
+        restaurantIds
       }
     });
   } catch (error) {

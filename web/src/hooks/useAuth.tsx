@@ -18,7 +18,7 @@ interface AuthContextType {
     lastName?: string;
     dateOfBirth?: string;
     telephone?: string;
-    restaurantId?: string;
+    restaurantIds?: string[];
   } | null;
   loading: boolean;
   logout: () => Promise<void>;
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName?: string;
     dateOfBirth?: string;
     telephone?: string;
-    restaurantId?: string;
+    restaurantIds?: string[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lastName: data.user.lastName,
             dateOfBirth: data.user.dateOfBirth,
             telephone: data.user.telephone,
-            restaurantId: data.user.restaurantId
+            restaurantIds: data.user.restaurantIds ?? []
           });
         }
       }

@@ -4,17 +4,17 @@ import { useAuth } from '@/hooks/useAuth';
 
 export const useClient = () => {
   const [isClient, setIsClient] = useState<boolean | null>(null);
-  const [assignedRestaurantId, setAssignedRestaurantId] = useState<
-    string | null
+  const [assignedRestaurantIds, setAssignedRestaurantIds] = useState<
+    string[] | null
   >(null);
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
       setIsClient(user.role === UserRole.CLIENT);
-      setAssignedRestaurantId(user.restaurantId ?? null);
+      setAssignedRestaurantIds(user.restaurantIds ?? []);
     }
   }, [user]);
 
-  return { isClient, assignedRestaurantId };
+  return { isClient, assignedRestaurantIds };
 };
