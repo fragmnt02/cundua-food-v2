@@ -19,17 +19,15 @@ export default function SelectCity() {
       setLoading(city);
       setSelectedCity(city);
       // Save user's city preference if logged in
-      const response = await fetch('/api/user/city', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ city })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save city preference');
-      }
+      try {
+        await fetch('/api/user/city', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ city })
+        });
+      } catch {}
 
       // Navigate to the city-specific page
       router.push(`/${city}`);
