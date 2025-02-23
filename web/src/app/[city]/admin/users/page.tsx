@@ -351,7 +351,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
@@ -382,12 +382,12 @@ export default function UsersPage() {
                 filteredUsers.map((user) => (
                   <Card key={user.uid}>
                     <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium leading-none">
+                          <p className="text-sm font-medium leading-none break-all">
                             {user.email}
                           </p>
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex flex-wrap gap-2 mt-2">
                             <Badge
                               variant={
                                 user.emailVerified ? 'default' : 'destructive'
@@ -401,12 +401,12 @@ export default function UsersPage() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                           {(user.role === UserRole.CLIENT ||
                             user.pendingRole === UserRole.CLIENT) && (
-                            <div className="flex gap-2 items-center">
+                            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                               <div
-                                className="relative"
+                                className="relative flex-1"
                                 ref={(el) => {
                                   if (el) {
                                     restaurantRefs.current[user.uid] = el;
@@ -420,7 +420,7 @@ export default function UsersPage() {
                                     openRestaurantSelectors[user.uid] || false
                                   }
                                   aria-haspopup="listbox"
-                                  className="w-[200px] justify-between"
+                                  className="w-full sm:w-[200px] justify-between"
                                   onClick={() =>
                                     setOpenRestaurantSelectors((prev) => ({
                                       ...prev,
@@ -447,7 +447,7 @@ export default function UsersPage() {
                                           }`}
                                     </span>
                                   )}
-                                  <ChevronDown className="h-4 w-4 opacity-50" />
+                                  <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
                                 </Button>
                                 {openRestaurantSelectors[user.uid] && (
                                   <div
@@ -530,6 +530,7 @@ export default function UsersPage() {
                                     )
                                   }
                                   disabled={user.isLoading}
+                                  className="w-full sm:w-auto"
                                 >
                                   {user.isLoading ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -547,7 +548,7 @@ export default function UsersPage() {
                             }
                             disabled={user.isLoading}
                           >
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-full sm:w-[180px]">
                               {user.isLoading ? (
                                 <div className="flex items-center">
                                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
